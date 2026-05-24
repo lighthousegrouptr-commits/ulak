@@ -1,0 +1,1 @@
+User communicates in Turkish. Prefers Turkish responses. Has interest in or connection to Zonguldak. GitHub account: lighthousegrouptr-commits. Prefers the agent name "Ulak" over "Hermes".

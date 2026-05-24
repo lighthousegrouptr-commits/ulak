@@ -1,0 +1,1 @@
+musikapp project: Express.js API + PostgreSQL + ACRCloud music recognition. Lives at /var/www/musikapp. Git remote: git@github.com:lighthousegrouptr-commits/musikapp.git (SSH, already authenticated). Auto-sync cron job running every 30m (job id: 06086b1d13b2). Agent is renamed "Ulak" via ~/.hermes/SOUL.md.
