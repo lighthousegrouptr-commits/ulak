@@ -1,1 +1,1 @@
-User communicates in Turkish. Prefers Turkish responses. Has interest in or connection to Zonguldak. GitHub account: lighthousegrouptr-commits. Prefers the agent name "Ulak" over "Hermes".
+Levent Şane, Zonguldak bağlantısı var. GitHub: lighthousegrouptr-commits. WhatsApp üzerinden kullanıyor. Her zaman Türkçe yanıtla, markdown kullanma (WhatsApp render etmez). Agent adını "Ulak" olarak istiyor — "Hermes" değil. SOUL.md zaten "Ulak Agent Persona" olarak güncellendi.
