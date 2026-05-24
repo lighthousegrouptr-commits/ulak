@@ -1,166 +1,171 @@
 ---
 name: hermes-config-backup
 description: "Backup and sync Hermes/Ulak config to GitHub: persona renaming, what to include/exclude, cron automation, remote setup."
-version: 1.0.0
-author: Ulak (Hermes Agent)
+version: 1.1.0
+author: Ulak Agent
 license: MIT
-platforms: [linux, macos]
+platforms: [linux]
 metadata:
   hermes:
-    tags: [hermes, backup, github, sync, persona, cron, config]
-    related_skills: [hermes-agent, github-repo-management]
+    tags: [hermes, ulak, backup, github, sync, whatsapp, persona]
 ---
 
-# Hermes Config Backup & Sync
+# Hermes → Ulak Konfigürasyon Yedek ve Uygulama Skill'i
 
-Covers two related tasks:
-1. Renaming the agent (Hermes → custom name like "Ulak")
-2. Backing up ~/.hermes config to a private/public GitHub repo with automated sync
+Bu skill, Hermes Agent kurulumunu "Ulak" olarak özelleştiren tüm değişiklikleri belgeler ve güncelleme sonrası otomatik olarak yeniden uygulanmasını sağlar.
+
+## Tetikleyici Koşullar
+
+- `hermes update` sonrası
+- Gateway restart sonrası WhatsApp prefix eski haline dönmüşse
+- Yeni sunucuya kurulum yapılıyorsa
+- `/skill hermes-config-backup` ile manuel çağrıldığında
 
 ---
 
-## 1. Renaming the Agent (Persona)
+## 1. SOUL.md — Persona / İsim
 
-Two files need editing:
+`~/.hermes/SOUL.md` dosyasını güncelle:
 
-### ~/.hermes/SOUL.md
-This file is loaded fresh every message. Add a line declaring the new name:
-
-```
+```bash
+cat > ~/.hermes/SOUL.md << 'EOF'
 # Ulak Agent Persona
-...
+
+<!--
+This file defines the agent's personality and tone.
+Edit this to customize how Ulak communicates with you.
+-->
+
 Sen Ulak'sın — terminal tabanlı, hızlı ve güvenilir bir AI asistan.
-```
-
-Also update the comment block references from "Hermes" to the new name.
-
-### ~/.hermes/config.yaml (personality definitions)
-Find personality strings that mention the old name and replace them:
-
-```bash
-sed -i "s/Captain Hermes/Captain Ulak/g; s/They call me Hermes/They call me Ulak/g" ~/.hermes/config.yaml
-```
-
-Note: patch tool is blocked on config.yaml (protected file) — use sed directly.
-
-No restart needed for SOUL.md changes. config.yaml changes take effect on next session (/reset).
-
----
-
-## 2. GitHub Repo Setup for Backup
-
-### Create the repo via API (when gh CLI is not authenticated)
-
-```bash
-curl -s -X POST \
-  -H "Authorization: token $GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github+json" \
-  https://api.github.com/user/repos \
-  -d '{"name": "ulak", "description": "Ulak AI Agent config backup", "private": false, "auto_init": true}'
-```
-
-### PITFALL: auto_init conflict
-If `auto_init: true` is used, GitHub creates a README on `main`. When you then try to push your own initial commit, you get a rebase conflict. Fix:
-
-```bash
-git rebase --abort   # if rebase is in progress
-git branch -m master main
-git push origin main --force
-```
-
-### Set up HTTPS remote with embedded token (no gh CLI needed)
-
-```bash
-git remote add origin https://$GITHUB_TOKEN@github.com/OWNER/REPO.git
-```
-
-Store the token in ~/.hermes/.env as `GITHUB_TOKEN=...` so the sync script can read it.
-
----
-
-## 3. What to Sync (and What to Exclude)
-
-### Include
-- `~/.hermes/SOUL.md` — persona/name
-- `~/.hermes/memories/MEMORY.md` + `USER.md` — persistent memory
-- `~/.hermes/skills/` — all skills (agent-created and bundled)
-- `~/.hermes/cron/jobs.json` — scheduled jobs
-- `~/.hermes/config.yaml` — but strip secrets (see below)
-- `~/.hermes/scripts/` — automation scripts
-- `~/.hermes/hooks/` — if populated
-
-### Exclude (never commit these)
-- `~/.hermes/.env` — API keys and secrets
-- `~/.hermes/auth.json` — OAuth tokens
-- `~/.hermes/state.db*` — session SQLite (large, binary)
-- `~/.hermes/audio_cache/`, `image_cache/`, `cache/` — binary caches
-- `~/.hermes/logs/` — runtime logs
-- `~/.hermes/sessions/` — session transcripts (can be large)
-- `*.lock` files, `__pycache__/`, `.usage.json`
-
-### Strip secrets from config.yaml before copying
-
-```bash
-grep -v "api_key\|password\|secret\|token\|TOKEN\|SECRET\|PASSWORD" \
-  ~/.hermes/config.yaml > /root/ulak/config/config.yaml
+EOF
 ```
 
 ---
 
-## 4. Automated Sync Script
+## 2. WhatsApp Bridge — Prefix ve Browser Kimliği
 
-Place at `~/.hermes/scripts/ulak_sync.sh`. See `references/sync-script.md` for the full script.
-
-Core logic:
-1. rsync skills/ with --delete (keeps deletions in sync)
-2. cp SOUL.md, memories/, cron/jobs.json
-3. grep-filter config.yaml to strip secrets
-4. `git add -A && git commit -m "sync: TIMESTAMP" && git push origin main`
-5. If no local changes, `git fetch` + compare HEAD to check for remote-only commits
-
----
-
-## 5. Cron Job (no_agent mode)
-
-Use `no_agent: true` so no LLM tokens are spent — the script output is delivered directly:
-
-```python
-cronjob(
-    action='create',
-    name='ulak-github-sync',
-    no_agent=True,
-    schedule='every 30m',
-    script='ulak_sync.sh'   # relative to ~/.hermes/scripts/
-)
-```
-
-Script path must be the filename only (relative to `~/.hermes/scripts/`), not an absolute path.
-
----
-
-## 6. Installing Custom .md Skill Files
-
-User-authored .md files can be dropped directly into the skills directory:
+`/usr/local/lib/hermes-agent/scripts/whatsapp-bridge/bridge.js` içindeki iki satırı değiştir:
 
 ```bash
-cp myskill.md ~/.hermes/skills/
-# or into a subdirectory:
-cp myskill.md ~/.hermes/skills/mycategory/
+BRIDGE="/usr/local/lib/hermes-agent/scripts/whatsapp-bridge/bridge.js"
+
+# Mesaj prefix
+sed -i "s/⚕ \*Hermes Agent\*/⚕ *Ulak Agent*/g" "$BRIDGE"
+
+# Browser kimliği (WhatsApp'ın gördüğü isim)
+sed -i "s/browser: \['Hermes Agent'/browser: ['Ulak Agent'/g" "$BRIDGE"
+
+# Doğrulama
+grep -n "Ulak Agent" "$BRIDGE"
 ```
 
-The SKILL.md must have YAML frontmatter with at least `name` and `description`.
-After placing files, run `/reload-skills` in the active session to pick them up
-without restarting. To verify: `hermes skills list`.
+Beklenen çıktı:
+```
+54:const DEFAULT_REPLY_PREFIX = '⚕ *Ulak Agent*\n────────────\n';
+189:    browser: ['Ulak Agent', 'Chrome', '120.0'],
+```
 
 ---
 
-## 7. Pitfalls
+## 3. config.yaml — Personality İsimleri
 
-- **patch tool blocked on config.yaml** — use `sed -i` in terminal instead.
-- **auto_init conflict** — always force-push the first commit when GitHub auto-created a README (see section 2).
-- **rsync may not be installed** — fall back to `cp -r` if rsync is absent.
-- **Token in remote URL** — `git remote get-url origin` will expose the token in shell history. Acceptable for a private backup workflow; for shared systems prefer SSH or credential store.
-- **skills/ is large** — first sync may push 500+ files; normal for a full Hermes install.
-- **musikapp or other projects must NOT be mixed into the ulak backup repo** — keep project repos separate.
-- **Renaming incomplete on WhatsApp gateway** — editing SOUL.md renames the persona in responses but the gateway session header/footer may still say "Hermes Agent". The SOUL.md persona block must explicitly instruct the agent to call itself "Ulak" and the personality section in config.yaml must be updated too. If the name still appears wrong after /reset, check `hermes config edit` for any remaining "Hermes" strings in the `personality` or `agent` sections.
-- **WhatsApp does not render markdown** — never use bold (`**`), headers (`#`), or bullet hyphens (`-`) in gateway responses. Plain text only. Lists should use numbers or line breaks.
+```bash
+sed -i "s/Captain Hermes/Captain Ulak/g" ~/.hermes/config.yaml
+sed -i "s/They call me Hermes/They call me Ulak/g" ~/.hermes/config.yaml
+```
+
+---
+
+## 4. Gateway Yeniden Başlat
+
+```bash
+hermes gateway restart
+sleep 5
+curl -s http://localhost:3000/health
+# Beklenen: {"status":"connected",...}
+```
+
+---
+
+## 5. Tüm Değişiklikleri Tek Seferde Uygula (ulak_apply.sh)
+
+```bash
+#!/bin/bash
+# ulak_apply.sh — Ulak özelleştirmelerini uygula
+# Kullanım: bash ~/.hermes/scripts/ulak_apply.sh
+
+echo "=== Ulak konfigürasyonu uygulanıyor ==="
+
+# 1. SOUL.md
+cat > ~/.hermes/SOUL.md << 'SOULEOF'
+# Ulak Agent Persona
+
+<!--
+This file defines the agent's personality and tone.
+Edit this to customize how Ulak communicates with you.
+-->
+
+Sen Ulak'sın — terminal tabanlı, hızlı ve güvenilir bir AI asistan.
+SOULEOF
+echo "✓ SOUL.md güncellendi"
+
+# 2. WhatsApp bridge
+BRIDGE="/usr/local/lib/hermes-agent/scripts/whatsapp-bridge/bridge.js"
+if [ -f "$BRIDGE" ]; then
+  sed -i "s/⚕ \*Hermes Agent\*/⚕ *Ulak Agent*/g" "$BRIDGE"
+  sed -i "s/browser: \['Hermes Agent'/browser: ['Ulak Agent'/g" "$BRIDGE"
+  echo "✓ WhatsApp bridge güncellendi"
+else
+  echo "✗ bridge.js bulunamadı: $BRIDGE"
+fi
+
+# 3. config.yaml
+sed -i "s/Captain Hermes/Captain Ulak/g" ~/.hermes/config.yaml
+sed -i "s/They call me Hermes/They call me Ulak/g" ~/.hermes/config.yaml
+echo "✓ config.yaml güncellendi"
+
+# 4. Gateway restart
+hermes gateway restart
+sleep 5
+STATUS=$(curl -s http://localhost:3000/health 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','?'))" 2>/dev/null || echo "kontrol edilemedi")
+echo "✓ Gateway durumu: $STATUS"
+
+echo "=== Ulak konfigürasyonu tamamlandı ==="
+```
+
+Script'i kaydet:
+
+```bash
+cp ~/.hermes/scripts/ulak_apply.sh ~/.hermes/scripts/ulak_apply.sh 2>/dev/null || true
+chmod +x ~/.hermes/scripts/ulak_apply.sh
+```
+
+---
+
+## Güncelleme Sonrası Otomatik Uygulama
+
+`hermes update` bridge.js dahil pek çok dosyayı sıfırlayabilir. Güncelleme sonrası hemen çalıştır:
+
+```bash
+hermes update && bash ~/.hermes/scripts/ulak_apply.sh
+```
+
+---
+
+## GitHub Sync (Ulak Repo)
+
+Tüm değişiklikler `/root/ulak` reposuna her 30 dakikada bir otomatik push edilir (cron job: ulak-github-sync). Manuel sync:
+
+```bash
+bash ~/.hermes/scripts/ulak_sync.sh
+```
+
+---
+
+## Pitfalls
+
+- `hermes update` bridge.js dosyasını sıfırlar — güncelleme sonrası mutlaka `ulak_apply.sh` çalıştır
+- Gateway restart QR kod gerektirmez, mevcut WhatsApp session korunur (`~/.hermes/whatsapp/session`)
+- SOUL.md her mesajda yeniden yüklendiği için gateway restart gerekmez, anında etki eder
+- config.yaml değişiklikleri için gateway restart gerekli
+- bridge.js'te `DEFAULT_REPLY_PREFIX` env var ile override edilebilir: `WHATSAPP_REPLY_PREFIX="⚕ *Ulak Agent*\n────────────\n"` — bu yol kalıcıdır, update'e dayanıklıdır
