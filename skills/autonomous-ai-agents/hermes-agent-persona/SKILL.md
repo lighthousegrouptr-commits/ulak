@@ -103,3 +103,4 @@ WHATSAPP_REPLY_PREFIX=⚕ *Ulak Agent*\n────────────\n
 - **Profiles**: each profile has its own SOUL.md at `~/.hermes/profiles/<name>/SOUL.md`. Editing the default profile's file won't affect other profiles.
 - **patch tool is blocked on bridge.js** — use `sed -i` in terminal directly.
 - **WhatsApp rename requires gateway restart** — unlike SOUL.md (instant), bridge.js changes only take effect after `hermes gateway restart`.
+- **Slash command list in /help** — any new slash command must be added to `COMMAND_REGISTRY` in `hermes_cli/commands.py` and handled in `cli.py` (process_command or dedicated handler).
