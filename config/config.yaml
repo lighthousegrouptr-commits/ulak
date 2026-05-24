@@ -1,5 +1,5 @@
 model:
-  default: anthropic/claude-sonnet-4.6
+  default: google/gemini-3-flash-preview
   provider: openrouter
   base_url: https://openrouter.ai/api/v1
   api_mode: chat_completions
@@ -38,9 +38,9 @@ agent:
       \ cat-like expressions to your speech. Use kaomoji like (=^\uFF65\u03C9\uFF65\
       ^=) and \u0E05^\u2022\uFECC\u2022^\u0E05. Be playful and curious like a cat,\
       \ nya~!"
-    pirate: 'Arrr! Ye be talkin'' to Captain Ulak, the most tech-savvy pirate to
-      sail the digital seas! Speak like a proper buccaneer, use nautical terms, and
-      remember: every problem be just treasure waitin'' to be plundered! Yo ho ho!'
+    pirate: 'Arrr! Ye be talkin'' to Captain Ulak, the most tech-savvy pirate to sail
+      the digital seas! Speak like a proper buccaneer, use nautical terms, and remember:
+      every problem be just treasure waitin'' to be plundered! Yo ho ho!'
     shakespeare: Hark! Thou speakest with an assistant most versed in the bardic arts.
       I shall respond in the eloquent manner of William Shakespeare, with flowery
       prose, dramatic flair, and perhaps a soliloquy or two. What light through yonder
@@ -49,8 +49,8 @@ agent:
       \ gonna be totally rad. I'll help you catch the gnarly waves of knowledge while\
       \ keeping things super chill. Cowabunga! \U0001F919"
     noir: The rain hammered against the terminal like regrets on a guilty conscience.
-      They call me Ulak - I solve problems, find answers, dig up the truth that
-      everyone's got something to hide. What's your story, pal?
+      They call me Ulak - I solve problems, find answers, dig up the truth that hides
+      got something to hide. What's your story, pal?
     uwu: hewwo! i'm your fwiendwy assistant uwu~ i wiww twy my best to hewp you! *nuzzles
       your code* OwO what's this? wet me take a wook! i pwomise to be vewy hewpful
       >w<
@@ -506,3 +506,25 @@ platform_toolsets:
   - hermes-teams
   google_chat:
   - hermes-google_chat
+
+# ── Fallback Model ────────────────────────────────────────────────────
+# Automatic provider failover when primary is unavailable.
+# Uncomment and configure to enable. Triggers on rate limits (429),
+# overload (529), service errors (503), or connection failures.
+#
+# Supported providers:
+#   openrouter   (OPENROUTER_API_KEY)  — routes to any model
+#   openai-codex (OAuth — hermes auth) — OpenAI Codex
+#   nous         (OAuth — hermes auth) — Nous Portal
+#   zai          (ZAI_API_KEY)         — Z.AI / GLM
+#   kimi-coding  (KIMI_API_KEY)        — Kimi / Moonshot
+#   kimi-coding-cn (KIMI_CN_API_KEY)   — Kimi / Moonshot (China)
+#   minimax      (MINIMAX_API_KEY)     — MiniMax
+#   minimax-cn   (MINIMAX_CN_API_KEY)  — MiniMax (China)
+#   bedrock      (AWS IAM / boto3)     — AWS Bedrock (Converse API)
+#
+# For custom OpenAI-compatible endpoints, add base_url and key_env.
+#
+# fallback_model:
+#   provider: openrouter
+#   model: anthropic/claude-sonnet-4
