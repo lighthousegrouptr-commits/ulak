@@ -5,3 +5,7 @@ Ulak projesi: /root/ulak -> github.com/lighthousegrouptr-commits/ulak, her 30dk 
 Levent bilgisayarı için SSH kısayolu isteği: ssh root@187.77.79.159
 §
 Test memory entry
+§
+Hafıza sorgusu - 25 Mayıs 2026
+§
+Dokploy sorgusu - 25 Mayıs 2026
