@@ -26,4 +26,15 @@ DİNİ BAYRAMLAR (2026, Ay'a göre kesinleşir):
 - Ramazan Bayramı (1-3 Şevval 1447): ~19-21 Mart 2026 (3 gün, muhtemelen geçti)
 - Kurban Bayramı (10-13 Zilhicce 1447): ~27-30 Mayıs 2026 (4 gün)
 
-NOT: İslami bayramların kesin tarihleri Diyanet İşleri Başkanlığı tarafından Ay'ın görünmesine göre açıklanır. Hicri takvim her yıl ~10-11 gün öne kayar. Toplam 15.5 gün resmi tatil.
+NOT: İslami bayramların kesin tarihleri Diyanet İşleri Başkanlığı tarafından Ay'ın görünmesine göre açıklanır. Hicri takvim her yıl ~10-11 gün öne kayar. Toplam 15.5 gün resmi tatil.§
+VPS Talep Formu Pattern (lighthousegroup.net.tr'den öğrenildi - 26 Mayıs 2026):
+
+Yeni site için talep formu kurulurken şu hataları yapma:
+1. Cloudflare Turnstile: size="invisible" GEÇERSİZ. Geçerliler: compact/flexible/normal. Kullan: appearance="interaction-only" (size YOK).
+2. Admin dashboard Basic Auth: JS fetch() auth header taşımaz. Çözüm: sayfa serve edilirken req.headers['authorization'] değerini HTML'e inject et (__AUTH_TOKEN__ placeholder).
+3. Dokploy env var'lar: docker service update --env-add geçici, redeploy'da silinir. Kalıcı için Dokploy PostgreSQL'deki application tablosunu da güncelle.
+4. Kod değişikliği: docker cp kalıcı değil. Doğrusu: docker build → docker service update --force.
+
+Skill: ~/.hermes/skills/software-development/vps-contact-form/SKILL.md
+Örnek kod: /etc/dokploy/applications/lighthousegoup-web-api-7za9hr/code/api/server.js
+Admin panel: https://api.lighthousegroup.net.tr/admin (admin / ADMIN_PASSWORD)
