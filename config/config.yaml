@@ -544,3 +544,13 @@ plugins:
 # fallback_model:
 #   provider: openrouter
 #   model: anthropic/claude-sonnet-4
+
+# ── MCP Servers ──────────────────────────────────────────────────────
+mcp_servers:
+  semrush:
+    command: "npx"
+    args: ["-y", "semrush-mcp"]
+    env:
+      SEMRUSH_API_KEY: "YOUR_SEMRUSH_API_KEY"
+    timeout: 120
+    connect_timeout: 60
