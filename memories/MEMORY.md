@@ -10,12 +10,4 @@ Lighthousegroup.net.tr email: Resend + Amazon SES. Domain: notify.lighthousegrou
 
 User expects proactive problem-solving. Turkish SEO strategy: block AI engines (noai/noimageai) but allow regular search engines. Blog: weekly Turkish technical posts on AI/GEO/SEO. CMS not yet identified - need repo access or server SSH to connect API. User preferred Semrush MCP but hasn't provided API key yet.
 §
-Backlink stratejisi: emergent-fabric.lovable.app (Synthetic Intelligence sayfası) ile lighthousegroup.net.tr arasında karşılıklı backlink planı yapılacak. Şimdi değil, daha sonra yapılacak. Footer'da zaten lighthousegroup.net.tr linki mevcut.
-§
-agentic-os deployment resolved (2026-05-30):
-- Repo: lighthousegrouptr-commits/agentic-os, Nixpacks build type
-- .nixpacks/Caddyfile override fixes broken $NIXPACKS_SPA_OUTPUT_DIR (was causing 404s)
-- live-data.json committed to git — provides pre-aggregated data for builds (no ~/.claude in container)
-- Cron on VPS: /usr/local/bin/refresh-agentic-data every 30min (aggregate inside container → dist/client/live-data.json)
-- useLiveData.ts: /live-data.json in prod, /__live-data in dev, staleTime=30s
-- do NOT add [start] to nixpacks.toml — breaks deploy with "Module not found dist/server/index.js"
+agentic-os (2026-05-30): Nixpaks+vite preview SSR deploy. ANA SORUN: Cloudflare Worker "tanstack-start-app" agentic.lighthousegroup.net.tr'ye deploy edilmiş ve Dokplay'i BYPASS ediyor. Worker eski bundle kullanıyor. Worker'i guncellemek (wrangler deploy) veya route'tan kaldirmak gerek. Repo: lighthousegrouptr-commits/agentic-os. live-data.json repo'da guncel (1457 msg, $151.82). Cron: refresh-agentic-data her 30dk. useLiveData: static import prod, /__live-data dev. nixpacks.toml'da [start] section KULLANMA (hata verir). .nixpacks/Caddyfile override calisiyor.

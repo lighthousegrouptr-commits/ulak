@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, and nginx fallbacks.
-version: 1.2.0
+version: 1.3.0
 platforms: [linux]
 metadata:
   hermes:
@@ -39,11 +39,16 @@ Do NOT assume a fresh deploy is needed — the app may already be running in a c
 
 ## Docker exec access
 
-`docker exec` into containers may be **blocked by tool policy** (approval gate). When exec is blocked:
+`docker exec` into containers is **frequently blocked by tool policy** (approval gate). This was a
+major time sink during the agentic-os deployment — many `docker exec` commands were silently denied,
+requiring the user to manually approve or run commands themselves. Plan for this:
 
-1. Ask the user to run commands manually inside the container
-2. Use `docker cp` to copy files in/out (may also be blocked)
-3. Rebuild the container image with the new content via Dockerfile + `docker build`
+1. **Minimize `docker exec` calls** — prefer `docker cp` for file transfer, `docker restart` for reloads
+2. **Batch commands** — combine multiple operations into single `docker exec` to reduce approval requests
+3. **Use `docker logs`** to diagnose instead of exec when possible
+4. **When exec is blocked**: Ask the user to run the command manually, or use alternative approaches
+
+`docker cp` to copy files in/out may also be blocked but generally succeeds more often than exec.
 
 ## Traefik label-based routing
 
@@ -149,7 +154,9 @@ When Dokploy uses Nixpacks (the default), it auto-generates a **Caddyfile** insi
 - To run custom commands during Nixpacks build, add `nixpacks.toml` to the repo root:
 - **Nixpacks copies the repo TWICE**: once before build (`COPY . /app`) and once after (`COPY . /app` at the end). The final copy can overwrite build output with stale repo files. If your build produces `dist/` but the repo also has a `dist/` (from a previous local build), the repo version wins. Solution: either `.gitignore` the `dist/` directory (already standard) or ensure `dist/` is not committed.
 
-**CRITICAL: Do NOT add a `[start]` section to `nixpacks.toml`.** When present, Dokploy/Nixpacks does NOT use its auto-generated Caddyfile — it tries to run your start command instead. If your start command references files that don't exist (e.g. `dist/server/index.js` when the app builds to `dist/client/`), the container crashes with `"task: non-zero exit (1)"` and enters a restart loop. Just use build phase only:
+**For SSR apps, `[start]` IS required** (exception to the rule below). See "Nixpacks `[start]` section" further down.
+
+**For pure SPAs, do NOT add a `[start]` section to `nixpacks.toml`.** When present, Dokploy/Nixpacks does NOT use its auto-generated Caddyfile — it tries to run your start command instead. If your start command references files that don't exist (e.g. `dist/server/index.js` when the app builds to `dist/client/`), the container crashes with `"task: non-zero exit (1)"` and enters a restart loop. For SPAs, just use build phase only:
 
 ```toml
 [phases.setup]
@@ -166,6 +173,10 @@ cmds = [
 **IMPORTANT: `aggregate.ts` runs in the build container which has no `~/.claude/`.** It will produce minimal/empty data. To get real data into the production bundle:
 - For **static SPA** apps: commit `live-data.json` to the repo (remove from `.gitignore`)
 - For **SSR** apps with `[start]`: data is baked into the JS bundle at build time (same approach)
+
+## Cloudflare Worker bypass (CRITICAL)
+
+If the repo has `wrangler.jsonc`, it deploys as a **Cloudflare Worker** separate from Dokploy. The Worker may be serving traffic INSTEAD of the Dokploy container. Symptoms: origin fixes have no effect, response headers show `cfWorker:dur>0`. Fix: either remove the Worker route in Cloudflare dashboard (Workers Routes → delete catch-all) or re-deploy the Worker with `wrangler deploy`. See [references/agentic-os-worker-bypass.md](references/agentic-os-worker-bypass.md).
 
 ## Nixpacks `[start]` section
 
