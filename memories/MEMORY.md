@@ -10,6 +10,6 @@ Lighthousegroup.net.tr email: Resend + Amazon SES. Domain: notify.lighthousegrou
 
 User expects proactive problem-solving. Turkish SEO strategy: block AI engines (noai/noimageai) but allow regular search engines. Blog: weekly Turkish technical posts on AI/GEO/SEO. CMS not yet identified - need repo access or server SSH to connect API. User preferred Semrush MCP but hasn't provided API key yet.
 §
-agentic-os (2026-05-30): Nixpaks+vite preview SSR deploy. ANA SORUN: Cloudflare Worker "tanstack-start-app" agentic.lighthousegroup.net.tr'ye deploy edilmiş ve Dokplay'i BYPASS ediyor. Worker eski bundle kullanıyor. Worker'i guncellemek (wrangler deploy) veya route'tan kaldirmak gerek. Repo: lighthousegrouptr-commits/agentic-os. live-data.json repo'da guncel (1457 msg, $151.82). Cron: refresh-agentic-data her 30dk. useLiveData: static import prod, /__live-data dev. nixpacks.toml'da [start] section KULLANMA (hata verir). .nixpacks/Caddyfile override calisiyor.
+Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts already scans this path. No code patch needed.
 §
-Hermes memory dizini: /root/.hermes/memory/ veya /root/.hermes/memories/. Agentic OS aggregate.ts sadece ~/.claude/ okuyor, Hermes memory'leri okumuyoru. Memory graph'ta Hermes memory'leri icin aggregate.ts'ye Hermes memory path'ini eklemek gerekiyor.
+agentic-os: Cloudflare Worker deploy (primary). wrangler deploy from /root/code/agentic-os. Worker name: tanstack-start-app. STALE_DAYS=30 in aggregate.ts. Hermes memory path: /root/ulak/memories/. Bun: export PATH=$PATH:/root/.bun/bin. Cron 2655c3b31f43 auto-deploys. live-data.json committed to git (un-ignored). Do NOT add [start] to nixpacks.toml for pure SPA — but SSR Worker deploy is preferred path.

@@ -14,8 +14,10 @@
 
 ```bash
 mkdir -p /tmp/hermes-memory
-cp ~/.hermes/memories/MEMORY.md ~/.hermes/memories/USER.md /tmp/hermes-memory/
+cp /root/ulak/memories/*.md /tmp/hermes-memory/
 ```
+
+**DO NOT** use `~/.hermes/memories/` as the source — that path does not exist on this system (verified May 2026). Use `/root/ulak/memories/` which is the live ulak snapshot synced from `~/.hermes/` every 30 minutes.
 
 Skip .lock files (they're empty anyway).
 

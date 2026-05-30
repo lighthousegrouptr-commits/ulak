@@ -88,12 +88,35 @@ Capture the `Current Version ID:` from output — this is the deploy handle for 
 - Start: `bun --bun node_modules/.bin/vite preview --port 3000 --host 0.0.0.0`
 - Override Caddyfile: `.nixpacks/Caddyfile` with `root * /app/dist/client`
 
+## Automation / Cron Script
+
+The file `scripts/cron-agentic-deploy.sh` is the scheduled deployment script. As of May 2026 it only does `git pull`, `build`, and `deploy` — it skips the Hermes memory sync and the `aggregate.ts` run.
+
+**For a full refresh** (what the cron job description actually requests), run the full pipeline manually (steps 1–5 above) or update `cron-agentic-deploy.sh` to include the memory sync and aggregate steps:
+
+```bash
+# Add to cron-agentic-deploy.sh before the build step:
+# Sync Hermes memories
+mkdir -p /tmp/hermes-memory
+cp /root/ulak/memories/*.md /tmp/hermes-memory/
+
+# Run aggregator
+export PATH="$PATH:/root/.bun/bin"
+bun run scripts/aggregate.ts 2>> "$LOG" || echo "$(date): aggregate failed" >> "$LOG"
+```
+
+## Stale detection
+
+`scripts/aggregate.ts` line 624: `const STALE_DAYS = 30`
+
 ## Pitfalls
+
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
-2. **Wrong memory path** — The cron task may mention `/root/ulak/memory/` but that path doesn't exist. Use `/root/ulak/memories/` (plural). `~/.hermes/memories/` also doesn't exist on this system.
+2. **Wrong memory path** — Use `/root/ulak/memories/` (plural). `/root/ulak/memory/` (singular) and `~/.hermes/memories/` do NOT exist on this system.
 3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` already includes `/tmp/hermes-memory`, `/root/ulak/memories`, and `/root/.hermes/memory` as sources in `parseMemory()`. No code patch is needed unless the function is rewritten.
-4. **Worker vs Container: Worker wins**. Check `cf-worker` header.
-5. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
-6. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
-7. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
-8. **wrangler version** — run `wrangler --version` to check. Update with `npm i -g wrangler@latest` if needed.
+4. **Cron script skips aggregate** — `cron-agentic-deploy.sh` as shipped does NOT run `aggregate.ts` or sync Hermes memories. If you need fresh data in the deploy, run the full pipeline manually or patch the script (see above).
+5. **Worker vs Container: Worker wins**. Check `cf-worker` header.
+6. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
+7. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
+8. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
+9. **wrangler version** — run `wrangler --version` to check. Update with `npm i -g wrangler@latest` if needed.
