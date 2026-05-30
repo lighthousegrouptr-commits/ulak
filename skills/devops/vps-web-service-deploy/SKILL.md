@@ -178,6 +178,31 @@ cmds = [
 
 If the repo has `wrangler.jsonc`, it deploys as a **Cloudflare Worker** separate from Dokploy. The Worker may be serving traffic INSTEAD of the Dokploy container. Symptoms: origin fixes have no effect, response headers show `cfWorker:dur>0`. Fix: either remove the Worker route in Cloudflare dashboard (Workers Routes → delete catch-all) or re-deploy the Worker with `wrangler deploy`. See [references/agentic-os-worker-bypass.md](references/agentic-os-worker-bypass.md).
 
+**Deploying the Worker** (when you want the Worker to be the primary deploy, not Dokploy):
+
+```bash
+cd /root/code/<repo>
+bun run build       # produces dist/ via Vite
+wrangler deploy     # uploads to Cloudflare Workers CDN
+```
+
+- `wrangler` is pre-installed at `/usr/bin/wrangler` on the VPS
+- Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
+- Deploy is immediate — new version goes live globally within ~30s
+- No Cloudflare cache purge needed for Worker deploys
+
+**Choosing between Worker vs Dokploy for SSR apps:**
+
+| | Cloudflare Worker | Dokploy (Nixpacks) |
+|---|---|---|
+| Deploy command | `wrangler deploy` | Auto on git push |
+| SSR support | Native (Tanstack Start) | Needs `[start]` + `vite preview` |
+| Data freshness | Static (baked at build) | Static (baked at build) |
+| Cache invalidation | Automatic on deploy | Manual Cloudflare purge |
+| Custom domain | Workers Routes in dashboard | Traefik label-based |
+
+For the `agentic-os` app, the **Cloudflare Worker** is the correct deploy target (not Dokploy). The Worker natively supports Tanstack Start SSR. Dokploy + Nixpacks was a red herring — the app never worked correctly through Dokploy because of the SSR/static mismatch.
+
 ## Nixpacks `[start]` section
 
 The `[start]` section in `nixpacks.toml` is **highly situational** and easy to get wrong. Read this entire section before adding one.
