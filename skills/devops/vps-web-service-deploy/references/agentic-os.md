@@ -114,20 +114,27 @@ For runtime aggregate to read real `~/.claude/` data:
 docker service update --mount-add type=bind,source=/root/.claude,target=/root/.claude,readonly=true hermetic-agenticos-fax02n
 ```
 
-## Final solution adopted
+## Final solution adopted (2026-05-30)
 
-**Approach: Bundle real data at build time by committing `live-data.json` to git.**
+**Approach: Bundle real data at build time by committing `live-data.json` to git + cron for runtime refresh.**
 
-After extensive debugging of Caddyfile `handle` routes, volume mounts, Dockerfiles, and
-custom start scripts, the simplest reliable solution was:
+After extensive debugging of:
+- Caddyfile `handle` routes (handle vs handle_path traps)
+- Volume mounts (`--mount-add type=bind`)
+- Dockerfile multi-stage builds (push permission issues)
+- Custom start scripts with Bun HTTP server
+- Nixpacks `[start]` section pitfalls (container crash loops)
 
-1. **Un-ignore `live-data.json`** in `.gitignore` (it was previously gitignored for privacy)
-2. **Run `bun run scripts/aggregate.ts`** on the host to populate `/root/code/agentic-os/src/data/live-data.json`
-3. **Commit and push** — now the Vite bundle includes real data at build time
-4. **Nixpacks** rebuilds from repo — aggregate produces empty data in build container (no `~/.claude`), but committed `live-data.json` is already in the bundle
-5. **`useLiveData.ts` hybrid**: static `import` for production, `fetch('/__live-data')` for dev
+The simplest reliable solution was:
 
-`nixpacks.toml` pattern used:
+1. **Un-ignore `live-data.json`** in `.gitignore`
+2. **Run aggregate locally** → commit & push → Vite bundle includes real data
+3. **Cron job** on host (`/usr/local/bin/refresh-agentic-data`) every 30min:
+   - `docker exec` into container → run aggregate (container has `~/.claude/` via mount)
+   - Copy result to `/app/dist/client/live-data.json`
+4. **`useLiveData.ts` hybrid**: `import staticData` for prod bundle, `fetch("/__live-data")` for dev
+
+Build pipeline (`nixpacks.toml`):
 ```toml
 [phases.setup]
 nixPkgs = ["bun"]
@@ -139,6 +146,21 @@ cmds = [
   "bun run build"
 ]
 ```
+
+No `[start]` section — let Nixpacks auto-generate Caddy config.
+
+## Nixpacks build pitfall: `[start]` section crashes the container
+
+**CRITICAL**: Adding `[start]` to `nixpacks.toml` overrides the auto-generated Caddyfile.
+If the start command references a file that doesn't exist (e.g. `dist/server/index.js`
+when the app builds to `dist/client/`), the container enters a restart loop:
+
+```
+"task: non-zero exit (1)" — Module not found "dist/server/index.js"
+```
+
+**Root cause**: Nixpacks/ Dokploy tries to run the start command, not Caddy. With no `[start]`,
+Nixpacks generates its own Caddyfile that serves `dist/client/` correctly.
 
 ## Key lessons from debugging
 

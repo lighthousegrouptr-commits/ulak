@@ -12,4 +12,4 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 §
 Backlink stratejisi: emergent-fabric.lovable.app (Synthetic Intelligence sayfası) ile lighthousegroup.net.tr arasında karşılıklı backlink planı yapılacak. Şimdi değil, daha sonra yapılacak. Footer'da zaten lighthousegroup.net.tr linki mevcut.
 §
-agentic-os: lighthousegrouptr-commits/agentic-os, agentic.lighthousegroup.net.tr. DEMO DATA issue fixed by committing live-data.json to git. Swarm svc: hermetic-agenticos-fax02n. Key tricks: docker exec tee silently fails (use docker cp), Caddy handle not handle_path, caddy reload needs admin on, no force-update.
+agentic-os deployment: Repo migrated to lighthousegrouptr-commits/agentic-os. Solution: commit live-data.json to git for build-time bundling + cron job for runtime refresh. Nixpacks [start] section must NOT be used. useLiveData.ts: static import prod, /__live-data fetch dev. Cron: /usr/local/bin/refresh-agentic-data every 30min.
