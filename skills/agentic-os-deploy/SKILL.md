@@ -52,15 +52,16 @@ done
 
 ### 2. Hermes Memory Already in Aggregator
 
-The aggregator (`scripts/aggregate.ts`) already scans these Hermes paths in `parseMemory()`:
+The aggregator (`scripts/aggregate.ts`) already scans these Hermes paths in `parseMemory()` (as of May 2026 patch):
 ```typescript
 const hermesMemDirs = [
-  "/tmp/hermes-memory",
   "/root/ulak/memories",
-  "/root/.hermes/memory",
+  "/root/.hermes/memories",   // ← added May 2026
+  "/root/.hermes/memory",     // ← listed but dir doesn't exist (harmless)
+  "/tmp/hermes-memory",
 ];
 ```
-**No code modification needed** unless `parseMemory()` is rewritten from scratch.
+**No further code modification needed** unless `parseMemory()` is rewritten from scratch.
 
 ### 3. Run Aggregator
 
@@ -177,20 +178,34 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 ## Reference Files
 
 - `references/2026-05-31-hermes-skills-memory-tab.md` — Session notes: Hermes skills scanning, Ulak memory tab, default minutes ($50/hr), mobile input fix
+- `references/2026-05-30-hermes-memory-path-fix.md` — Session notes: `hermesMemDirs` path bug fix (singular→plural), multi-source sync with collision-avoidance naming, bun PATH workaround
 
 ## Pitfalls
 
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
-2. **Wrong memory path** — Use `/root/ulak/memories/` (plural). `/root/ulak/memory/` (singular) does NOT exist. NOTE: `~/.hermes/memories/` (plural, WITH the trailing 's') DOES exist and contains the same files as `/root/ulak/memories/`. Only copy from `/root/ulak/memories/` — do NOT also copy from `~/.hermes/memories/` to avoid duplicates.
-3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` already includes `/root/ulak/memories` and `/root/.hermes/memory` (note: singular 'memory') in `hermesMemDirs`. Add `/tmp/hermes-memory` to the list ONLY if it's populated from sources NOT already in the list. If `/tmp/hermes-memory` is copied from `/root/ulak/memories/` AND `/root/ulak/memories/` is already scanned, you'll get duplicate nodes in the memory graph. See pitfall #6.
+2. **Wrong memory path** — Use `/root/ulak/memories/` and `/root/.hermes/memories/` (both plural, WITH trailing 's'). The singular forms (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist as real directories. The aggregator was patched in May 2026 to include `/root/.hermes/memories` — if you're looking at old documentation referencing singular paths, it's stale.
+3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` `hermesMemDirs` (as of May 2026 patch) scans:
+  ```typescript
+  const hermesMemDirs = [
+    "/root/ulak/memories",
+    "/root/.hermes/memories",   // ← added May 2026 (was missing before)
+    "/root/.hermes/memory",     // ← still listed but dir doesn't exist (harmless)
+    "/tmp/hermes-memory",
+  ];
+  ```
+  The `/tmp/hermes-memory` entries use prefixed filenames (`ulak-*, hermes-*`) so they are treated as distinct files by the memory graph — this produces a richer graph with both sources represented. Running the aggregator with all sources active should yield ~20 memory files and 2 hermes workspaces. If the file count seems too high, check for un-prefixed duplicates in `/tmp/hermes-memory/`.
 4. **Cron script skips aggregate** — `cron-agentic-deploy.sh` does NOT run `aggregate.ts`. Run full pipeline manually.
 5. **Missing source kind entry** — `src/routes/memory.tsx` has THREE places that enumerate sources (SourceId type, BASE_SOURCES, and the SourceFilter pillar). All three must be updated or the filter tab won't appear on the dashboard.
-6. **Duplicate source from /tmp/hermes-memory** — If `/tmp/hermes-memory` is added to `hermesMemDirs` AND `/root/ulak/memories` is also in the list, the aggregate will index the same files twice (once under each path), producing duplicate nodes in the memory graph. Either: (a) remove `/root/ulak/memories` from the list if using `/tmp/hermes-memory`, or (b) verify `live-data.json` memory node count is sane after running the aggregator. A healthy single-source run shows ~2 Hermes memory nodes; duplicates will show 4+.
+6. **Duplicate source from /tmp/hermes-memory** — `/tmp/hermes-memory` and `/root/ulak/memories` are BOTH scanned by the aggregator. If `/tmp/hermes-memory` contains plain `MEMORY.md` / `USER.md` (copied without prefix) AND `/root/ulak/memories` has the same files, the aggregate will index them twice, producing duplicate nodes. The fix: always use prefixed filenames when copying into `/tmp/hermes-memory` (`ulak-MEMORY.md`, `hermes-MEMORY.md`). After running the aggregator, check `live-data.json` — a healthy run shows ~20 total memory files and 2 hermes workspaces. If you see 4+ hermes workspaces or the total file count is unexpectedly high, you likely have unprefixed duplicates. Clean `/tmp/hermes-memory/` and re-sync with prefixes.
 7. **Worker vs Container: Worker wins**. Check `cf-worker` header.
 8. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
 9. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
 10. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
-11. **wrangler + Node.js** — `wrangler deploy` requires Node >= 22. VPS ships Node 20. wrangler v4.86.0 happens to work on Node 20 (no error), but this is not guaranteed. If deploy fails with Node version error, update wrangler: `npm i -g wrangler@latest` or use nvm to install Node 22.
+11. **wrangler + Node.js** — `wrangler deploy` requires Node >= 22. VPS ships Node 20. wrangler v4.86.0 happens to work on Node 20 (no error), but this is not guaranteed. If deploy fails with Node version error, use the Node v22 binary that ships on the VPS at `/tmp/node-v22.14.0-linux-x64/bin/node`:
+  ```bash
+  export PATH="/tmp/node-v22.14.0-linux-x64/bin:$PATH" && wrangler deploy
+  ```
+  Or update wrangler: `npm i -g wrangler@latest`, or install via nvm.
 
 12. **Skills page input too small for mobile** — The `minutes saved per run` input on the Skills page used `w-12` (48px) which is untappable on mobile. Fixed by replacing with `flex-1 min-w-[60px]` and setting `fontSize: "16px"` (inline style) to prevent iOS Safari zoom. Also added `WebkitAppearance: "none"` to prevent default mobile spinbutton styling that can obscure the value. Always test skill input forms on mobile viewport.
 
