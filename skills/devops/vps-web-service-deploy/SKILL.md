@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, and nginx fallbacks.
-version: 1.1.0
+version: 1.2.0
 platforms: [linux]
 metadata:
   hermes:
@@ -147,6 +147,7 @@ When Dokploy uses Nixpacks (the default), it auto-generates a **Caddyfile** insi
 - To customize: either switch to Dockerfile build type, or overwrite `/assets/Caddyfile` in the container (see "Overwriting Caddyfile" section)
 - Nixpacks sets env vars like `NIXPACKS_SPA_OUTPUT_DIR=dist/client`
 - To run custom commands during Nixpacks build, add `nixpacks.toml` to the repo root:
+- **Nixpacks copies the repo TWICE**: once before build (`COPY . /app`) and once after (`COPY . /app` at the end). The final copy can overwrite build output with stale repo files. If your build produces `dist/` but the repo also has a `dist/` (from a previous local build), the repo version wins. Solution: either `.gitignore` the `dist/` directory (already standard) or ensure `dist/` is not committed.
 
 **CRITICAL: Do NOT add a `[start]` section to `nixpacks.toml`.** When present, Dokploy/Nixpacks does NOT use its auto-generated Caddyfile — it tries to run your start command instead. If your start command references files that don't exist (e.g. `dist/server/index.js` when the app builds to `dist/client/`), the container crashes with `"task: non-zero exit (1)"` and enters a restart loop. Just use build phase only:
 
@@ -162,9 +163,21 @@ cmds = [
 ]
 ```
 
-**IMPORTANT: `aggregate.ts` runs in the build container which has no `~/.claude/`.** It will produce minimal/empty data. To get real data into the production bundle, either:
-- Commit `live-data.json` to the repo (remove from `.gitignore`) so it's bundled at build time, OR
-- Mount `~/.claude:/root/.claude:ro` and re-run aggregate at runtime via a custom start command
+**IMPORTANT: `aggregate.ts` runs in the build container which has no `~/.claude/`.** It will produce minimal/empty data. To get real data into the production bundle:
+- For **static SPA** apps: commit `live-data.json` to the repo (remove from `.gitignore`)
+- For **SSR** apps with `[start]`: data is baked into the JS bundle at build time (same approach)
+
+## Nixpacks `[start]` section
+
+The `[start]` section in `nixpacks.toml` is **highly situational** and easy to get wrong. Read this entire section before adding one.
+
+**Default (no `[start]` section):** Nixpacks auto-generates a Caddyfile for static file serving. Apps with a static `index.html` in `dist/client/` work fine this way. No `[start]` needed.
+
+**When to add `[start]`:** Only for SSR frameworks (TanStack Start, Cloudflare Workers, etc.) that produce `dist/server/` and have no `index.html`. Nixpacks' Caddy static serving returns 404 for these.
+
+**When NOT to add `[start]`:** Pure SPAs or any app with a static `index/html`. Adding `[start]` here overrides the auto-generated Caddyfile and causes 404s.
+
+**`[start]` section is safe for SSR apps.** Earlier fears that `[start]` causes crashes were due to referencing wrong files (e.g. `dist/server/index.js`). With a valid start command like `vite preview`, the container starts and runs correctly.
 
 ## Runtime data in Vite bundles — static import + fetch hybrid
 
@@ -191,6 +204,11 @@ export function useLiveData() {
   return data ?? EMPTY;
 }
 ```
+
+**For runtime-refreshed data** (via cron, see below), the production fetch URL should be
+a static file path that Caddy serves directly from `dist/client/`, e.g. `/live-data.json`.
+File is copied there by the cron script. Use `staleTime: 30_000` so React Query re-fetches
+the updated file:
 
 **Commit generated data to git** if the build container can't produce real data (no `~/.claude/`). Remove from `.gitignore`, run aggregator locally, commit & push. Production builds bundle the committed file. Mark with a comment explaining why it's un-ignored.
 
@@ -233,7 +251,7 @@ echo "$(date): refreshed"
 4. Update the app's data hook to fetch from a static file path (e.g. `/live-data.json`) that Caddy serves from `dist/client/`
 5. Use `staleTime: 30_000` in React Query so the browser picks up refreshed data
 
-**Note**: This only works when the container has access to `~/.claude/` (via volume mount). Without the mount, aggregate in the container produces the same empty data.
+**Note for SSR apps with `[start]`:** The cron copies `live-data.json` to `dist/client/` but the `vite preview` server doesn't serve arbitrary JSON files from `dist/client/` the way Caddy does. For SSR apps, the data should be baked into the JS bundle at build time (commit to git). Runtime data refresh for SSR apps requires either: (a) a separate API endpoint in the SSR handler, or (b) rebuilding and redeploying. The cron-based file copy approach works best with the Caddy static serving setup (non-SSR).
 
 ## Cloudflare cache invalidation
 
@@ -245,9 +263,10 @@ When the origin server is fixed but the browser still shows stale content after 
 
 ## Overwriting Caddyfile in container
 
-**METHOD: Use `docker cp`, NOT `docker exec tee`.** The `docker exec` tee/heredoc
+**CRITICAL: Use `docker cp`, NOT `docker exec tee`.** The `docker exec` tee/heredoc
 approach silently fails in Nixpacks-built containers — the tool policy blocks the write
-but reports exit 0, leaving the file empty. Use `docker cp` instead:
+but reports exit 0, leaving the file empty. In some cases `tee` writes 0 bytes with
+no error. Use `docker cp` instead:
 
 ```bash
 # 1. Prepare file locally, copy to remote host, then into container
@@ -270,6 +289,13 @@ handle /__live-data {
 }
 ```
 
+**Cleanest Caddyfile override for Nixpacks: `.nixpacks/Caddyfile` in repo project root.**
+Nixpacks auto-discovers `.nixpacks/assets/` during build (logs show `COPY .nixpacks/assets /assets/`).
+Place your Caddyfile at `.nixpacks/Caddyfile` (NOT `.nixpacks/assets/Caddyfile`).
+This applies at build time and survives rebuilds — no need for `docker cp` post-deploy.
+
 **Caddyfile syntax**: Caddy v2.8.4 on this VPS. Use `:3000` (not `{$PORT:3000}`
 from the Nixpacks original — that was Railway template syntax). Use absolute paths
 (`/app/dist/client`, not `../app/dist/client`).
+
+**When to use `docker cp` instead:** When the deployed app already exists and you don't want to trigger a full rebuild. Steps: prepare Caddyfile locally → `scp` to host → `docker cp` into container → `docker restart`.

@@ -12,4 +12,10 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 §
 Backlink stratejisi: emergent-fabric.lovable.app (Synthetic Intelligence sayfası) ile lighthousegroup.net.tr arasında karşılıklı backlink planı yapılacak. Şimdi değil, daha sonra yapılacak. Footer'da zaten lighthousegroup.net.tr linki mevcut.
 §
-agentic-os deployment: Repo migrated to lighthousegrouptr-commits/agentic-os. Solution: commit live-data.json to git for build-time bundling + cron job for runtime refresh. Nixpacks [start] section must NOT be used. useLiveData.ts: static import prod, /__live-data fetch dev. Cron: /usr/local/bin/refresh-agentic-data every 30min.
+agentic-os deployment resolved (2026-05-30):
+- Repo: lighthousegrouptr-commits/agentic-os, Nixpacks build type
+- .nixpacks/Caddyfile override fixes broken $NIXPACKS_SPA_OUTPUT_DIR (was causing 404s)
+- live-data.json committed to git — provides pre-aggregated data for builds (no ~/.claude in container)
+- Cron on VPS: /usr/local/bin/refresh-agentic-data every 30min (aggregate inside container → dist/client/live-data.json)
+- useLiveData.ts: /live-data.json in prod, /__live-data in dev, staleTime=30s
+- do NOT add [start] to nixpacks.toml — breaks deploy with "Module not found dist/server/index.js"

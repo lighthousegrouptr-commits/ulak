@@ -23,118 +23,25 @@ git remote set-url origin git@github.com:lighthousegrouptr-commits/agentic-os.gi
 
 Had to `git pull --rebase --allow-unrelated-histories` because remote had divergent history.
 
-## Architecture (key insight)
+## Architecture
 
-`useLiveData` hook fetches `/__live-data` endpoint at runtime (NOT a static import).
-The Vite dev server provides this via a `configureServer` plugin — in production you MUST
-provide your own endpoint that reads `src/data/live-data.json` from disk and serves it as JSON.
+This is a **TanStack Start SSR app** with `@cloudflare/vite-plugin` — it produces both
+`dist/client/` (assets) and `dist/server/` (SSR worker entry). There is NO `index.html` —
+every request is server-side rendered. This means:
 
-Same for `/__refresh_data` (POST) — triggers a re-run of the aggregator (`scripts/aggregate.ts`).
+- Nixpacks' default Caddy static file serving **will not work** (no `index.html` → 404)
+- Start command must be `bun run preview` with explicit port/host flags
+- `[start]` section in `nixpacks.toml` **IS required** for this app type (exception to the general rule)
 
-## Deployment options for live-data.json
+## Deployment solution (adopted 2026-05-30)
 
-The bundle is baked at build time. For production data, three approaches:
+### 1. Caddyfile override (`.nixpacks/Caddyfile` in repo)
 
-1. **Bundle at build time** (simplest): aggregate runs before `vite build`, data baked into
-   JS bundle. Requires rebuild on data change. Works with Dockerfile builds.
-2. **Caddy `handle` route**: Add route to Caddyfile that rewrites `/__live-data` to static file.
-   Requires volume mount of `~/.claude` for aggregate to read real data at runtime.
-3. **Custom start script**: Bun server that handles `/__live-data` + `/__refresh_data` + static files.
+Place at `.nixpacks/Caddyfile` in the project root. Nixpacks auto-discovers
+`.nixpacks/assets/` and copies to `/assets/` at build time.
 
-This project adopted approach #2 (Caddy route) as a patch to the existing Nixpacks build,
-with approach #3 as the Dockerfile fallback.
+### 2. `nixpacks.toml`
 
-## Caddyfile — `handle` vs `handle_path` (TRAP)
-
-**`handle_path /__live-data`** only matches `/__live-data/*` (with trailing slash + subpath).
-Bare `/__live-data` returns 404.
-
-**`handle /__live-data`** matches the exact path `/__live-data`:
-
-```caddyfile
-handle /__live-data {
-    root * /app/src/data/
-    rewrite * /live-data.json
-    file_server
-}
-```
-
-## Caddyfile injection method
-
-`docker exec` with heredoc/ttee **silently fails** in Nixpacks-built containers (docker-tool
-approval blocks the tee write, exit 0 but file empty). Use `docker cp` instead:
-
-```bash
-# Copy file locally to remote host, then into container
-scp Caddyfile_fixed root@<host>:/tmp/Caddyfile_fixed
-docker cp /tmp/Caddyfile_fixed <container>:/assets/Caddyfile
-```
-
-After overwriting, Caddy has `admin off` so `caddy reload` fails (no admin socket).
-Must `docker restart <container>` instead.
-
-## Nixpacks default behavior
-
-Dokploy uses **Nixpacks** by default, auto-generating Caddyfile at `/assets/Caddyfile`.
-Env var `NIXPACKS_SPA_OUTPUT_DIR=dist/client` controls the serve directory.
-
-The generated Caddyfile uses relative paths (`../app/{$NIXPACKS_SPA_OUTPUT_DIR}`) —
-problems with relative paths in multi-chroot Caddy setups.
-
-## Swarm service gotchas
-
-- `docker service force-update` does NOT exist in this Swarm version
-- `docker service update --mount-add` works
-- Old containers linger after service update — check `docker ps | grep <name>` for active one
-- `docker exec` tee/heredoc silently fails (blocked by tool policy) — use `docker cp`
-
-## Files added to repo
-
-- `Dockerfile` — multi-stage: build with bun, runtime serves static + API endpoints
-- `nixpacks.toml` — alternative build config (later removed in favor of Dockerfile)
-- `scripts/docker-start.sh` — runtime: re-run aggregator, Bun static server with:
-  - `GET /__live-data` → serves `src/data/live-data.json` (or example fallback)
-  - `POST /__refresh_data` → re-runs `bun run scripts/aggregate.ts`
-  - Static file serve from `dist/client/` with SPA fallback to `index.html`
-
-## Runtime aggregate results (sample)
-
-Successful aggregate run inside container produced:
-- 2 projects, 1458 assistant msgs
-- 12 memory files / 1 workspace / 14 events
-- 5 skills installed / 5 used / 6 runs in last 7d
-- $151.82 value extracted last 7d
-- Claude: oauth, ChatGPT: none, OpenRouter: missing
-
-## Mount configuration
-
-For runtime aggregate to read real `~/.claude/` data:
-
-```
-docker service update --mount-add type=bind,source=/root/.claude,target=/root/.claude,readonly=true hermetic-agenticos-fax02n
-```
-
-## Final solution adopted (2026-05-30)
-
-**Approach: Bundle real data at build time by committing `live-data.json` to git + cron for runtime refresh.**
-
-After extensive debugging of:
-- Caddyfile `handle` routes (handle vs handle_path traps)
-- Volume mounts (`--mount-add type=bind`)
-- Dockerfile multi-stage builds (push permission issues)
-- Custom start scripts with Bun HTTP server
-- Nixpacks `[start]` section pitfalls (container crash loops)
-
-The simplest reliable solution was:
-
-1. **Un-ignore `live-data.json`** in `.gitignore`
-2. **Run aggregate locally** → commit & push → Vite bundle includes real data
-3. **Cron job** on host (`/usr/local/bin/refresh-agentic-data`) every 30min:
-   - `docker exec` into container → run aggregate (container has `~/.claude/` via mount)
-   - Copy result to `/app/dist/client/live-data.json`
-4. **`useLiveData.ts` hybrid**: `import staticData` for prod bundle, `fetch("/__live-data")` for dev
-
-Build pipeline (`nixpacks.toml`):
 ```toml
 [phases.setup]
 nixPkgs = ["bun"]
@@ -145,38 +52,116 @@ cmds = [
   "bun run scripts/aggregate.ts || true",
   "bun run build"
 ]
+
+[start]
+cmd = "bun --bun node_modules/.bin/vite preview --port 3000 --host 0.0.0.0"
 ```
 
-No `[start]` section — let Nixpacks auto-generate Caddy config.
+**CRITICAL: Port must be 3000 and host must be 0.0.0.0.** Vite preview defaults to port 4173, but
+Traefik routes to container port 3000. Without `--port 3000`, the container starts fine but all
+requests get connection refused (Traefik → container:3000, but Vite listens on :4173). Without
+`--host 0.0.0.0`, Vite only listens on loopback and Swarm can't reach it from the ingress network.
 
-## Nixpacks build pitfall: `[start]` section crashes the container
+### 3. Data strategy
 
-**CRITICAL**: Adding `[start]` to `nixpacks.toml` overrides the auto-generated Caddyfile.
-If the start command references a file that doesn't exist (e.g. `dist/server/index.js`
-when the app builds to `dist/client/`), the container enters a restart loop:
+- `live-data.json` committed to git (un-ignored) → bundled at build time with real data
+- Runtime refresh via host-side cron that `docker exec`s into container to re-run aggregate
+- `useLiveData.ts`: static import in prod, `/__live-data` fetch in dev, staleTime 30s
 
+## Runtime aggregate results (sample)
+
+Successful aggregate run inside container produced:
+- 2 projects, 1458 assistant msgs
+- 12 memory files / 1 workspace / 14 events
+- 5 skills installed / 5 used / 6 runs in last 7d
+- $151.82 value extracted last 7d
+- Claude: oauth, ChatGPT: none, OpenRouter: missing
+
+## Files added to repo
+
+- `.nixpacks/Caddyfile` — overrides Nixpacks' auto-generated Caddyfile with absolute `root * /app/dist/client`
+- `nixpacks.toml` — build phase with aggregate + `[start]` for SSR preview
+- `scripts/refresh-data.sh` — host-side cron script: docker exec → aggregate → copy to dist/client
+- `src/data/live-data.json` — committed to git (un-ignored) for build-time data bundling
+
+## Caddyfile injection method (fallback)
+
+If `.nixpacks/Caddyfile` doesn't work and you need post-deploy Caddyfile changes:
+
+`docker exec` tee/heredoc **silently fails** in Nixpacks containers. Use `docker cp`:
+
+```bash
+scp Caddyfile_fixed root@<host>:/tmp/Caddyfile_fixed
+docker cp /tmp/Caddyfile_fixed <container>:/assets/Caddyfile
+docker restart <container>
 ```
-"task: non-zero exit (1)" — Module not found "dist/server/index.js"
+
+## Mount configuration
+
+For runtime aggregate to read real `~/.claude/` data inside the container:
+
+```bash
+docker service update --mount-add type=bind,source=/root/.claude,target=/root/.claude,readonly=true hermetic-agenticos-fax02n
 ```
 
-**Root cause**: Nixpacks/ Dokploy tries to run the start command, not Caddy. With no `[start]`,
-Nixpacks generates its own Caddyfile that serves `dist/client/` correctly.
+## Swarm service gotchas
+
+- `docker service force-update` does NOT exist in this Swarm version
+- `docker service update --mount-add` works
+- Old containers linger after service update — check `docker ps | grep <name>`
+- `docker exec` tee/heredoc silently fails (tool policy blocks) — use `docker cp`
 
 ## Key lessons from debugging
 
-- **`docker exec` tee/heredoc silently fails** in Nixpacks containers — tool policy blocks it but exit code is 0, file stays empty. Always use `docker cp`.
-- **Caddy `handle` vs `handle_path`**: `handle_path /__live-data` only matches `/__live-data/*`. Use `handle /__live-data` for exact path.
-- **Caddyfile requires absolute paths** (`/app/dist/client`) not relative (`../app/dist/client`).
-- **Caddy v2.8.4** syntax: use `:3000` not `{$PORT:3000}` (Railway template).
-- **`caddy reload` fails** when `admin off` — must `docker restart <container>` to pick up Caddyfile changes.
-- **Dokploy doesn't support `docker service force-update`** — command doesn't exist in this Swarm version.
-- **Mounts work** via `docker service update --mount-add type=bind,source=...,target=...,readonly=true <service>` — confirmed `/root/.claude` mounted successfully.
-- **Multiple containers** may run simultaneously during deploy — check `docker ps | grep <name>` to find the active one.
+### Nixpacks + SSR frameworks
+- No `index.html` in `dist/client/` — Nixpacks' Caddy static serving returns 404
+- Solution: `[start] cmd = "bun run preview --port 3000 --host 0.0.0.0"` in `nixpacks.toml`
+- `dist/server/index.js` is a worker entry point (Cloudflare Workers), NOT a standalone Node server
+- NEVER reference `dist/server/index.js` as a start command
+- **`[start]` section WORKS for SSR apps** — the earlier crashes were caused by referencing wrong
+  files (e.g. `dist/server/index.js`), not by the `[start]` section itself. As long as the start
+  command is a valid bin/script, the container starts fine.
+
+### Vite preview port gotcha (IMPORTANT)
+- `bun run preview` (and `vite preview`) defaults to **port 4173**, NOT 3000
+- Traefik routes to container port 3000 → connection refused if Vite is on 4173
+- ALWAYS pass `--port 3000 --host 0.0.0.0` to vite preview
+- Without `--host 0.0.0.0`, Vite binds only to `127.0.0.1` and Swarm ingress can't reach it
+- Symptoms of wrong port: container shows "Running" in `docker ps`, `docker logs` shows
+  "✓ vite preview" with port 4173, but all HTTP requests to the domain return connection refused
+  or time out
+
+### Nixpacks Caddyfile
+- Default uses `root * ../app/{$NIXPACKS_SPA_OUTPUT_DIR}` — broken (Railway template syntax)
+- Override at `.nixpacks/Caddyfile` in repo → copied to `/assets/` at build time
+- Use absolute paths: `root * /app/dist/client`
+- Port: `:3000` (not `{$PORT:3000}`)
+- `caddy fmt --overwrite` is applied by Nixpacks to your Caddyfile — syntax must be valid
+
+### `handle` vs `handle_path` (Caddy trap)
+- `handle_path /__live-data` only matches `/__live-data/*` (with trailing slash + subpath)
+- Use `handle /__live-data` for exact path matching
+
+### Build container limitations
+- No `~/.claude/` — aggregate runs empty in build phase
+- Fix: commit `live-data.json` to git (un-ignore in `.gitignore`)
+- `COPY . /app` happens AFTER build — can overwrite `dist/` with stale repo files
+  (mitigated by `.gitignore` on `dist/`)
+
+### Data persistence
+- Production data is baked at build time → stale until next deploy
+- Runtime refresh via host cron: docker exec → aggregate → copy to `dist/client/live-data.json`
+- React Query `staleTime: 30_000` picks up refreshed data
+- Install refresh script as `/usr/local/bin/refresh-<service>-data` via SSH heredoc
+
+### Cloudflare cache
+- All `*.lighthousegroup.net.tr` domains use Cloudflare proxy
+- After fixing origin: Cloudflare dashboard → Caching → Purge Everything
+- Browser: Ctrl+Shift+R or incognito window
 
 ## Known issues
 
 - `wrangler pages dev` fails on this VPS (no `wrangler:modules-watch`)
 - Node.js on host is v20; wrangler requires v22+
-- Volume mount + Caddyfile `/__live-data` route was verified working (JSON with real data returned)
-- Production data will become stale over time (baked at build time). For auto-refresh,
-  add a cron job on the host that runs aggregate and triggers a Dokploy redeploy.
+- Multiple Swarm containers may run simultaneously during deploy — check `docker ps`
+- `caddy reload` fails when `admin off` — must `docker restart <container>`
