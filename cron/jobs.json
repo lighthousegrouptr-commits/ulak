@@ -20,15 +20,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 288
+        "completed": 289
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-24T19:10:28.093507+00:00",
-      "next_run_at": "2026-05-30T20:27:02.563434+00:00",
-      "last_run_at": "2026-05-30T19:27:02.487796+00:00",
+      "next_run_at": "2026-05-30T20:57:28.662202+00:00",
+      "last_run_at": "2026-05-30T19:57:03.788875+00:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -41,7 +41,7 @@
     {
       "id": "2655c3b31f43",
       "name": "agentic-wrangler-deploy",
-      "prompt": "Run the Agentic OS refresh and deploy script:\n\n1. cd /root/code/agentic-os\n2. git pull --rebase origin main\n3. bun run build\n4. wrangler deploy\n\nThis rebuilds the JS bundle with the latest live-data.json and deploys the Cloudflare Worker. Report the result (success/failure) and the deployed version ID.",
+      "prompt": "Run the Agentic OS full refresh and deploy:\n\n1.  Sync Hermes memory files from the Hermes server:\n    - Source: /root/ulak/memory/ (Hermes agent memories on this machine)\n    - Copy relevant memory files to /tmp/hermes-memory/\n\n2.  Run the aggregator so it picks up both ~/.claude/ AND the synced Hermes memories:\n    - Ensure aggregate.ts scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/\n    - cd /root/code/agentic-os && bun run scripts/aggregate.ts\n\n3.  Build and deploy:\n    - bun run build\n    - wrangler deploy\n\nReport: deployed version ID, total memory files count, any errors.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -58,16 +58,16 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 1
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-30T19:36:00.679007+00:00",
-      "next_run_at": "2026-05-30T20:06:00.679066+00:00",
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-05-30T20:45:28.618598+00:00",
+      "last_run_at": "2026-05-30T20:15:28.618598+00:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
@@ -77,5 +77,5 @@
       "profile": null
     }
   ],
-  "updated_at": "2026-05-30T19:57:02.563674+00:00"
+  "updated_at": "2026-05-30T20:27:28.662365+00:00"
 }
