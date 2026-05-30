@@ -27,18 +27,20 @@ The full refresh syncs Hermes agent memories into the aggregate and deploys:
 
 ### 1. Sync Hermes Memory Files
 
-Memory files live in two places on this machine. Both must be synced into `/tmp/hermes-memory/` for the aggregator to pick them up. Use **prefixed filenames** to avoid collisions when both sources have files with the same name (e.g. both have `MEMORY.md` and `USER.md`).
+**CRITICAL: The cron job description may say `/root/ulak/memory/` — this path does NOT exist.** The real source is `/root/.hermes/memories/` (plural, with trailing 's'). Use the prefixed-filename pattern below to avoid duplicates when multiple sources also have identically-named files.
 
 ```bash
 mkdir -p /tmp/hermes-memory
 rm -f /tmp/hermes-memory/*.md   # clear stale files from previous runs
 
-# Sync from both sources with collision-avoidance prefixes
-for f in /root/ulak/memories/*.md; do
-  [ -f "$f" ] && cp "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
-done
+# Primary source — always copy with prefix (may be the only source present)
 for f in /root/.hermes/memories/*.md; do
   [ -f "$f" ] && cp "$f" "/tmp/hermes-memory/hermes-$(basename "$f")"
+done
+
+# Secondary source — ulak snapshot (may not exist yet if sync hasn't run)
+for f in /root/ulak/memories/*.md; do
+  [ -f "$f" ] && cp "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
 done
 ```
 
@@ -82,7 +84,7 @@ Produces `dist/client/` and `dist/server/`.
 ### 5. Deploy
 
 ```bash
-wrangler deploy
+export PATH="/tmp/node-v22.14.0-linux-x64/bin:/root/.bun/bin:$PATH" && wrangler deploy
 ```
 
 Capture the `Current Version ID:` from output — this is the deploy handle for verification.
@@ -178,6 +180,7 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 ## Reference Files
 
 - `references/2026-05-31-hermes-skills-memory-tab.md` — Session notes: Hermes skills scanning, Ulak memory tab, default minutes ($50/hr), mobile input fix
+- `references/2026-05-30-cron-deploy.md` — Cron deploy session notes: full pipeline run, env gotchas (bun PATH, Node v22 path, real memory source path)
 - `references/2026-05-30-hermes-memory-path-fix.md` — Session notes: `hermesMemDirs` path bug fix (singular→plural), multi-source sync with collision-avoidance naming, bun PATH workaround
 
 ## Pitfalls
