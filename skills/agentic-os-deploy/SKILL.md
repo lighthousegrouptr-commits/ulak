@@ -29,31 +29,32 @@ The full refresh syncs Hermes agent memories into the aggregate and deploys:
 
 ```bash
 mkdir -p /tmp/hermes-memory
-cp ~/.hermes/memories/*.md /tmp/hermes-memory/
+cp /root/ulak/memories/*.md /tmp/hermes-memory/
 ```
 
-**Source paths** (not `/root/ulak/memory/` — that path does not exist):
-- `~/.hermes/memories/` — live Hermes memory (MEMORY.md, USER.md)
-- `/root/ulak/memories/` — synced ulak snapshot (also has MEMORY.md, USER.md)
-- One file will be `MEMORY.md.lock` / `USER.md.lock` (empty lock files, harmless)
+**Source paths** (verified):
+- `/root/ulak/memories/` — synced ulak snapshot (MEMORY.md, USER.md). **This is the correct source path.**
+- `~/.hermes/memory/` and `~/.hermes/memories/` — do NOT exist on this system (verified May 2026).
+- `/root/ulak/memory/` (singular) does NOT exist — the correct directory is `/root/ulak/memories/` (plural).
+- The aggregator already has Hermes paths built in. **No code patch needed.**
+- One file may be `MEMORY.md.lock` / `USER.md.lock` (empty lock files, harmless).
 
-### 2. Ensure Aggregate Includes Hermes Memory
+### 2. Hermes Memory Already in Aggregator
 
-The aggregator (`scripts/aggregate.ts`) scans `~/.claude/projects/*/memory/` and Obsidian vaults natively.
-For Hermes memories, add this source block in `parseMemory()` (between the Claude project dirs and the `// Aggregate` comment):
-
+The aggregator (`scripts/aggregate.ts`) already scans these Hermes paths in `parseMemory()`:
 ```typescript
-  // Hermes agent memory files
-  const hermesMemDir = "/tmp/hermes-memory";
-  if (existsSync(hermesMemDir)) sources.push({ root: hermesMemDir, label: "hermes" });
+const hermesMemDirs = [
+  "/tmp/hermes-memory",
+  "/root/ulak/memories",
+  "/root/.hermes/memory",
+];
 ```
-
-See [references/hermes-memory-integration.md](references/hermes-memory-integration.md) for source paths, verification steps, and the patch location diagram.
+**No code modification needed** unless `parseMemory()` is rewritten from scratch.
 
 ### 3. Run Aggregator
 
 ```bash
-cd /root/code/agentic-os && bun run scripts/aggregate.ts
+cd /root/code/agentic-os && export PATH="$PATH:/root/.bun/bin" && bun run scripts/aggregate.ts
 ```
 
 Expected output includes: `memory: N files / M workspaces` — verify `hermes` workspace appears.
@@ -61,7 +62,7 @@ Expected output includes: `memory: N files / M workspaces` — verify `hermes` w
 ### 4. Build
 
 ```bash
-bun run build
+export PATH="$PATH:/root/.bun/bin" && bun run build
 ```
 
 Produces `dist/client/` and `dist/server/`.
@@ -89,10 +90,10 @@ Capture the `Current Version ID:` from output — this is the deploy handle for 
 
 ## Pitfalls
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
-2. **Wrong memory path** — Hermes memories are at `~/.hermes/memories/`, not `/root/ulak/memory/`.
-3. **Worker vs Container: Worker wins**. Check `cf-worker` header.
-4. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
-5. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
-6. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
-7. **Aggregate `parseMemory()` patch** — if the function is rewritten, the Hermes source block must be re-added at the same location (after Claude project dirs, before `// Aggregate`).
+2. **Wrong memory path** — The cron task may mention `/root/ulak/memory/` but that path doesn't exist. Use `/root/ulak/memories/` (plural). `~/.hermes/memories/` also doesn't exist on this system.
+3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` already includes `/tmp/hermes-memory`, `/root/ulak/memories`, and `/root/.hermes/memory` as sources in `parseMemory()`. No code patch is needed unless the function is rewritten.
+4. **Worker vs Container: Worker wins**. Check `cf-worker` header.
+5. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
+6. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
+7. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
 8. **wrangler version** — run `wrangler --version` to check. Update with `npm i -g wrangler@latest` if needed.
