@@ -267,6 +267,14 @@ Add a comment in `.gitignore` above the un-ignored line explaining why (so futur
 # src/data/live-data.json
 ```
 
+## Aggregate memory path configuration
+
+When the app has multiple memory sources (Claude Code projects AND agent memory files like
+Ulak/Hermes), extend the aggregate script's memory source paths. See
+[references/agentic-os-config.md](references/agentic-os-config.md) for the full configuration
+of the `agentic-os` project's aggregate, including Hermes memory paths, duplicate source
+pitfalls, and `STALE_DAYS` tuning.
+
 ## Runtime data refresh via cron (when data must stay fresh)
 
 When committed-at-build-time data goes stale and you can't redeploy often enough:

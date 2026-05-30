@@ -27,22 +27,34 @@ The aggregator (`scripts/aggregate.ts`, function `parseMemory()`) already includ
 
 ```typescript
 const hermesMemDirs = [
-  "/tmp/hermes-memory",
   "/root/ulak/memories",
   "/root/.hermes/memory",
 ];
 ```
 
-**No code patch is required** unless `parseMemory()` is rewritten from scratch. If rewriting, add the same block before the `// Aggregate` comment.
+**Note**: `/tmp/hermes-memory` was removed as a source in May 2026 because the aggregator now reads `/root/ulak/memories/` directly (synced from `~/.hermes/` every 30 min). The `/tmp/hermes-memory` staging directory is no longer needed.
 
-## Verification
+**No further code patch is required** unless `parseMemory()` is rewritten from scratch.
 
-After running `bun run scripts/aggregate.ts`:
-- Log output includes `hermes` workspace
-- `src/data/live-data.json` contains a `hermes`-labeled workspace node
-- File count should include 2 Hermes files (MEMORY.md, USER.md)
+## Source Kind Bug (Fixed May 31, 2026)
 
-**PATH reminder**: `bun` is not on the default PATH. Always use:
-```bash
-export PATH="$PATH:/root/.bun/bin"
-```
+After adding Hermes paths to the aggregator, the Memory page was still missing the "Ulak" filter tab. Root cause: THREE separate hard-coded source lists existed and only two were updated:
+
+1. `aggregate.ts` `MemSource` type — had `"hermes"` added ✓
+2. `aggregate.ts` workspace/file source detection — had `"hermes-"` prefix checks ✓
+3. `memory.tsx` `SourceId` type, `BASE_SOURCES`, `PINECONE_SOURCES` — **missing** ✗
+4. `memory.tsx` `SourceFilter` component pills array — **missing** ✗
+5. `memory.tsx` `matchesActive()` function — **missing** ✗
+6. `memory-graph-3d.tsx` filter `matches()` function — **missing** ✗
+
+**All six locations must be updated together.** The "Adding a New Source Filter Tab" section in SKILL.md documents the full checklist.
+
+**Verification after deploy:**
+- Memory page shows "All / Obsidian / Local Claude / Ulak" buttons
+- "Ulak" pill is amber-colored (#F59E0B)
+- Clicking "Ulak" shows only Hermes source nodes
+- "All" includes Hermes nodes alongside others
+
+## Sources Array Pitfall
+
+When adding the Hermes source to `hermesMemDirs`, a duplicate `/tmp/hermes-memory` entry was already in the array from an earlier session's fix. The aggregator pushes ALL directories from `hermesMemDirs` into `sources`, so duplicates produce duplicate workspace nodes in the graph (same files appear under two workspace nodes). Always check `live-data.json`'s `memory.sources` array for duplicates after modifying `hermesMemDirs`.

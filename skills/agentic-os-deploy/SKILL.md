@@ -109,14 +109,57 @@ bun run scripts/aggregate.ts 2>> "$LOG" || echo "$(date): aggregate failed" >> "
 
 `scripts/aggregate.ts` line 624: `const STALE_DAYS = 30`
 
+## Adding a New Source Filter Tab to the Memory Graph
+
+When a new memory source (e.g. `hermes` for the Ulak/Hermes agent) is added to the aggregator, the UI won't automatically show a filter tab. Three files need coordinated changes:
+
+### Files to modify
+
+1. **`scripts/aggregate.ts`** — ensure the source is detected and tagged:
+   - Source list builder (~line 1600): `const kind` must recognize the new source label prefix
+   - File node builder (~line 1546): `const fSource` must check `workspaceId.startsWith("new-source-")`
+   - Workspace node builder (~line 1507-1511): `const wsSource` must check workspace ID prefix
+   - `MemSource` type (~line 628): add the new source string literal
+
+2. **`src/components/memory-graph-3d.tsx`** — add filter support:
+   - In the `matches` function inside the `useMemo` data filter (~line 382-383):
+     ```typescript
+     if (allowedCats.has("new-source") && n.source === "new-source") return true;
+     ```
+
+3. **`src/routes/memory.tsx`** — add the UI pill/tab:
+   - `type SourceId` (~line 38): add `"new-source"` to the union
+   - `BASE_SOURCES` (~line 36) and `PINECONE_SOURCES` (~line 37): add the new source
+   - `matchesActive()` (~line 68-76): add `if (sourceTag === "new-source" && activeSet.has("new-source")) return true;`
+   - `SourceFilter` component pills array (~line 329-356): add a conditional pill entry. Use `liveData?.memory?.nodes?.some((n: any) => n.source === "new-source")` to conditionally show:
+     ```typescript
+     ...(liveData?.memory?.nodes?.some((n: any) => n.source === "new-source")
+       ? [{
+           id: "new-source" as const,
+           label: "Display Name",
+           color: "#HEX",
+           tooltip: "Description",
+         }]
+       : []),
+     ```
+
+### Verification
+- After deploy, check the Memory page for the new filter button
+- Clicking it should show only nodes with `source === "new-source"`
+- "All" filter should include the new source alongside existing ones
+
 ## Pitfalls
 
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
 2. **Wrong memory path** — Use `/root/ulak/memories/` (plural). `/root/ulak/memory/` (singular) and `~/.hermes/memories/` do NOT exist on this system.
-3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` already includes `/tmp/hermes-memory`, `/root/ulak/memories`, and `/root/.hermes/memory` as sources in `parseMemory()`. No code patch is needed unless the function is rewritten.
-4. **Cron script skips aggregate** — `cron-agentic-deploy.sh` as shipped does NOT run `aggregate.ts` or sync Hermes memories. If you need fresh data in the deploy, run the full pipeline manually or patch the script (see above).
-5. **Worker vs Container: Worker wins**. Check `cf-worker` header.
-6. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
-7. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
-8. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
-9. **wrangler version** — run `wrangler --version` to check. Update with `npm i -g wrangler@latest` if needed.
+3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` already includes Hermes sources. No patch needed unless rewritten.
+4. **Cron script skips aggregate** — `cron-agentic-deploy.sh` does NOT run `aggregate.ts`. Run full pipeline manually.
+5. **Missing source kind entry** — `src/routes/memory.tsx` has THREE places that enumerate sources (SourceId type, BASE_SOURCES, and the SourceFilter pillar). All three must be updated or the filter tab won't appear on the dashboard.
+6. **Duplicate source fix didn't deploy** — A patch to aggregate.ts that removes `/tmp/hermes-memory` from `hermesMemDirs` may appear fine in code but `/tmp/hermes-memory` can still exist on disk from a previous run. Always verify live-data.json for duplicate sources after deploy.
+7. **Worker vs Container: Worker wins**. Check `cf-worker` header.
+8. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
+9. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
+10. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
+11. **wrangler + Node.js** — `wrangler deploy` requires Node >= 22. VPS ships Node 20. wrangler v4.86.0 happens to work on Node 20 (no error), but this is not guaranteed. If deploy fails with Node version error, update wrangler: `npm i -g wrangler@latest` or use nvm to install Node 22.
+
+12. **Skills page input too small for mobile** — The `minutes saved per run` input on the Skills page used `w-12` (48px) which is untappable on mobile. Fixed by replacing with `flex-1 min-w-[60px]` and setting `fontSize: "16px"` (inline style) to prevent iOS Safari zoom. Also added `WebkitAppearance: "none"` to prevent default mobile spinbutton styling that can obscure the value. Always test skill input forms on mobile viewport.
