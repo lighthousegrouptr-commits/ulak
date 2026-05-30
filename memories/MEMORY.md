@@ -12,6 +12,6 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 §
 Backlink stratejisi: emergent-fabric.lovable.app (Synthetic Intelligence sayfası) ile lighthousegroup.net.tr arasında karşılıklı backlink planı yapılacak. Şimdi değil, daha sonra yapılacak. Footer'da zaten lighthousegroup.net.tr linki mevcut.
 §
-2026-05-30: Lighthousegroup - Dockerfile veya Nixpacks config'e bir adım ekleyip, build aggregate'ın çalışmasını sağlamak.
+VPS deploy (5/2026): Dokploy uses Docker Swarm (docker service update --mount-add). Vite apps: configureServer middleware endpoints (__live-data etc) don't exist in production. Best: bundle data at build time or Dockerfile with Bun static server + API endpoints. Nixpacks auto-generates Caddyfile at /assets/Caddyfile. Overwrite with tee + caddy reload. Caddy v2.8.4.
 §
 agentic-os repo: github.com/sasdsamatt123/agentic-os. lighthousegrouptr-commits SSH key ile push yapamıyor — permission denied. HTTPS de çalışmıyor. Levent'in bu repo için git credentials vermesi veya lighthousegrouptr-commits'e collaborator olarak eklemesi gerekiyor.
