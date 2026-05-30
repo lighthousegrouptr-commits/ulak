@@ -116,6 +116,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **Data persistence**: Container restarts lose filesystem changes. Use Docker volumes or bind mounts.
 - **SPA + API endpoints**: TanStack Start / Vite SPAs that fetch data via `/__api` endpoints at runtime need those endpoints provided in production. The Vite `configureServer` plugin only works in dev — in production, your start command MUST serve the same endpoints (or proxy to them). Check `src/lib/use-*.ts` hooks to discover which endpoints the app expects.
 - **Git push access**: `lighthousegrouptr-commits` SSH key may not have push access to all repos. If push fails with Permission denied, either (a) add the key as a contributor to the repo, or (b) use HTTPS with a PAT.
+- **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). Each has its own repo, container, and Dokploy service. **Always confirm which project the user means before touching repos, containers, or configs.** When the user says "my repo" without naming it, ask. Don't assume — musikapp ≠ agentic-os ≠ ulak, all managed by `lighthousegrouptr-commits` but repos live under different GitHub accounts.
 
 ## Dokploy uses Docker Swarm
 
