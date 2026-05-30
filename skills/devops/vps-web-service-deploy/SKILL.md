@@ -114,3 +114,5 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **docker exec blocked**: Plan for file transfer via rebuild or ask user.
 - **Node version**: Host Node is v20. wrangler needs v22+. Use `node-v22` binary from `/tmp/` if needed, or Dockerize.
 - **Data persistence**: Container restarts lose filesystem changes. Use Docker volumes or bind mounts.
+- **SPA + API endpoints**: TanStack Start / Vite SPAs that fetch data via `/__api` endpoints at runtime need those endpoints provided in production. The Vite `configureServer` plugin only works in dev — in production, your start command MUST serve the same endpoints (or proxy to them). Check `src/lib/use-*.ts` hooks to discover which endpoints the app expects.
+- **Git push access**: `lighthousegrouptr-commits` SSH key may not have push access to all repos. If push fails with Permission denied, either (a) add the key as a contributor to the repo, or (b) use HTTPS with a PAT.

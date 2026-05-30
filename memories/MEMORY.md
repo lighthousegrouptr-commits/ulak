@@ -11,3 +11,7 @@ Lighthousegroup.net.tr email: Resend + Amazon SES. Domain: notify.lighthousegrou
 User expects proactive problem-solving. Turkish SEO strategy: block AI engines (noai/noimageai) but allow regular search engines. Blog: weekly Turkish technical posts on AI/GEO/SEO. CMS not yet identified - need repo access or server SSH to connect API. User preferred Semrush MCP but hasn't provided API key yet.
 §
 Backlink stratejisi: emergent-fabric.lovable.app (Synthetic Intelligence sayfası) ile lighthousegroup.net.tr arasında karşılıklı backlink planı yapılacak. Şimdi değil, daha sonra yapılacak. Footer'da zaten lighthousegroup.net.tr linki mevcut.
+§
+2026-05-30: Lighthousegroup - Dockerfile veya Nixpacks config'e bir adım ekleyip, build aggregate'ın çalışmasını sağlamak.
+§
+agentic-os repo: github.com/sasdsamatt123/agentic-os. lighthousegrouptr-commits SSH key ile push yapamıyor — permission denied. HTTPS de çalışmıyor. Levent'in bu repo için git credentials vermesi veya lighthousegrouptr-commits'e collaborator olarak eklemesi gerekiyor.
