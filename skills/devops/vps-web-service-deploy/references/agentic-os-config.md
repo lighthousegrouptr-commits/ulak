@@ -5,16 +5,24 @@
 The `scripts/aggregate.ts` scans multiple memory sources. As of the latest config:
 
 ```typescript
+// Claude project-scanned memory dirs (~/.claude/projects/*/memory) — existing
+// Claude global memory dir (~/.claude/memory/) — added 2026-05-31, may not exist yet
+if (existsSync(join(CLAUDE_DIR, "memory"))) {
+  sources.push({ root: join(CLAUDE_DIR, "memory"), label: "claude" });
+}
+
 const hermesMemDirs = [
   "/root/ulak/memories",       // Ulak agent memory (git mirror, syncs every 30min)
   "/root/.hermes/memories",    // Live Hermes agent memory (MEMORY.md, USER.md)
-  "/root/.hermes/memory",      // Legacy Hermes path (singular)
+  "/root/.hermes/memory",      // Legacy Hermes path (singular) — does NOT exist on this VPS
   "/tmp/hermes-memory",        // Staging: combined dump from all sources on each deploy
 ];
 ```
 
 **Pitfall -- memory dir naming**: The live Hermes dir is `memories/` (plural) at
-`/root/.hermes/memories/`. The legacy path uses `memory/` (singular). Don't mix them up.
+`/root/.hermes/memories/`. The legacy path uses `memory/` (singular) — does NOT exist on this VPS,
+but the scanner checks it anyway for portability. Similarly, `~/.claude/memory/` doesn't exist
+yet but is included for future use.
 
 **Pitfall -- duplicate sources**: If two paths resolve to the same files, duplicate nodes
 appear in the memory graph. Keep only one source path per physical directory.

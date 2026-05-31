@@ -62,6 +62,7 @@ The dashboard scans Hermes agent skills from `/root/.hermes/skills/` alongside `
 | `/root/.hermes/memories/` | Yes | Live Hermes memories (also MEMORY.md, USER.md) |
 | `/root/.hermes/memory/` | No | Singular — does NOT exist |
 | `/root/ulak/memory/` | No | Singular — does NOT exist |
+| `~/.claude/memory/` | No | Added to aggregator 2026-05-31; may not exist yet |
 
 ### Memory Sync Commands
 
@@ -109,14 +110,20 @@ done
 ```bash
 # 1. Sync memories (see above)
 # 2. Aggregate
-cd /root/code/agentic-os && export PATH="$PATH:/root/.bun/bin" && bun run scripts/aggregate.ts
+cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && bun run scripts/aggregate.ts
 # 3. Build
-export PATH="$PATH:/root/.bun/bin" && bun run build
+export PATH="/root/.bun/bin:$PATH" && bun run build
 # 4. Deploy
-source /root/.profile && cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+export PATH="/root/.bun/bin:$PATH" && wrangler deploy
 ```
 
-**Always `source /root/.profile` first** — `CLOUDFLARE_API_TOKEN` is not available in cron/unattended sessions otherwise.
+**PATH note for cron/unattended jobs**: `bun` is at `/root/.bun/bin/bun` — always export PATH first.
+`wrangler` (v4.86+) is directly available on this VPS PATH (installed via npm globally or npx cache)
+— no need for `source /root/.profile` or `npx wrangler` wrappers unless `CLOUDFLARE_API_TOKEN`
+is needed (which wrangler reads from `~/.wrangler/` config on this machine).
+
+**`~/.claude/memory/`** was added as an aggregator source on 2026-05-31. It doesn't exist on this
+VPS yet but is included for future portability (Line ~1466 in `aggregate.ts`).
 
 ---
 
