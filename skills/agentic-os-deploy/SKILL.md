@@ -223,8 +223,10 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 
   **Full deploy command** (works regardless of which Node version is active):
   ```bash
-  export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+  export PATH="/root/.bun/bin:$PATH" && npx wrangler deploy
   ```
+
+  Using `npx wrangler deploy` (instead of bare `wrangler deploy`) is more reliable — `npx` auto-resolves the wrangler binary from `node_modules/.bin` without requiring it on PATH. Confirmed working in cron context on 2026-05-31.
 
   The `/tmp/node-v22.14.0-linux-x64` path from old documentation is NOT reliably present. The `n` install approach is self-contained and survives symlink resets. As of May 2026, the VPS had Node v20.20.2 active and Node v24.16.0 was installed fresh via `n lts`.
 
