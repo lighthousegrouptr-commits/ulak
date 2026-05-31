@@ -180,6 +180,7 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 ## Reference Files
 
 - `references/2026-05-31-full-refresh.md` — 2026-05-31 cron runs (×2): full pipeline, /tmp cleanup via Python os.remove(), both memory sources active, 18 files/2 workspaces, deploy version `6c360093`, confirmed workarounds current
+- `references/2026-05-31-cron-run-3.md` — Third run 2026-05-31: Node.js v20→v24 upgrade via `n lts` (old `/tmp/node-v22` path was stale), aggregator 18 files/2 workspaces, deploy version `919c0572`
 - `references/2026-05-31-hermes-skills-memory-tab.md` — Session notes: Hermes skills scanning, Ulak memory tab, default minutes ($50/hr), mobile input fix
 - `references/2026-05-30-cron-deploy.md` — Cron deploy session notes: full pipeline run, env gotchas (bun PATH, Node v22 path, real memory source path)
 - `references/2026-05-30-hermes-memory-path-fix.md` — Session notes: `hermesMemDirs` path bug fix (singular→plural), multi-source sync with collision-avoidance naming, bun PATH workaround
@@ -206,11 +207,26 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 8. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
 9. **SSR**: Vite preview catches all requests. Don't fetch `/live-data.json` in prod — use static import.
 10. **`$NIXPACKS_SPA_OUTPUT_DIR`**: Railway-only. Hardcode path in Caddyfile.
-11. **wrangler + Node.js** — `wrangler deploy` requires Node >= 22. VPS ships Node 20. wrangler v4.86.0 happens to work on Node 20 (no error), but this is not guaranteed. If deploy fails with Node version error, use the Node v22 binary that ships on the VPS at `/tmp/node-v22.14.0-linux-x64/bin/node`:
+11. **wrangler + Node.js** — `wrangler deploy` requires Node >= 22. VPS may ship Node 20. If deploy fails with a Node version error:
+
+  **Check if a pre-installed Node v22 exists first:**
   ```bash
-  export PATH="/tmp/node-v22.14.0-linux-x64/bin:$PATH" && wrangler deploy
+  ls /tmp/node-v22.14.0-linux-x64/bin/node 2>/dev/null && echo "EXISTS" || echo "NOT FOUND"
   ```
-  Or update wrangler: `npm i -g wrangler@latest`, or install via nvm.
+
+  **If it doesn't exist** (fresh VPS or after OS updates), install Node LTS via `n`:
+  ```bash
+  npm install -g n && n lts
+  # This installs to /usr/local/bin/node — now update the symlink:
+  ln -sf /usr/local/bin/node /usr/bin/node && node --version
+  ```
+
+  **Full deploy command** (works regardless of which Node version is active):
+  ```bash
+  export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+  ```
+
+  The `/tmp/node-v22.14.0-linux-x64` path from old documentation is NOT reliably present. The `n` install approach is self-contained and survives symlink resets. As of May 2026, the VPS had Node v20.20.2 active and Node v24.16.0 was installed fresh via `n lts`.
 
 12. **Skills page input too small for mobile** — The `minutes saved per run` input on the Skills page used `w-12` (48px) which is untappable on mobile. Fixed by replacing with `flex-1 min-w-[60px]` and setting `fontSize: "16px"` (inline style) to prevent iOS Safari zoom. Also added `WebkitAppearance: "none"` to prevent default mobile spinbutton styling that can obscure the value. Always test skill input forms on mobile viewport.
 
