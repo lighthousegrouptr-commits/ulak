@@ -298,11 +298,19 @@ pitfalls, and `STALE_DAYS` tuning.
 | Path | Exists? | Description |
 |------|---------|-------------|
 | `/root/ulak/memories/` | ✅ Yes | Ulak snapshot, synced every 30 min |
-| `/root/.hermes/memories/` | ✅ Yes | Live Hermes memories |
+| `/root/.hermes/memories/` | ✅ Yes | Live Hermes memories (source of truth) |
+| `/tmp/hermes-memory/` | ✅ Yes | Staging dir for deploy pipeline (populated before aggregate) |
 | `/root/.hermes/memory/` | ❌ No | Singular — does NOT exist |
 | `/root/ulak/memory/` | ❌ No | Singular — does NOT exist (common mistake in cron task descriptions) |
 
 **When a task description says `/root/ulak/memory/`**, use `/root/ulak/memories/` instead.
+**When a task description says `/root/ulak/memory/` as the Hermes server source**, the actual source-of-truth is `/root/.hermes/memories/` and the Ulak snapshot at `/root/ulak/memories/` is a mirror synced every 30 min.
+
+The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Hermes source dirs directly, so the `/tmp/hermes-memory/` staging step is supplementary — useful as a consolidation point but not strictly required for the aggregator to pick up Hermes memories.
+
+## Run Log
+
+See `references/2026-05-31-cron-run-full-refresh-deploy-r3.md` for the latest full refresh + deploy run notes (Version ID `247b9cd0`, 36 files, zero errors).
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
