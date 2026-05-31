@@ -293,6 +293,17 @@ Ulak/Hermes), extend the aggregate script's memory source paths. See
 of the `agentic-os` project's aggregate, including Hermes memory paths, duplicate source
 pitfalls, and `STALE_DAYS` tuning.
 
+## Hermes Memory Path Quick Reference
+
+| Path | Exists? | Description |
+|------|---------|-------------|
+| `/root/ulak/memories/` | ✅ Yes | Ulak snapshot, synced every 30 min |
+| `/root/.hermes/memories/` | ✅ Yes | Live Hermes memories |
+| `/root/.hermes/memory/` | ❌ No | Singular — does NOT exist |
+| `/root/ulak/memory/` | ❌ No | Singular — does NOT exist (common mistake in cron task descriptions) |
+
+**When a task description says `/root/ulak/memory/`**, use `/root/ulak/memories/` instead.
+
 ## Runtime data refresh via cron (when data must stay fresh)
 
 When committed-at-build-time data goes stale and you can't redeploy often enough:
@@ -369,3 +380,4 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis and Worker deploy workflow
 - `references/2026-05-31-cron-run-full-refresh-deploy.md` — Full refresh + deploy run notes (36 files, Version ID, zero errors)
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
+- `references/2026-05-31-cron-run-full-refresh-deploy-r2.md` — Full refresh + deploy run 2: Version ID `ed1e9141`, 36 files, 12.58s build, zero errors
