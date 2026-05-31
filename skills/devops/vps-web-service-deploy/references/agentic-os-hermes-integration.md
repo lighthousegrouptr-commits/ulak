@@ -99,9 +99,9 @@ done
 
 | Sync Mode | Files | Workspaces |
 |-----------|-------|------------|
-| Full (with claude-project) | ~32 | 2 |
-| Minimal (hermes/ulak only) | ~22 | 2 |
-| No /tmp sync | ~18 | 2 |
+| Full (with claude-project) | 36 | 2 |
+| Minimal (hermes/ulak only) | 20 | 2 |
+| No /tmp sync | ~16 | 2 |
 
 ---
 
@@ -147,5 +147,6 @@ For detailed per-run notes, see archived session logs:
 | `2026-05-31-cron-run-manual.md` | Manual run, cp-only sync, rm-blocked workarounds |
 | `2026-05-31-deploy-notes.md` | Deploy-specific notes |
 | `2026-05-31-hermes-skills-memory-tab.md` | Hermes skills scanning, Ulak memory tab, mobile fix |
+| `2026-05-31-cron-run-full-refresh-deploy.md` | Full refresh + deploy, 36 files/2 ws, Version ID `9d184325`, 11.51s deploy, zero errors |
 | `agentic-os-setup.md` | Initial setup notes |
 | `hermes-memory-integration.md` | Hermes memory integration details |

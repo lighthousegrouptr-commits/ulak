@@ -46,8 +46,14 @@ Do NOT assume a fresh deploy is needed — the app may already be running in a c
 
 This also affects `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, etc.
 
-`wrangler` is similarly not directly on PATH — use `npx wrangler deploy` (which works because
-`npx` comes with the `/usr/bin/node` + `/usr/bin/npm` that ARE on PATH).
+`wrangler` is directly available on VPS PATH at `/usr/bin/wrangler` (v4.86+). No `npx` wrapper needed:
+```bash
+wrangler deploy     # uploads to Cloudflare Workers CDN directly
+```
+
+- Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
+- Deploy is immediate — new version goes live globally within ~30s
+- No Cloudflare cache purge needed for Worker deploys
 
 ## Docker exec access
 
@@ -361,4 +367,5 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
 - `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS, deploy commands
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis and Worker deploy workflow
+- `references/2026-05-31-cron-run-full-refresh-deploy.md` — Full refresh + deploy run notes (36 files, Version ID, zero errors)
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
