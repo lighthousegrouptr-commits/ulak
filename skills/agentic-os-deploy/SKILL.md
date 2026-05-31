@@ -186,7 +186,7 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 ## Pitfalls
 
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
-2. **Wrong memory path** — Use `/root/ulak/memories/` and `/root/.hermes/memories/` (both plural, WITH trailing 's'). The singular forms (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist as real directories. The aggregator was patched in May 2026 to include `/root/.hermes/memories` — if you're looking at old documentation referencing singular paths, it's stale.
+2. **Wrong memory path** — Use `/root/ulak/memories/` and `/root/.hermes/memories/` (both plural, WITH trailing 's'). Both exist as of May 2026. The singular forms (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist as real directories. The aggregator was patched in May 2026 to include `/root/.hermes/memories` — if you're looking at old documentation referencing singular paths, it's stale. When syncing both sources to `/tmp/hermes-memory/`, use prefixed filenames (`ulak-*`, `hermes-*`) to avoid duplicate nodes.
 3. **Hermes memory already in aggregator** — `scripts/aggregate.ts` `hermesMemDirs` (as of May 2026 patch) scans:
   ```typescript
   const hermesMemDirs = [
@@ -210,6 +210,8 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
   ```
   Or update wrangler: `npm i -g wrangler@latest`, or install via nvm.
 
-12. **Skills page input too small for mobile** — The `minutes saved per run` input on the Skills page used `w-12` (48px) which is untappable on mobile. Fixed by replacing with `flex-1 min-w-[60px]` and setting `fontSize: "16px"` (inline style) to prevent iOS Safari zoom. Also added `WebkitAppearance: "none"` to prevent default mobile spinbutton styling that can obscure the value. Always test skill input forms on mobile viewport.
+13. **Skills page input too small for mobile** — The `minutes saved per run` input on the Skills page used `w-12` (48px) which is untappable on mobile. Fixed by replacing with `flex-1 min-w-[60px]` and setting `fontSize: "16px"` (inline style) to prevent iOS Safari zoom. Also added `WebkitAppearance: "none"` to prevent default mobile spinbutton styling that can obscure the value. Always test skill input forms on mobile viewport.
+
+14. **`rm -rf` under `/tmp` blocked by security approval** — Commands like `rm -rf /tmp/hermes-memory` trigger a pending-approval gate and will be blocked in cron/unattended contexts. Workaround: skip the delete step entirely. Just `mkdir -p /tmp/hermes-memory` (idempotent) and copy files in place — the overwrite is harmless. If you need a clean slate, copy to a fresh subdirectory instead of deleting.
 
 13. **Hermes skills show "installed" as lastUsed** — Skills from `/root/.hermes/skills/` have no usage logs, so `lastUsed` displays as "installed" instead of a relative timestamp. This is expected and correct. Do NOT try to derive usage from Hermes platform logs — the aggregate only reads Claude Code JSONL logs. If you need to distinguish Hermes from Claude skills in the UI, check for `lastUsed === "installed"` as a heuristic.
