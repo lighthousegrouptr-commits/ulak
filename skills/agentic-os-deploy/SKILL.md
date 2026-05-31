@@ -29,18 +29,38 @@ The full refresh syncs Hermes agent memories into the aggregate and deploys:
 
 **CRITICAL: The cron job description may say `/root/ulak/memory/` — this path does NOT exist.** The real source is `/root/.hermes/memories/` (plural, with trailing 's'). Use the prefixed-filename pattern below to avoid duplicates when multiple sources also have identically-named files.
 
+**FULL SYNC (when cron requests `~/.claude/projects/*/memory` sync — produces ~32 file count):**
+
 ```bash
 mkdir -p /tmp/hermes-memory
 
-# No rm needed — just overwrite existing files (cp -f). rm -f /tmp/hermes-memory/*
-# triggers a security approval gate ("delete in root path") that blocks unattended runs.
-
-# Primary source
+# Primary source — Hermes agent memories
 for f in /root/.hermes/memories/*.md; do
   [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/hermes-$(basename "$f")"
 done
 
 # Secondary source — ulak snapshot
+for f in /root/ulak/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
+done
+
+# Claude project memory dirs (when explicitly requested by cron)
+for proj_dir in /root/.claude/projects/*/memory; do
+  [ -d "$proj_dir" ] || continue
+  proj_label=$(basename "$(dirname "$proj_dir")" | sed 's/^-//')
+  for f in "$proj_dir"/*.md; do
+    [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/claude-project-${proj_label}-$(basename "$f")"
+  done
+done
+```
+
+**MINIMAL SYNC (hermes/ulak only — when cron does NOT request claude-project sync):**
+
+```bash
+mkdir -p /tmp/hermes-memory
+for f in /root/.hermes/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/hermes-$(basename "$f")"
+done
 for f in /root/ulak/memories/*.md; do
   [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
 done
@@ -51,8 +71,9 @@ done
 - `/root/.hermes/memories/` (plural, WITH trailing 's') — also exists with identical copies of MEMORY.md and USER.md. Copy from here too, with `hermes-` prefix.
 - `/root/.hermes/memory/` (singular, NO trailing 's') — does **NOT** exist as a real directory (even though old versions of aggregate.ts listed it). The code was patched in May 2026 to also scan `/root/.hermes/memories` (plural).
 - `/root/ulak/memory/` (singular) — does **NOT** exist.
+- `/root/.claude/projects/*/memory/` — Claude project memory dirs (13 files under `-root/` as of May 2026). Only sync to `/tmp` when cron explicitly requests it.
 - Skip `.lock` files — the `*.md` glob above handles this automatically.
-- After sync, expect ~4 files in `/tmp/hermes-memory/`: `ulak-MEMORY.md`, `ulak-USER.md`, `hermes-MEMORY.md`, `hermes-USER.md`.
+- After full sync (all sources), expect ~16 files in `/tmp/hermes-memory/`. After aggregator runs with all paths, expect **~32 files / 2 workspaces** (because the aggregator also scans `~/.claude/projects/*/memory` directly, producing overlap with the prefixed copies in `/tmp`).
 
 ### 2. Hermes Memory Already in Aggregator
 
@@ -74,6 +95,10 @@ cd /root/code/agentic-os && export PATH="$PATH:/root/.bun/bin" && bun run script
 ```
 
 Expected output includes: `memory: N files / M workspaces` — verify `hermes` workspace appears.
+
+- **~32 files / 2 workspaces** — when full sync (with claude-project) was done
+- **~22 files / 2 workspaces** — when minimal sync (hermes/ulap only) was done — the aggregator still picks up `~/.claude/projects/*/memory` directly
+- **~18 files / 2 workspaces** — if `/tmp/hermes-memory` was skipped entirely (no claude-project files in `/tmp`, only direct scans)
 
 ### 4. Build
 
@@ -114,10 +139,17 @@ The file `scripts/cron-agentic-deploy.sh` is the scheduled deployment script. As
 
 ```bash
 # Add to cron-agentic-deploy.sh before the build step:
-# Sync Hermes memories
+# Sync Hermes memories (full sync with claude-project)
 mkdir -p /tmp/hermes-memory
 cp -f /root/ulak/memories/*.md /tmp/hermes-memory/
 cp -f /root/.hermes/memories/*.md /tmp/hermes-memory/
+for proj_dir in /root/.claude/projects/*/memory; do
+  [ -d "$proj_dir" ] || continue
+  proj_label=$(basename "$(dirname "$proj_dir")" | sed 's/^-//')
+  for f in "$proj_dir"/*.md; do
+    [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/claude-project-${proj_label}-$(basename "$f")"
+  done
+done
 
 # Run aggregator
 export PATH="$PATH:/root/.bun/bin"
@@ -196,6 +228,7 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 - `references/2026-05-31-cron-run-evening.md` — Evening run notes
 - `references/2026-05-31-cron-run-manual.md` — Manual cron run 2026-05-31 afternoon: cp-only sync (no rm), 22 mem files, deploy `8f19ea4a`, confirmed rm-blocked-gate workarounds
 - `references/2026-05-31-deploy-notes.md` — Deploy-specific notes
+- `references/2026-05-31-cron-run-8-full-refresh.md` — Run 8 (2026-05-31): full sync with claude-project memory dirs, 32 files/2 ws, deploy `2936dec9`
 - `references/hermes-memory-integration.md` — Hermes memory integration details
 - `references/agentic-os-setup.md` — Initial setup notes
 
@@ -213,10 +246,15 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
     "/tmp/hermes-memory",
   ];
   ```
-  The direct scans of `/root/ulak/memories` and `/root/.hermes/memories` are the primary sources. `/tmp/hermes-memory` is scanned as a bonus but is effectively redundant — the aggregator picks up the same files from the direct paths. A healthy run with all paths active shows ~18 total memory files and 2 workspaces (hermes + claude). If the file count is ~22+, check for unprefixed duplicate files in `/tmp/hermes-memory/` (same basename as in the direct paths).
+  The direct scans of `/root/ulak/memories` and `/root/.hermes/memories` are the primary sources. `/tmp/hermes-memory` is scanned as a bonus. Expected file counts depend on sync mode:
+  - **Full sync** (claude-project dirs copied to `/tmp`): ~32 files / 2 workspaces
+  - **Minimal sync** (hermes/ulak only in `/tmp`): ~22 files / 2 workspaces
+  - **No `/tmp` sync at all**: ~18 files / 2 workspaces
+  All three counts are correct for their respective sync modes. Do NOT try to "fix" a count that matches the expected range for the sync mode used.
+
 4. **Cron script skips aggregate** — `cron-agentic-deploy.sh` does NOT run `aggregate.ts`. Run full pipeline manually.
 5. **Missing source kind entry** — `src/routes/memory.tsx` has THREE places that enumerate sources (SourceId type, BASE_SOURCES, and the SourceFilter pillar). All three must be updated or the filter tab won't appear on the dashboard.
-6. **`/tmp/hermes-memory` sync is redundant (by design as of May 2026)** — The aggregator's `parseMemory()` already scans `/root/ulak/memories` and `/root/.hermes/memories` directly. The `/tmp/hermes-memory` scan picks up the same files again, inflating file counts: expect **~22 files** (not 18) in the aggregate output. This is the expected steady state and not an error. The `/tmp` sync step exists in the cron pipeline for forward-compatibility (if the aggregator's direct paths change), but currently produces no new data. Do NOT try to "fix" the 22-count — it's consistent and stable across runs. If you see ~18 files, it means `/tmp/hermes-memory` was skipped, not that the count is "more correct."
+6. **`/tmp/hermes-memory` sync is redundant (by design as of May 2026)** — The aggregator's `parseMemory()` already scans `/root/ulak/memories` and `/root/.hermes/memories` directly. The `/tmp/hermes-memory` scan picks up the same files again, inflating file counts. This is the expected steady state and not an error. The `/tmp` sync step exists in the cron pipeline for forward-compatibility (if the aggregator's direct paths change), but currently produces no new data.
 
 7. **Worker vs Container: Worker wins**. Check `cf-worker` header.
 8. **Nixpacks `[start]`**: causes errors. Use `[phases.build]` only.
