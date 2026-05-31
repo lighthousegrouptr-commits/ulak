@@ -312,7 +312,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Run Log
 
-See `references/2026-05-31-cron-run-full-refresh-deploy-r4.md` for the latest full refresh + deploy run notes (Version ID `564d51e9`, 36 files, 10.69s build, zero errors).
+See `references/2026-05-31-cron-run-full-refresh-deploy-r5.md` for the latest full refresh + deploy run notes (Version ID `2cb9047d`, 18 files, 26s build, zero errors).
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
