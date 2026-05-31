@@ -37,6 +37,18 @@ Do NOT assume a fresh deploy is needed — the app may already be running in a c
 - **Host paths** — `/opt/` for persistent data, `/root/code/` for git repos
 - **Host tools** — `bun`, `node`, `nginx` may or may not be installed; prefer containerized runtimes
 
+## Bun PATH gotcha
+
+**`bun` is NOT on `$PATH` by default on this VPS.** It installs to `/root/.bun/bin/bun`. Every
+`bun` invocation must either:
+1. Export PATH first: `export PATH="/root/.bun/bin:$PATH"`
+2. Use the full path: `/root/.bun/bin/bun run build`
+
+This also affects `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, etc.
+
+`wrangler` is similarly not directly on PATH — use `npx wrangler deploy` (which works because
+`npx` comes with the `/usr/bin/node` + `/usr/bin/npm` that ARE on PATH).
+
 ## Docker exec access
 
 `docker exec` into containers is **frequently blocked by tool policy** (approval gate). This was a
