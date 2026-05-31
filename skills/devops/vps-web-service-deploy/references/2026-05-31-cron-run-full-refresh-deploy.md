@@ -9,11 +9,11 @@
 
 ### 1. Memory Sync
 - Source paths verified:
-  - `/root/ulak/memories/` ✅ (MEMORY.md, USER.md)
-  - `/root/.hermes/memories/` ✅ (MEMORY.md, USER.md)
   - `/root/ulak/memory/` ❌ does NOT exist (singular — common mistake)
   - `/root/.hermes/memory/` ❌ does NOT exist (singular — common mistake)
-- Copied latest memories + SOUL.md into `/tmp/hermes-memory/`
+  - `/root/.hermes/memories/` ✅ (MEMORY.md, USER.md — 2 files)
+  - `/root/ulak/memories/` ✅ (MEMORY.md, USER.md — 2 files)
+- Copied all memory files into `/tmp/hermes-memory/`
 - Final count: 20 .md files in `/tmp/hermes-memory/`
 
 ### 2. Aggregator
@@ -35,24 +35,26 @@ Output:
 ```
 export PATH="/root/.bun/bin:$PATH" && bun run build
 ```
-- Client + SSR built in ~22s (vite 7.3.3)
+- Client built in 12.62s (vite 7.3.3)
+- SSR built in 12.82s
 - Only pre-existing chunk-size warnings (three.js/force-graph)
 
 ### 4. Deploy
 ```
 export PATH="/root/.bun/bin:$PATH" && wrangler deploy
 ```
+- wrangler v4.86.0 (update available: v4.95.0)
 - Uploaded 21 new/modified assets + 29 worker modules
-- Total: 6032.69 KiB / gzip: 1167.80 KiB
-- Worker startup time: 13 ms
-- **Version ID:** `9d184325-5f97-48b3-bef9-424ab5367a52`
+- Total: 6032.64 KiB / gzip: 1167.80 KiB
+- Worker startup time: 15 ms
+- **Version ID:** `ebfaf653-29e0-4124-8568-e61ae68a8e83`
 - **URL:** https://tanstack-start-app.lighthousegrouptr.workers.dev
 
 ---
 
 ## Key Findings
+- Pipeline is stable and reproducible — second consecutive error-free run with identical 36-file count
 - `wrangler` is directly on VPS PATH at `/usr/bin/wrangler` (v4.86+) — no `npx` needed
-- 36 memory files confirm Claude project dirs are being scanned alongside Hermes memory dirs
-- No duplicate files despite overlap between /tmp/hermes-memory and source dirs
-- First fully error-free end-to-end run with 36-file aggregator count
-- Confirmed: /root/ulak/memory/ and /root/.hermes/memory/ (singular) do NOT exist — always use plural memories/
+- Build times improved (~12.6s/12.8s vs ~22s previously) — likely warm Vite cache
+- Confirmed: /root/ulak/memory/ and /root/.hermes/memory/ (singular) do NOT exist — always use plural `memories/`
+- Aggregator already has Hermes memory paths configured (lines 1474-1482 in aggregate.ts) — no code changes needed for future runs

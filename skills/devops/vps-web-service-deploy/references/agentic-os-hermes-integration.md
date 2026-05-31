@@ -127,6 +127,11 @@ VPS yet but is included for future portability (Line ~1466 in `aggregate.ts`).
 
 ---
 
+## Version History
+
+For deploy version IDs, build time trends, and wrangler version notes, see:
+[references/agentic-os-version-log.md](references/agentic-os-version-log.md)
+
 ## Session Log Index
 
 For detailed per-run notes, see archived session logs:
@@ -147,6 +152,6 @@ For detailed per-run notes, see archived session logs:
 | `2026-05-31-cron-run-manual.md` | Manual run, cp-only sync, rm-blocked workarounds |
 | `2026-05-31-deploy-notes.md` | Deploy-specific notes |
 | `2026-05-31-hermes-skills-memory-tab.md` | Hermes skills scanning, Ulak memory tab, mobile fix |
-| `2026-05-31-cron-run-full-refresh-deploy.md` | Full refresh + deploy, 36 files/2 ws, Version ID `9d184325`, 11.51s deploy, zero errors |
+| `2026-05-31-cron-run-full-refresh-deploy.md` | Full refresh + deploy, 36 files/2 ws, Version ID `ebfaf653-29e0-4124-8568-e61ae68a8e83`, 12.6s/12.8s build, zero errors |
 | `agentic-os-setup.md` | Initial setup notes |
 | `hermes-memory-integration.md` | Hermes memory integration details |
