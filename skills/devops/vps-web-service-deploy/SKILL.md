@@ -1,6 +1,6 @@
 ---
 name: vps-web-service-deploy
-description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, and nginx fallbacks.
+description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
 version: 1.3.0
 platforms: [linux]
 metadata:
@@ -355,3 +355,10 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 (`/app/dist/client`, not `../app/dist/client`).
 
 **When to use `docker cp` instead:** When the deployed app already exists and you don't want to trigger a full rebuild. Steps: prepare Caddyfile locally → `scp` to host → `docker cp` into container → `docker restart`.
+
+## Reference Files
+
+- `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
+- `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS, deploy commands
+- `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis and Worker deploy workflow
+- `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)

@@ -1,0 +1,144 @@
+# Agentic OS — Hermes Skills & Memory Integration
+
+**Source**: Consolidated from `agentic-os-deploy` skill (archived 2026-05-31).
+**Applies to**: `lighthousegrouptr-commits/agentic-os` on `agentic.lighthousegroup.net.tr`
+
+---
+
+## Adding a New Source Filter Tab to the Memory Graph
+
+When a new memory source (e.g. `hermes`) is added to the aggregator, the UI won't automatically show a filter tab. **Six files/locations** need coordinated changes:
+
+| # | File | What to add |
+|---|------|-------------|
+| 1 | `scripts/aggregate.ts` `MemSource` type (~line 628) | Add the new source string literal |
+| 2 | `scripts/aggregate.ts` source list builder (~line 1600) | `const kind` must recognize the new source label prefix |
+| 3 | `scripts/aggregate.ts` file node builder (~line 1546) | `const fSource` must check `workspaceId.startsWith("new-source-")` |
+| 4 | `scripts/aggregate.ts` workspace node builder (~line 1507) | `const wsSource` must check workspace ID prefix |
+| 5 | `src/components/memory-graph-3d.tsx` filter `matches()` (~line 382) | `if (allowedCats.has("new-source") && n.source === "new-source") return true;` |
+| 6 | `src/routes/memory.tsx` | Three sub-locations (see below) |
+
+### memory.tsx — Three sub-locations:
+
+1. **Type + constants** (~lines 36-38): Add to `SourceId` union, `BASE_SOURCES`, and `PINECONE_SOURCES`
+2. **`matchesActive()`** (~lines 68-76): Add `if (sourceTag === "new-source" && activeSet.has("new-source")) return true;`
+3. **`SourceFilter` component pills** (~lines 329-356): Add conditional pill entry:
+   ```typescript
+   ...(liveData?.memory?.nodes?.some((n: any) => n.source === "new-source")
+     ? [{
+         id: "new-source" as const,
+         label: "Display Name",
+         color: "#HEX",
+         tooltip: "Description",
+       }]
+     : []),
+   ```
+
+**All six must be updated together** or the filter tab won't appear.
+
+---
+
+## Hermes Agent Skills Integration
+
+The dashboard scans Hermes agent skills from `/root/.hermes/skills/` alongside `~/.claude/skills/`:
+
+- `aggregate.ts` `scanInstalledSkills()` calls `scanSkillsFromDir("/root/.hermes/skills")` alongside `~/.claude/skills/`
+- Each subdirectory with a `SKILL.md` becomes an installed skill
+- Hermes skills get `uses7d: 0` (usage tracked by Hermes platform, not Claude Code logs)
+- Default minutes are in `src/lib/time-saved.ts` `DEFAULT_MINUTES`
+- Hourly rate default: $50/hr
+
+**Key difference**: Claude Code skills (`~/.claude/skills/`) have usage tracked via JSONL logs; Hermes skills (`/root/.hermes/skills/`) have no usage logs — `lastUsed` displays as "installed".
+
+---
+
+## Hermes Memory Integration — Sync Procedure
+
+### Verified Source Paths (May 2026)
+
+| Path | Exists? | Notes |
+|------|---------|-------|
+| `/root/ulak/memories/` | Yes | Ulak snapshot (MEMORY.md, USER.md), synced every 30 min |
+| `/root/.hermes/memories/` | Yes | Live Hermes memories (also MEMORY.md, USER.md) |
+| `/root/.hermes/memory/` | No | Singular — does NOT exist |
+| `/root/ulak/memory/` | No | Singular — does NOT exist |
+
+### Memory Sync Commands
+
+**Full sync (all sources including Claude project dirs):**
+```bash
+mkdir -p /tmp/hermes-memory
+for f in /root/.hermes/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/hermes-$(basename "$f")"
+done
+for f in /root/ulak/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
+done
+for proj_dir in /root/.claude/projects/*/memory; do
+  [ -d "$proj_dir" ] || continue
+  proj_label=$(basename "$(dirname "$proj_dir")" | sed 's/^-//')
+  for f in "$proj_dir"/*.md; do
+    [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/claude-project-${proj_label}-$(basename "$f")"
+  done
+done
+```
+
+**Minimal sync (hermes/ulak only):**
+```bash
+mkdir -p /tmp/hermes-memory
+for f in /root/.hermes/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/hermes-$(basename "$f")"
+done
+for f in /root/ulak/memories/*.md; do
+  [ -f "$f" ] && cp -f "$f" "/tmp/hermes-memory/ulak-$(basename "$f")"
+done
+```
+
+### Expected Aggregator Output
+
+| Sync Mode | Files | Workspaces |
+|-----------|-------|------------|
+| Full (with claude-project) | ~32 | 2 |
+| Minimal (hermes/ulak only) | ~22 | 2 |
+| No /tmp sync | ~18 | 2 |
+
+---
+
+## Full Refresh Pipeline
+
+```bash
+# 1. Sync memories (see above)
+# 2. Aggregate
+cd /root/code/agentic-os && export PATH="$PATH:/root/.bun/bin" && bun run scripts/aggregate.ts
+# 3. Build
+export PATH="$PATH:/root/.bun/bin" && bun run build
+# 4. Deploy
+source /root/.profile && cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+```
+
+**Always `source /root/.profile` first** — `CLOUDFLARE_API_TOKEN` is not available in cron/unattended sessions otherwise.
+
+---
+
+## Session Log Index
+
+For detailed per-run notes, see archived session logs:
+
+| File | Content |
+|------|---------|
+| `2026-05-30-cron-deploy.md` | First successful end-to-end cron run |
+| `2026-05-30-hermes-memory-path-fix.md` | Memory dir singular→plural bug fix |
+| `2026-05-31-full-refresh.md` | Two full refresh runs on 2026-05-31 |
+| `2026-05-31-cron-run-3.md` | Node.js v20→v24 upgrade, aggregator results |
+| `2026-05-31-cron-run-4.md` | Token sourcing from `.profile`, inline `-e`/`-c` blocked |
+| `2026-05-31-cron-run-5.md` | Run 5 notes |
+| `2026-05-31-cron-run-6.md` | Run 6 notes |
+| `2026-05-31-cron-run-7.md` | Run 7 notes |
+| `2026-05-31-cron-run-8-full-refresh.md` | Full sync with claude-project dirs, 32 files/2 ws |
+| `2026-05-31-cron-run-auto.md` | Auto cron run |
+| `2026-05-31-cron-run-evening.md` | Evening run notes |
+| `2026-05-31-cron-run-manual.md` | Manual run, cp-only sync, rm-blocked workarounds |
+| `2026-05-31-deploy-notes.md` | Deploy-specific notes |
+| `2026-05-31-hermes-skills-memory-tab.md` | Hermes skills scanning, Ulak memory tab, mobile fix |
+| `agentic-os-setup.md` | Initial setup notes |
+| `hermes-memory-integration.md` | Hermes memory integration details |
