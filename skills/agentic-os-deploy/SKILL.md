@@ -184,8 +184,8 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
 - `references/2026-05-31-hermes-skills-memory-tab.md` — Session notes: Hermes skills scanning, Ulak memory tab, default minutes ($50/hr), mobile input fix
 - `references/2026-05-30-cron-deploy.md` — Cron deploy session notes: full pipeline run, env gotchas (bun PATH, Node v22 path, real memory source path)
 - `references/2026-05-30-hermes-memory-path-fix.md` — Session notes: `hermesMemDirs` path bug fix (singular→plural), multi-source sync with collision-avoidance naming, bun PATH workaround
-
-## Pitfalls
+- `references/2026-05-31-cron-run-4.md` — Run 4 (2026-05-31): token sourcing from `.profile`, inline `-e`/`-c` blocked in cron, 22 mem files/2 ws, deploy `4a03834d`
+- `references/2026-05-31-cron-run-auto.md`
 
 1. **`bun` not on PATH** — use `/root/.bun/bin/bun` or export PATH. `which bun` returns nothing by default.
 2. **Wrong memory path** — Use `/root/ulak/memories/` and `/root/.hermes/memories/` (both plural, WITH trailing 's'). Both exist as of May 2026. The singular forms (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist as real directories. The aggregator was patched in May 2026 to include `/root/.hermes/memories` — if you're looking at old documentation referencing singular paths, it's stale.
@@ -247,4 +247,27 @@ The dashboard now also scans Hermes agent skills from `/root/.hermes/skills/` al
    - **Skip delete entirely**: `mkdir -p /tmp/hermes-memory` (idempotent) and `cp -f` files in place — overwrite is harmless since memory content is identical each run.
    - **Avoid `rm -rf` on any `/tmp` path in scripts** — always assume it will be blocked in unattended/cron context.
 
-14. **Hermes skills show** — Skills from `/root/.hermes/skills/` have no usage logs, so `lastUsed` displays as "installed" instead of a relative timestamp. This is expected and correct. Do NOT try to derive usage from Hermes platform logs — the aggregate only reads Claude Code JSONL logs.
+14. **`CLOUDFLARE_API_TOKEN` not in cron/unattended environment** — The `CLOUDFLARE_API_TOKEN` env var is NOT automatically available in cron or unattended sessions, even if it's set in the interactive shell. Running `wrangler deploy`, `npx wrangler deploy`, or `wrangler whoami` will fail with "not authenticated" or "set a CLOUDFLARE_API_TOKEN environment variable".
+
+   **Fix**: Source the profile file that holds the token before deploying:
+   ```bash
+   source /root/.profile
+   export PATH="/root/.bun/bin:$PATH"
+   wrangler deploy
+   ```
+   The token lives in `/root/.profile` (line: `export CLOUDFLARE_API_TOKEN=cfut_N...`). Confirmed working in cron context on 2026-05-5-31.
+
+   **Full cron-safe deploy command**:
+   ```bash
+   source /root/.profile && cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+   ```
+
+   **Full cron-safe deploy command**:
+   ```bash
+   source /root/.profile && cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && wrangler deploy
+   ```
+   See `references/2026-05-31-cron-run-4.md` for full session notes.
+
+   **Do NOT assume the token is set** — always explicitly source the profile or export the token in any script that calls `wrangler deploy`.
+
+15. **Hermes skills show** — Skills from `/root/.hermes/skills/` have no usage logs, so `lastUsed` displays as "installed" instead of a relative timestamp. This is expected and correct. Do NOT try to derive usage from Hermes platform logs — the aggregate only reads Claude Code JSONL logs.
