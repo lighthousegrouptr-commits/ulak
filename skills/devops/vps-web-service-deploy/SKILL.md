@@ -393,7 +393,5 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Full refresh + deploy run 6: Version ID `b0c48d1a`, 18 files, ~26s build, zero errors
 - `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Full refresh + deploy run 9: Version ID `93b09ad8`, 18 files, 21.79s build, zero errors
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
-- `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Full refresh + deploy run 6: Version ID `b0c48d1a`, 18 files, ~26s build, zero errors
 - `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Full refresh + deploy run 9: Version ID `93b09ad8`, 18 files, 21.79s build, zero errors
-- `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Full refresh + deploy run 6: Version ID `b0c48d1a`, 18 files, ~26s build, zero errors
-- `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Full refresh + deploy run 9: Version ID `93b09ad8`, 18 files, 21.79s build, zero errors
+- `references/2026-06-01-cron-run-full-refresh-deploy-r10.md` — Full refresh + deploy run 10: Version ID `91282ee8`, 18 files, 22.62s build, zero errors
