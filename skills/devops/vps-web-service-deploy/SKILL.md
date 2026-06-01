@@ -176,9 +176,11 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`wrangler deploy`** (bare) — wrangler is pre-installed at `/usr/bin/wrangler` on the VPS. Use bare `wrangler deploy` (preferred, faster). `npx wrangler deploy` also works as a fallback but adds unnecessary resolution overhead.
 
-- **Task spec path errors**: Cron task descriptions may reference `/root/ulak/memory/` (singular) as the Hermes memory source. This path does NOT exist. The correct paths are `/root/ulak/memories/` (ulak snapshot, plural) and `/root/.hermes/memories/` (live source). Always verify paths with `ls` before copying. This has been wrong in 5+ consecutive task specs — do not trust the path literally. Aggressively correct this in your execution: when the task says "sync from `/root/ulak/memory/`", silently use `/root/ulak/memories/` instead.
+## Security scanner blocks `rm -rf` on `/tmp/hermes-memory/`
 
-- **Security scanner blocks `rm -rf` on `/tmp/hermes-memory/`**: The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir. To clean old files: overwrite them in place using the `write_file` tool (write empty or minimal content to replace stale files). Accumulated files in `/tmp/hermes-memory/` cause no harm — the aggregate deduplicates by source path.
+The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15, r21). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir.
+
+**Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r21 with 9 stale .md files still present (all processed correctly alongside the 2 fresh copies).
 
 - **Python pipe-to-interpreter blocked**: `cat file | python3 -c "..."` is blocked by the host security scanner (pipe-to-interpreter = HIGH). Workaround: use `execute_code` with Python `open()` to read files instead of piping through the terminal. The Python execution path bypasses the scanner.
 
@@ -403,7 +405,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Version Log
 
-See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r20), including Version IDs, file counts, and build times.
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r21), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
