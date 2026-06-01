@@ -5,14 +5,15 @@
 | Run | Date | Version ID | Files | Build | Errors |
 |---|---|---|---|---|---|
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
+| r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 
-## Current State (r14)
+## Current State (r15)
 
-- **Version ID**: `27f74434-8c48-4a2d-aa03-ed7f4102d720`
+- **Version ID**: `d9dc598a-7259-4ba9-841a-718dfa3eee86`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory**: 22 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.97s + SSR 11.43s = 23.40s total
-- **Deploy**: 29 uploaded (73 cached), 8696 KiB (1907 KiB gzip), 13ms startup, 53 modules
+- **Memory**: 20 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Build**: client 11.92s + SSR 6.66s = 18.58s total
+- **Deploy**: 21 uploaded (54 cached), 6085 KiB (1172 KiB gzip), 15ms startup, 29 modules
 
 ## r14 Fix — Tanstack Start SSR wrangler.jsonc
 
