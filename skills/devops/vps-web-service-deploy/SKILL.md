@@ -310,9 +310,9 @@ pitfalls, and `STALE_DAYS` tuning.
 
 The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Hermes source dirs directly, so the `/tmp/hermes-memory/` staging step is supplementary — useful as a consolidation point but not strictly required for the aggregator to pick up Hermes memories.
 
-## Run Log
+## Version Log
 
-See `references/2026-05-31-cron-run-full-refresh-deploy-r5.md` for the latest full refresh + deploy run notes (Version ID `2cb9047d`, 18 files, 26s build, zero errors).
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r6), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 

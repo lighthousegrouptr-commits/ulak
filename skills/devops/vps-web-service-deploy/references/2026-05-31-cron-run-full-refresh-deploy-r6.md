@@ -1,20 +1,38 @@
 # Full Refresh + Deploy Run 6 — 2026-05-31
 
-- **Version ID:** `5fb78b01-a404-4e9d-a94e-9fde02ead64c`
-- **URL:** https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory files picked up by aggregator:** 18 files / 2 workspaces / 14 events
-  - `/root/ulak/memories/` → MEMORY.md, USER.md
-  - `/root/.hermes/memories/` → MEMORY.md, USER.md
-  - Synced to `/tmp/hermes-memory/` → 2 files (MEMORY.md, USER.md)
-  - `/root/.hermes/memory/` → does NOT exist (singular — confirmed absent again)
-- **Aggregator:** 2 Claude projects, 1,458 assistant messages, 8 installed skills, 6 runs in last 7d
-- **Value extracted 7d:** $151.82
-- **Build:** Clean, 11.73s client + server, zero errors
-- **Deploy:** 21 new assets uploaded, 6 MB total / 1.17 MB gzip, Worker Startup 14 ms
-- **Errors:** None
+## Summary
+
+| Field | Value |
+|---|---|
+| Version ID | `b0c48d1a-0d64-42e3-a1de-08e089d5017a` |
+| Build time | 14.47s (client) + 11.37s (SSR) = ~26s total |
+| Memory files | 18 .md files across all sources |
+| Workspaces | 2 |
+| Events | 14 |
+| Errors | 0 |
+
+## Memory Source Breakdown
+
+| Source | Files | Notes |
+|---|---|---|
+| `/root/.claude/projects/-root/memory/` | 12 | Claude project memories |
+| `/root/ulak/memories/` | 2 | MEMORY.md, USER.md |
+| `/root/.hermes/memories/` | 2 | MEMORY.md, USER.md |
+| `/tmp/hermes-memory/` | 2 | Staging copy (pre-populated before aggregate) |
+
+Aggregate output: `18 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events`
+
+## Deploy Output
+
+- Uploaded 21 new/modified assets (54 already cached)
+- 29 worker modules, 6021 KiB total (1167 KiB gzip)
+- Worker startup: 22ms
+- Deploy URL: https://tanstack-start-app.lighthousegrouptr.workers.dev
+- Upload time: 11.91s, triggers: 2.02s
 
 ## Notes
 
-- `bun` PATH needed manual export again: `export PATH="/root/.bun/bin:$PATH"` — this is a persistent VPS characteristic, not a transient issue. Documented in SKILL.md already.
-- The aggregate.ts memory source paths are already configured correctly (lines 1474-1482) — scans `/root/ulak/memories`, `/root/.hermes/memories`, `/root/.hermes/memory`, `/tmp/hermes-memory`.
-- No new pitfalls or corrections. Routine run.
+- Standard cron-triggered full refresh, no anomalies
+- Memory sync: `~/.hermes/memories/` → `/tmp/hermes-memory/` confirmed working
+- All four Hermes memory source dirs remain configured in `aggregate.ts` (lines 1474-1482)
+- No changes to pipeline or config since r5
