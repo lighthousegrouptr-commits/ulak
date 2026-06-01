@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.6.0
+version: 1.7.0
 platforms: [linux]
 metadata:
   hermes:
@@ -46,8 +46,36 @@ Do NOT assume a fresh deploy is needed — the app may already be running in a c
 
 This also affects `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, etc.
 
-`wrangler` is directly available on VPS PATH at `/usr/bin/wrangler` (v4.90.0, update available to v4.95.0).
+## Terminal tool loop protection
+
+The terminal tool has a **same-tool-failure guard**: if the same tool fails 3 times in one turn, a warning fires and you must diagnose before retrying. On this VPS, this commonly happens with `bun` commands because `bun` is not on `$PATH`.
+
+**Pattern to avoid:**
 ```
+terminal("bun run build")           # fails: bun not found
+terminal("which bun")               # fails: not on PATH
+terminal("bun run build")           # fails again → triggers loop warning
+```
+
+**Fix:** Always use the absolute path or export PATH in the same command:
+```bash
+export PATH="/root/.bun/bin:$PATH" && bun run build
+# or
+/root/.bun/bin/bun run build
+```
+
+This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, `bun install`, etc.
+
+## wrangler version tracking
+
+| Run | wrangler version | update available |
+|---|---|---|
+| r20 | v4.86.0 | v4.96.0 |
+| r16 | v4.90.0 | v4.95.0 |
+
+Non-critical wrangler updates do not affect deploy success. Use bare `wrangler deploy` (on PATH at `/usr/bin/wrangler`).
+
+```bash
 wrangler deploy     # uploads to Cloudflare Workers CDN directly — preferred
 npx wrangler deploy # also works as fallback when PATH is not configured
 ```
@@ -374,7 +402,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Version Log
 
-See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r15), including Version IDs, file counts, and build times.
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r20), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
@@ -451,12 +479,8 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS, deploy commands
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis and Worker deploy workflow
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
-- `references/agentic-os-version-log.md` — Full deploy history (r1–r15): Version IDs, file counts, build times
+- `references/agentic-os-version-log.md` — Full deploy history (r1–r20): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
-- `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Run 6: Version ID `b0c48d1a`, 18 files, ~26s build
-- `references/2026-06-01-cron-run-full-refresh-deploy-r8.md` — Run 8: Version ID `274b1973`, 18 files, 22.08s build
-- `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Run 9: Version ID `93b09ad8`, 18 files, 21.79s build
-- `references/2026-06-01-cron-run-full-refresh-deploy-r10.md` — Run 10: Version ID `91282ee8`, 18 files, 22.62s build
-- `references/2026-06-01-cron-run-full-refresh-deploy-r12.md` — Run 12: Version ID `1dd87104`, 18 files, 23.67s build; terminal cp/mkdir to `/tmp/hermes-memory/` worked without scanner block
-- `references/2026-06-01-cron-run-full-refresh-deploy-r13.md` — Run 13: Version ID `783db393`, 20 files, 22.97s build; `~/.claude/memory/` confirmed absent, project-memory-dir scan picks up 12 files from `-root/memory/`
+- `references/2026-06-01-cron-run-full-refresh-deploy-r20.md` — Run 20: Version ID `3d22dc78`, 24 files, ~18s build, identical Hermes/Ulak memory confirmed
+- `references/2026-06-01-cron-run-full-refresh-deploy-r19.md` — Run 19: Version ID `0eea010d`, 22 files, ~18s build
 - `references/2026-06-01-cron-run-full-refresh-deploy-r16.md` — Run 16: Version ID `aebc499e`, 20 files, 21.84s build; `npx wrangler deploy` also works (resolves v4.90.0), but bare `wrangler deploy` preferred as wrangler is on PATH at `/usr/bin/wrangler`
