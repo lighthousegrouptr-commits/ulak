@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.3.0
+version: 1.4.0
 platforms: [linux]
 metadata:
   hermes:
@@ -140,6 +140,8 @@ COPY /app/Caddyfile /etc/caddy/Caddyfile
 The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **Requires sudo** — will trigger approval gates.
 
 ## Pitfalls
+
+- **Decision fatigue**: Levent struggles when offered multiple options (e.g. "Docker or Nixpacks?", "A, B, or C?"). For config/deploy decisions: decide yourself, state the choice and its rationale in one sentence, move on. Don't present option menus. Similarly, don't assume time differences — always check Turkey time with `TZ='Europe/Istanbul' date`. See `/root/ulak/memories/USER.md` for full preference list.
 
 - **Python pipe-to-interpreter blocked**: `cat file | python3 -c "..."` is blocked by the host security scanner (pipe-to-interpreter = HIGH). Workaround: use `execute_code` with Python `open()` to read files instead of piping through the terminal. The Python execution path bypasses the scanner.
 
@@ -314,7 +316,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Version Log
 
-See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r6), including Version IDs, file counts, and build times.
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r11), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
@@ -390,8 +392,10 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
 - `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS, deploy commands
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis and Worker deploy workflow
-- `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Full refresh + deploy run 6: Version ID `b0c48d1a`, 18 files, ~26s build, zero errors
-- `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Full refresh + deploy run 9: Version ID `93b09ad8`, 18 files, 21.79s build, zero errors
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
-- `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Full refresh + deploy run 9: Version ID `93b09ad8`, 18 files, 21.79s build, zero errors
-- `references/2026-06-01-cron-run-full-refresh-deploy-r10.md` — Full refresh + deploy run 10: Version ID `91282ee8`, 18 files, 22.62s build, zero errors
+- `references/agentic-os-version-log.md` — Full deploy history (r1–r11): Version IDs, file counts, build times
+- `references/2026-05-31-cron-run-full-refresh-deploy-r6.md` — Run 6: Version ID `b0c48d1a`, 18 files, ~26s build
+- `references/2026-06-01-cron-run-full-refresh-deploy-r8.md` — Run 8: Version ID `274b1973`, 18 files, 22.08s build
+- `references/2026-06-01-cron-run-full-refresh-deploy-r9.md` — Run 9: Version ID `93b09ad8`, 18 files, 21.79s build
+- `references/2026-06-01-cron-run-full-refresh-deploy-r10.md` — Run 10: Version ID `91282ee8`, 18 files, 22.62s build
+- `references/2026-06-01-cron-run-full-refresh-deploy-r11.md` — Run 11: Version ID `a3141938`, 18 files, 23.29s build

@@ -14,17 +14,18 @@
 | r8 | 2026-06-01 | `274b1973` | 18 | 22.08s | 0 |
 | r9 | 2026-06-01 | `93b09ad8` | 18 | 21.79s | 0 |
 | r10 | 2026-06-01 | `91282ee8` | 18 | 22.62s | 0 |
+| r11 | 2026-06-01 | `a3141938` | 18 | 23.29s | 0 |
 
 \* r1–r4 reported 36 files due to stale duplication in `/tmp/hermes-memory/`. r5+ did a clean wipe first → 18 unique files (correct count).
 
-## Current State (r10)
+## Current State (r11)
 
-- **Version ID**: `91282ee8-d188-4529-a25b-747a2d054478`
+- **Version ID**: `a3141938-4316-41fc-bcf3-e633293fc56b`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.09s + SSR 11.53s = 22.62s total
-- **Deploy**: 21 uploaded (54 cached), 6021 KiB (1167 KiB gzip), 22ms startup
-- **Note**: Confirmed `bun` PATH export and Python pipe-to-interpreter workaround from r8+r9 still needed.
+- **Build**: client 11.53s + SSR 11.76s = 23.29s total
+- **Deploy**: 21 uploaded (54 cached), 6021 KiB (1167 KiB gzip), 16ms startup
+- **Note**: All paths and workarounds from r5–r10 remain stable. No new issues.
 
 ## Pipeline Steps (canonical)
 
