@@ -305,6 +305,31 @@ rm -f .wrangler/deploy/config.json dist/server/wrangler.json
 
 For the `agentic-os` app, the **Cloudflare Worker** is the correct deploy target (not Dokploy). The Worker natively supports Tanstack Start SSR. Dokploy + Nixpacks was a red herring — the app never worked correctly through Dokploy because of the SSR/static mismatch.
 
+## Build prerequisite: placeholder `dist/server/index.js` (CRITICAL)
+
+**On a clean checkout or after `rm -rf dist`, `bun run build` will FAIL** with:
+```
+Error: The provided Wrangler config main field (.../dist/server/index.js) doesn't point to an existing file
+```
+The `@cloudflare/vite-plugin` config hook validates `main` in `wrangler.jsonc` **before** Vite runs. If `dist/server/index.js` doesn't exist yet, the build never starts.
+
+**Workaround — always create the placeholder before building:**
+```bash
+mkdir -p dist/server
+echo 'export default { fetch: () => new Response("placeholder") };' > dist/server/index.js
+export PATH="/root/.bun/bin:$PATH"
+bun run build   # Vite overwrites placeholder with real bundle
+```
+
+**When this applies:**
+- After `rm -rf dist` (clean rebuild)
+- Fresh clone where `dist/` was never built
+- After `git checkout` that removes generated files
+
+**When NOT needed:** Incremental rebuilds where `dist/server/` already exists from a previous build.
+
+This step should be done immediately before `bun run build` (after any pre-deploy wrangler config cleanup).
+
 ## Pre-deploy cleanup: remove conflicting wrangler configs
 
 Before every `wrangler deploy`, check for and remove stale wrangler config files that can

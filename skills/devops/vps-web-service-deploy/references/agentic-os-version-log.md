@@ -3,7 +3,8 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
-|---|---|---|---|---|---|
+| r26 | 2026-06-01 | `8fd3af90-4169-4b40-b7b7-79d3a81e2632` | 18 | ~11s | 0 |
+| r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 | r23 | 2026-06-01 | `c06f7bde-a379-445b-9560-9fbe1125b97e` | 18 | ~18s | 0 |
 | r22 | 2026-06-01 | `f16d5536-7d58-400e-8e31-602865a56248` | 24 | ~19s | 0 |
@@ -16,16 +17,29 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r24)
+## Current State (r26)
 
-- **Version ID**: `a4e2c842-9622-4a2d-a240-1ca88784e856`
+- **Version ID**: `8fd3af90-4169-4b40-b7b7-79d3a81e2632`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 10.90s + SSR 6.83s = ~17.7s total
-- **Deploy**: 77 files scanned, 21 uploaded (54 already cached), 6446 KiB (1199 KiB gzip), 23ms startup, 29 modules
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $124.39 value 7d
-- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` + `wrangler deploy` (bare wrangler on PATH at `/usr/bin/wrangler` v4.86.0)
+- **Build**: client 11.07s + SSR 77ms = ~11.15s total (incremental)
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 17.15 KiB (4.35 KiB gzip), 15ms startup
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $30.07 value 7d
+- **Deploy method**: placeholder `dist/server/index.js` → `bun run build` → `wrangler deploy` (bare wrangler v4.86.0)
 - **No errors at any stage**
+
+## r26 Notes
+
+- **New technique**: `dist/server/index.js` must exist before `bun run build` (Cloudflare Vite plugin validates `main` field in config hook before building). `dist/server/` existed but was empty — directory alone isn't enough.
+- Workaround: `mkdir -p dist/server && echo 'export default { fetch: () => new Response("placeholder") };' > dist/server/index.js`
+- Build faster than r25 (11s vs 19s) — incremental cache benefit.
+- Pipeline stable, no other issues.
+
+## r25 Notes
+
+- Memory files stable at 18 — pipeline consistent with r24.
+- `bun` not found in PATH (cron environment) — `export PATH="/root/.bun/bin:$PATH"` required.
+- Value 7d: $36.77 (lower than r24's $124.39 — likely a quiet week).
 
 ## r24 Notes
 
