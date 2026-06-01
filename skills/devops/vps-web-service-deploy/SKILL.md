@@ -455,4 +455,4 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/2026-06-01-cron-run-full-refresh-deploy-r10.md` — Run 10: Version ID `91282ee8`, 18 files, 22.62s build
 - `references/2026-06-01-cron-run-full-refresh-deploy-r12.md` — Run 12: Version ID `1dd87104`, 18 files, 23.67s build; terminal cp/mkdir to `/tmp/hermes-memory/` worked without scanner block
 - `references/2026-06-01-cron-run-full-refresh-deploy-r13.md` — Run 13: Version ID `783db393`, 20 files, 22.97s build; `~/.claude/memory/` confirmed absent, project-memory-dir scan picks up 12 files from `-root/memory/`
-- `references/2026-06-01-cron-run-full-refresh-deploy-r15.md` — Run 15: Version ID `d9dc598a`, 20 files, 18.58s build; confirmed `/root/ulak/memory/` (singular) does NOT exist; terminal cp/mkdir still works; SSR build faster (6.66s)
+- `references/2026-06-01-cron-run-full-refresh-deploy-r16.md` — Run 16: Version ID `aebc499e`, 20 files, 21.84s build; `npx wrangler deploy` also works (resolves v4.90.0), but bare `wrangler deploy` preferred as wrangler is on PATH at `/usr/bin/wrangler`
