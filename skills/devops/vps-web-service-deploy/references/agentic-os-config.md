@@ -44,7 +44,8 @@ Default is 10 days. Increase to 30 for less stale noise on rarely-updated files.
 
 ## Deploy
 
-Primary: Cloudflare Worker via `npx wrangler deploy`. No cache purge needed.
+Primary: Cloudflare Worker via `wrangler deploy` (bare, on PATH at `/usr/bin/wrangler`). No cache purge needed.
+`npx wrangler deploy` works as fallback but bare `wrangler deploy` is preferred (faster, no resolution overhead).
 Cron: `agentic-wrangler-deploy` (30min) auto-builds + deploys.
 
 ## live-data.json
