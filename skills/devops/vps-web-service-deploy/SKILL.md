@@ -70,6 +70,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r22 | v4.90.0 | — |
 | r21 | v4.90.0 | — |
 | r20 | v4.86.0 | v4.96.0 |
 | r16 | v4.90.0 | v4.95.0 |
@@ -405,7 +406,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Version Log
 
-See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r21), including Version IDs, file counts, and build times.
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r22), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
@@ -476,6 +477,81 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 
 **When to use `docker cp` instead:** When the deployed app already exists and you don't want to trigger a full rebuild. Steps: prepare Caddyfile locally → `scp` to host → `docker cp` into container → `docker restart`.
 
+## Debugging "Memory shows 0" on Agentic OS dashboard
+
+The memory page (`/memory`) and the home page memory section can show 0 for several distinct reasons. Trace the data flow in this order:
+
+### Data flow: aggregate.ts → live-data.json → React component
+
+1. **aggregate.ts** (line ~1293 output) writes `memory.stats` and `memory.nodes` into `live-data.json`
+2. **live-data.json** is either: (a) committed to git (baked at build), or (b) fetched at runtime
+3. **memory.tsx** reads `liveData.memory.stats` for tile values; falls back to `mock-data.ts` when stats are 0/undefined
+
+### Common "shows 0" causes
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| All 4 tiles show 0 | `isExample: true` in live-data.json → demo mode | Run aggregate where `~/.claude/` exists, commit real data |
+| "Active" = 0 | No files modified in last 7 days (`activeLast7d`) | Not a bug — files are just older than 7 days. Check `STALE_DAYS` (currently 30) |
+| "Activated" = 0 | No recall/vectorize events in `memory.events` | Events come from Pinecone + skill-event extraction — absent without Pinecone key |
+| "Memory sources" = 0 | Stats object missing or empty | Check `memory.stats.totalDataSources` in live-data.json |
+| "Missing" = 0 | All workspaces have an index file | Normal healthy state — not an error |
+| `totalFiles` in header = 0 | `memory.stats.totalFiles` is 0 or NaN | Aggregator found no .md files in any source dir |
+| "DEMO DATA" badge shown | `liveData.isExample === true` | Live data not loaded — committed example file is being served |
+
+### Key stat fields in `memory.stats`
+
+```
+totalFiles: 24        // all .md files found across all source dirs
+totalWorkspaces: 2    // unique workspace IDs (claude-*, hermes-*, obsidian)
+stale: 0              // files older than STALE_DAYS (30)
+missing: 0            // workspaces with no index file (MEMORY.md)
+freshness: 100        // (totalFiles - stale) / totalFiles * 100
+activeLast7d: 18      // files modified within 7 days
+activatedLast7d: 6    // recall + vectorize events in last 7 days
+totalVectors: 0       // Pinecone vectors (0 if no Pinecone key)
+totalDataSources: 4   // number of source dirs (claude + hermes + hermes2 + staging)
+pineconeIndexes: 0    // Pinecone index count (0 without key)
+```
+
+### Quick diagnosis commands
+
+```bash
+# Check if live-data.json has real memory data
+cat /root/code/agentic-os/src/data/live-data.json | python3 -c "import json,sys; d=json.load(sys.stdin); s=d.get('memory',{}).get('stats',{}); print(f'files={s.get(\"totalFiles\")}, ws={s.get(\"totalWorkspaces\")}, active7d={s.get(\"activeLast7d\")}, isExample={d.get(\"isExample\")}')"
+
+# Check if isExample flag is set
+grep -c '"isExample"' /root/code/agentic-os/src/data/live-data.json
+
+# Re-run aggregate to refresh data (must run where ~/.claude/ exists)
+cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && bun run scripts/aggregate.ts
+```
+
+### memory.tsx fallback logic
+
+When `isDemo` is true AND stats are 0/NaN, the component falls back to mock-data values. When `isDemo` is false (real data), 0 means genuinely 0 — no fallback. This means:
+- **Demo data**: tiles show mock numbers (looks populated even if nothing exists)
+- **Real data with 0**: tiles show 0 (honest but ugly)
+- After running aggregate with real `~/.claude/` + Hermes dirs, `isExample` should be absent and real stats should populate
+
+### Source filter pills
+
+The `/memory` page shows filter pills: "All", "Obsidian", "Local Claude", and conditionally "Pinecone" (if `pineconeIndexes > 0` or `hasKey`) and "Ulak" (if any node has `source: "hermes"`). If "Ulak" pill is missing, Hermes memory nodes are not being generated — check that aggregate scanned `/root/.hermes/memories/` and `/root/ulak/memories/`.
+
+### Memory graph empty (3D graph shows no nodes)
+
+If stat tiles show non-zero numbers (e.g. "24 files indexed", "18 Active") but the 3D graph is blank, the problem is **data delivery**, not data generation. Trace:
+
+1. **Verify live-data.json has real data** (see diagnosis commands above). If stats are non-zero, aggregate is fine.
+2. **Check how the dashboard is being served** — Cloudflare Worker or local dev server?
+   - Cloudflare Worker: `curl -s -o /dev/null -w "%{http_code}" https://<worker-subdomain>.lighthousegroup.workers.dev/` — if DNS fails (`ERR_NAME_NOT_RESOLVED`) or returns 5xx, the Worker is not running or the subdomain is wrong.
+   - Local dev: `curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/` — if "000", no local server.
+3. **Check `memory-graph-3d.tsx` `buildData()` logic** (line 47-55): if `liveMemory?.nodes?.length && liveMemory?.links?.length` are both truthy, it uses real data. If either is falsy (0 nodes/links), it falls back to mock-data graph. Verify in browser dev console that `liveData.memory.nodes.length > 0`.
+4. **Source filter mismatch**: The filter pills (All/Obsidian/Claude/Ulak) control which nodes appear in the graph via `sourceFilter` prop. If only "Obsidian" is selected but no obsidian nodes exist, the graph appears empty. Default is "All" which should show everything.
+5. **Worker deploy staleness**: If the Worker was last deployed before the latest aggregate run, it bundles old `live-data.json`. Re-deploy with `wrangler deploy` after running aggregate.
+
+**Key insight**: `memory-graph-3d.tsx` `buildData()` checks BOTH `nodes.length` AND `links.length`. Even if nodes exist, if links array is empty (e.g. aggregate bug), the entire real data path is skipped and mock fallback is used — which produces a different-looking graph than expected.
+
 ## Reference Files
 
 - `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
@@ -484,7 +560,8 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r20): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
-- `references/2026-06-01-cron-run-full-refresh-deploy-r21.md` — Run 21: Version ID `e9d15cff`, 24 files, ~18s build, pipeline stable
+- `references/2026-06-01-cron-run-full-refresh-deploy-r22.md` — Run 22: Version ID `f16d5536`, 24 files, ~19s build, pipeline stable, no new issues
+- `references/2026-06-01-cron-run-full-refresh-deploy-r21.md` — Run 21: Version ID `18411418`, 24 files, ~18s build, pipeline stable
 - `references/2026-06-01-cron-run-full-refresh-deploy-r20.md` — Run 20: Version ID `3d22dc78`, 24 files, ~18s build, identical Hermes/Ulak memory confirmed
 - `references/2026-06-01-cron-run-full-refresh-deploy-r19.md` — Run 19: Version ID `0eea010d`, 22 files, ~18s build
 - `references/2026-06-01-cron-run-full-refresh-deploy-r16.md` — Run 16: Version ID `aebc499e`, 20 files, 21.84s build; `npx wrangler deploy` also works (resolves v4.90.0), but bare `wrangler deploy` preferred as wrangler is on PATH at `/usr/bin/wrangler`

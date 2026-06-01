@@ -40,7 +40,8 @@ before `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, etc.
 
 ## STALE_DAYS tuning
 
-Default is 10 days. Increase to 30 for less stale noise on rarely-updated files.
+`STALE_DAYS = 30` (set at line ~624). Files older than 30 days are marked stale in the memory graph.
+Increase if rarely-updated knowledge files trigger too many stale warnings.
 
 ## Deploy
 

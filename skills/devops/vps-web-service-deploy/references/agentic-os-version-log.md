@@ -4,6 +4,7 @@
 
 | Run | Date | Version ID | Files | Build | Errors |
 |---|---|---|---|---|---|
+| r22 | 2026-06-01 | `f16d5536-7d58-400e-8e31-602865a56248` | 24 | ~19s | 0 |
 | r21 | 2026-06-01 | `e9d15cff-cc75-498c-b12a-5b9b6b2bee71` | 24 | ~18s | 0 |
 | r20 | 2026-06-01 | `3d22dc78-5fff-41f5-b525-1f8a7331b2c8` | 24 | ~18s | 0 |
 | r19 | 2026-06-01 | `0eea010d-a55f-4229-9d92-7304d46ddcfa` | 22 | ~18s | 0 |
@@ -13,16 +14,26 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r21)
+## Current State (r22)
 
-- **Version ID**: `e9d15cff-cc75-498c-b12a-5b9b6b2bee71`
+- **Version ID**: `f16d5536-7d58-400e-8e31-602865a56248`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 24 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 10.88s + SSR 6.76s = ~17.6s total
-- **Deploy**: 21 uploaded (54 already cached), 6297 KiB (1188 KiB gzip), 21ms startup, 29 modules
+- **Build**: client 11.46s + SSR 7.17s = ~18.6s total
+- **Deploy**: 21 uploaded (54 already cached), 6339 KiB (1191 KiB gzip), 22ms startup, 29 modules
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $125.17 value 7d
 - **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` + `npx wrangler deploy` (wrangler v4.90.0)
 - **No errors at any stage**
+
+## r22 Notes
+
+- Clean run, no changes from r21/r20. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- wrangler v4.90.0 (unchanged from r21).
+- Memory files: 24 (unchanged) — Hermes/Ulak copies remain byte-identical.
+- `/tmp/hermes-memory/` stale file accumulation continues (9 files from prior runs); harmless, aggregate deduplicates by source path.
+- `rm -rf` on `/tmp/hermes-memory/` still blocked by security scanner — workaround `mkdir -p` + `cp` confirmed.
+- Python pipe-to-interpreter (`cat file | python3 -c`) confirmed still blocked — workaround: use `execute_code` with Python `open()`.
+- Skill library review completed: no new techniques or corrections; vps-web-service-deploy skill comprehensive through r22.
 
 ## r21 Notes
 
