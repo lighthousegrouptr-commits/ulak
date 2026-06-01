@@ -4,19 +4,21 @@
 
 | Run | Date | Version ID | Files | Build | Errors |
 |---|---|---|---|---|---|
+| r17 | 2026-06-01 | `719f6497` | 20 | ~18.5s | 0 |
 | r16 | 2026-06-01 | `aebc499e` | 20 | 21.84s | 0 |
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r16)
+## Current State (r17)
 
-- **Version ID**: `aebc499e-4765-4f9c-91b5-b273398bc8b9`
+- **Version ID**: `719f6497-f383-41c5-9401-38e0dec46eb4`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 20 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 13.18s + SSR 8.66s = 21.84s total
-- **Deploy**: 21 uploaded (54 cached), 6128 KiB (1176 KiB gzip), 15ms startup, 29 modules
+- **Build**: client 11.72s + SSR 6.79s = ~18.5s total
+- **Deploy**: 21 uploaded (54 cached), 6148.68 KiB (1177.19 KiB gzip), 19ms startup, 29 modules
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $151.82 value 7d
-- **`npx wrangler deploy`** also works (resolves to globally installed wrangler v4.90.0) — but per skill convention, bare `wrangler deploy` is preferred since `wrangler` is on PATH at `/usr/bin/wrangler`
+- **Deploy method**: `npx wrangler deploy` (bun PATH export needed; npx resolves wrangler v4.90.0)
+- **Task spec path error**: Spec referenced `/root/ulak/memory/` (singular, nonexistent) — corrected to `/root/.hermes/memories/` per SKILL.md pitfall. 5th+ occurrence of this error in cron specs.
 
 ## r14 Fix — Tanstack Start SSR wrangler.jsonc
 

@@ -46,14 +46,16 @@ Do NOT assume a fresh deploy is needed — the app may already be running in a c
 
 This also affects `bun run scripts/aggregate.ts`, `bun run build`, `bun run dev`, etc.
 
-`wrangler` is directly available on VPS PATH at `/usr/bin/wrangler` (v4.86+). No `npx` wrapper needed:
-```bash
-wrangler deploy     # uploads to Cloudflare Workers CDN directly
+`wrangler` is directly available on VPS PATH at `/usr/bin/wrangler` (v4.90.0, update available to v4.95.0).
+```
+wrangler deploy     # uploads to Cloudflare Workers CDN directly — preferred
+npx wrangler deploy # also works as fallback when PATH is not configured
 ```
 
 - Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
 - Deploy is immediate — new version goes live globally within ~30s
 - No Cloudflare cache purge needed for Worker deploys
+- Non-critical wrangler update (e.g. 4.90→4.95) does not affect deploy success
 
 ## Docker exec access
 
@@ -143,7 +145,9 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Decision fatigue**: Levent struggles when offered multiple options (e.g. "Docker or Nixpacks?", "A, B, or C?"). For config/deploy decisions: decide yourself, state the choice and its rationale in one sentence, move on. Don't present option menus. Similarly, don't assume time differences — always check Turkey time with `TZ='Europe/Istanbul' date`. See `/root/ulak/memories/USER.md` for full preference list.
 
-- **Task spec path errors**: Cron task descriptions may reference `/root/ulak/memory/` (singular) as the Hermes memory source. This path does NOT exist. The correct paths are `/root/ulak/memories/` (ulak snapshot, plural) and `/root/.hermes/memories/` (live source). Always verify paths with `ls` before copying. This has been wrong in 3+ consecutive task specs — do not trust the path literally.
+- **`npx wrangler deploy`** works as a reliable fallback when bun's PATH isn't set: `export PATH="$PATH:/root/.bun/bin" && cd /root/code/agentic-os && npx wrangler deploy`. Both `wrangler deploy` (bare, on PATH) and `npx wrangler deploy` are valid — use whichever resolves in the current session context.
+
+- **Task spec path errors**: Cron task descriptions may reference `/root/ulak/memory/` (singular) as the Hermes memory source. This path does NOT exist. The correct paths are `/root/ulak/memories/` (ulak snapshot, plural) and `/root/.hermes/memories/` (live source). Always verify paths with `ls` before copying. This has been wrong in 5+ consecutive task specs — do not trust the path literally.
 
 - **Security scanner blocks `rm -rf` on `/tmp/hermes-memory/`**: The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir. To clean old files: `cd /tmp/hermes-memory && rm -f *.md`.
 
