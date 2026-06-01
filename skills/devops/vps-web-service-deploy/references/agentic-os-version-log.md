@@ -11,17 +11,19 @@
 | r5 | 2026-05-31 | `2cb9047d` | 18 | ~26s | 0 |
 | r6 | 2026-05-31 | `b0c48d1a` | 18 | ~26s | 0 |
 | r7 | 2026-06-01 | `dacf6497` | 18 | 11.31s | 0 |
+| r8 | 2026-06-01 | `274b1973` | 18 | 22.08s | 0 |
 
 \* r1–r4 reported 36 files due to stale duplication in `/tmp/hermes-memory/`. r5+ did a clean wipe first → 18 unique files (correct count).
 
-## Current State (r7)
+## Current State (r8)
 
-- **Version ID**: `dacf6497-4162-40c9-b88c-6b1a1dc099b7`
+- **Version ID**: `274b1973-8efb-44e5-b8fc-b0e79cbb7adc`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Deploy**: 21 uploaded (54 cached), 6021 KiB (1167 KiB gzip), 14ms startup
+- **Build**: client 10.68s + SSR 11.40s = 22.08s total
+- **Deploy**: 21 uploaded (54 cached), 6021 KiB (1167 KiB gzip), 15ms startup
 - **Memory sources**: `~/.claude/projects`, `/root/ulak/memories/`, `~/.hermes/memories/`, `/tmp/hermes-memory/`
-- **Note**: `/root/ulak/memory/` (singular) did not exist as a source — files copied from `/root/.hermes/memories/` and `/root/ulak/memories/` only.
+- **Note**: `~/.claude/memory/` does NOT exist on this machine — aggregate skips it silently. Only `~/.claude/projects/` with per-project `memory/` subdirs contributes Claude-side data.
 
 ## Pipeline Steps (canonical)
 
