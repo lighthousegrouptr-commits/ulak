@@ -4,6 +4,7 @@
 
 | Run | Date | Version ID | Files | Build | Errors |
 |---|---|---|---|---|---|
+| r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 | r23 | 2026-06-01 | `c06f7bde-a379-445b-9560-9fbe1125b97e` | 18 | ~18s | 0 |
 | r22 | 2026-06-01 | `f16d5536-7d58-400e-8e31-602865a56248` | 24 | ~19s | 0 |
 | r21 | 2026-06-01 | `e9d15cff-cc75-498c-b12a-5b9b6b2bee71` | 24 | ~18s | 0 |
@@ -15,16 +16,23 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r23)
+## Current State (r24)
 
-- **Version ID**: `c06f7bde-a379-445b-9560-9fbe1125b97e`
+- **Version ID**: `a4e2c842-9622-4a2d-a240-1ca88784e856`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.04s + SSR 6.56s = ~17.6s total
-- **Deploy**: 77 files in asset dir, 21 uploaded (54 already cached), 6424 KiB (1197 KiB gzip), 27ms startup, 29 modules
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $125.17 value 7d
-- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` + `wrangler deploy` (bare wrangler on PATH at `/usr/bin/wrangler` v4.86.0, update available to v4.96.0)
+- **Build**: client 10.90s + SSR 6.83s = ~17.7s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 already cached), 6446 KiB (1199 KiB gzip), 23ms startup, 29 modules
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $124.39 value 7d
+- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` + `wrangler deploy` (bare wrangler on PATH at `/usr/bin/wrangler` v4.86.0)
 - **No errors at any stage**
+
+## r24 Notes
+
+- Clean run, no changes from r23. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Memory file count stable at 18 — Hermes/Ulak memories consistent.
+- `rm -rf` on `/tmp/hermes-memory/` avoided — used `mkdir -p` + `cp` overwriting in place. Recommended pattern: never use `rm -rf` even on `/tmp` subdirs in cron/isolated contexts.
+- Python pipe-to-interpreter (`cat file | python3 -c`) avoided — used `read_file` tool.
 
 ## r23 Notes
 

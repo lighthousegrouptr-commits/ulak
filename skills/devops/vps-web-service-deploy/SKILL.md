@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.1
+version: 1.7.2
 platforms: [linux]
 metadata:
   hermes:
@@ -179,7 +179,9 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 ## Security scanner blocks `rm -rf` on `/tmp/hermes-memory/`
 
-The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15, r21). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir.
+The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15, r21, r24). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir. There is no need to clean it first — `cp` silently overwrites in place.
+
+**Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r24.
 
 **Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r21 with 9 stale .md files still present (all processed correctly alongside the 2 fresh copies).
 
