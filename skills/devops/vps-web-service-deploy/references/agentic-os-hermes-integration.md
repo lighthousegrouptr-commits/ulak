@@ -105,33 +105,6 @@ done
 
 ---
 
-## Full Refresh Pipeline
-
-```bash
-# 1. Sync memories (see above)
-# 2. Aggregate
-cd /root/code/agentic-os && export PATH="/root/.bun/bin:$PATH" && bun run scripts/aggregate.ts
-# 3. Build
-export PATH="/root/.bun/bin:$PATH" && bun run build
-# 4. Deploy
-export PATH="/root/.bun/bin:$PATH" && wrangler deploy
-```
-
-**PATH note for cron/unattended jobs**: `bun` is at `/root/.bun/bin/bun` — always export PATH first.
-`wrangler` (v4.86+) is directly available on this VPS PATH (installed via npm globally or npx cache)
-— no need for `source /root/.profile` or `npx wrangler` wrappers unless `CLOUDFLARE_API_TOKEN`
-is needed (which wrangler reads from `~/.wrangler/` config on this machine).
-
-**`~/.claude/memory/`** was added as an aggregator source on 2026-05-31. It doesn't exist on this
-VPS yet but is included for future portability (Line ~1466 in `aggregate.ts`).
-
----
-
-## Version History
-
-For deploy version IDs, build time trends, and wrangler version notes, see:
-[references/agentic-os-version-log.md](references/agentic-os-version-log.md)
-
 ## Session Log Index
 
 For detailed per-run notes, see archived session logs:
