@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.2
+version: 1.7.3
 platforms: [linux]
 metadata:
   hermes:
@@ -172,6 +172,8 @@ COPY /app/Caddyfile /etc/caddy/Caddyfile
 The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **Requires sudo** — will trigger approval gates.
 
 ## Pitfalls
+
+- **Cron task source path typo**: Cron task instructions frequently specify `/root/ulak/memory/` (singular) as the Hermes memory source. This path does NOT exist. The correct source is `/root/ulak/memories/` (plural). Similarly, `/root/.hermes/memory/` (singular) does not exist — use `/root/.hermes/memories/`. See the "Hermes Memory Path Quick Reference" table below.
 
 - **Decision fatigue**: Levent struggles when offered multiple options (e.g. "Docker or Nixpacks?", "A, B, or C?"). For config/deploy decisions: decide yourself, state the choice and its rationale in one sentence, move on. Don't present option menus. Similarly, don't assume time differences — always check Turkey time with `TZ='Europe/Istanbul' date`. See `/root/ulak/memories/USER.md` for full preference list.
 
@@ -408,7 +410,7 @@ The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Her
 
 ## Version Log
 
-See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r22), including Version IDs, file counts, and build times.
+See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r25), including Version IDs, file counts, and build times.
 
 ## Runtime data refresh via cron (when data must stay fresh)
 
@@ -607,6 +609,64 @@ done
 ```
 If any line shows "server= client=" with empty values or mismatched hashes, do a clean rebuild before deploying.
 
+### Wrangler asset dedup cache blocks fresh deploy (CRITICAL)
+
+Even after `rm -rf dist && bun run build && wrangler deploy`, wrangler may report **"No updated asset files to upload"** and skip uploading the new client assets. The old assets remain in Cloudflare's KV, and the worker serves stale chunks — including a stale `worker-entry` that returns placeholder responses like `"building..."`.
+
+**Why this happens:** Wrangler compares content hashes of the local `dist/client/assets/` files against the currently-deployed version's manifest. If the hashes match (because source code didn't change, or the build is deterministic), wrangler skips the upload. But this comparison is buggy when:
+1. A `rm -rf dist` + fresh build was done (old manifest is stale)
+2. The worker entry changed but client assets didn't (or vice versa)
+3. New chunks were added that weren't in the old deployment
+
+**Symptoms:**
+- `wrangler deploy` says "No updated asset files to upload. Proceeding with deployment..."
+- `curl https://<worker-url>/` returns stale content (e.g. `"building..."`, `"placeholder"`)
+- `curl https://<worker-url>/assets/<chunk-hash>.js` returns 404 for newly-built chunks
+- Worker Version ID changes but behavior doesn't
+
+**Fix approaches (in order of reliability):**
+
+1. **Purge wrangler state + rebuild:**
+   ```bash
+   rm -rf .wrangler/state .wrangler/tmp
+   mkdir -p dist/server && echo 'export default { fetch: () => new Response("rebuilding...") };' > dist/server/index.js
+   bun run build
+   wrangler deploy
+   ```
+   The placeholder `index.js` must exist BEFORE build (wrangler validates `main` field in config hook). Build overwrites it with real bundle.
+
+2. **Touch/modify a source file** to force different content hash, then rebuild:
+   ```bash
+   # Add a timestamp comment to server.ts to change worker-entry hash
+   echo "// deploy $(date +%s)" >> src/server.ts  # hacky but works
+   bun run build
+   wrangler deploy
+   # Then revert the comment
+   git checkout src/server.ts
+   ```
+
+3. **Deploy with a new worker name** (nuclear option):
+   Change `"name"` in `wrangler.jsonc`, deploy, then update the Cloudflare Route to point the custom domain to the new worker. Revert the name change afterwards.
+
+4. **Cloudflare dashboard** → Workers → select worker → Deployments → "Rollback" is NOT available for asset-only changes. You must push a new deployment with changed content.
+
+**Pre-deploy safeguard:** Always verify the worker serves fresh content after deploy:
+```bash
+curl -s https://agentic.lighthousegroup.net.tr/ | head -20
+# If you see "building...", "placeholder", or stale HTML, wrangler skipped the asset upload
+```
+
+**Pre-deploy prerequisite: `dist/server/index.js` must exist before `bun run build`.** The Cloudflare Vite plugin's config hook validates that the `main` field in `wrangler.jsonc` (`dist/server/index.js`) points to an existing file. On a clean `rm -rf dist`, this file doesn't exist and the build fails with:
+```
+Error: The provided Wrangler config main field (.../dist/server/index.js) doesn't point to an existing file
+```
+**Workaround:** Create a placeholder before building:
+```bash
+mkdir -p dist/server
+echo 'export default { fetch: () => new Response("placeholder") };' > dist/server/index.js
+bun run build   # Vite overwrites this with the real bundle
+```
+
 ## Reference Files
 
 - `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
@@ -616,6 +676,8 @@ If any line shows "server= client=" with empty values or mismatched hashes, do a
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r20): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
 - `references/2026-06-01-memory-graph-hash-mismatch.md` — Client/server chunk hash mismatch causing memory-graph-3d 404 on Worker; diagnosis steps, fix, wrangler asset dedup limitation
+- `references/2026-06-01-cron-run-full-refresh-deploy-r25.md` — Run 25: Version ID `828f7b8a`, 18 files, ~19.3s build, pipeline stable, `/root/ulak/memory/` vs `memories/` path typo identified
+- `references/2026-06-01-cron-run-full-refresh-deploy-r24.md` — Run 24: Version ID `a4e2c842`, 18 files, ~17.7s build, `rm -rf` on staging dir avoided (use `mkdir -p` + `cp`)
 - `references/2026-06-01-cron-run-full-refresh-deploy-r22.md` — Run 22: Version ID `f16d5536`, 24 files, ~19s build, pipeline stable, no new issues
 - `references/2026-06-01-cron-run-full-refresh-deploy-r21.md` — Run 21: Version ID `18411418`, 24 files, ~18s build, pipeline stable
 - `references/2026-06-01-cron-run-full-refresh-deploy-r20.md` — Run 20: Version ID `3d22dc78`, 24 files, ~18s build, identical Hermes/Ulak memory confirmed
