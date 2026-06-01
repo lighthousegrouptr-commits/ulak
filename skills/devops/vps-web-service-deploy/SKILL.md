@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.0
+version: 1.7.1
 platforms: [linux]
 metadata:
   hermes:
@@ -70,6 +70,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r21 | v4.90.0 | — |
 | r20 | v4.86.0 | v4.96.0 |
 | r16 | v4.90.0 | v4.95.0 |
 
@@ -481,6 +482,7 @@ from the Nixpacks original — that was Railway template syntax). Use absolute p
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r20): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
+- `references/2026-06-01-cron-run-full-refresh-deploy-r21.md` — Run 21: Version ID `e9d15cff`, 24 files, ~18s build, pipeline stable
 - `references/2026-06-01-cron-run-full-refresh-deploy-r20.md` — Run 20: Version ID `3d22dc78`, 24 files, ~18s build, identical Hermes/Ulak memory confirmed
 - `references/2026-06-01-cron-run-full-refresh-deploy-r19.md` — Run 19: Version ID `0eea010d`, 22 files, ~18s build
 - `references/2026-06-01-cron-run-full-refresh-deploy-r16.md` — Run 16: Version ID `aebc499e`, 20 files, 21.84s build; `npx wrangler deploy` also works (resolves v4.90.0), but bare `wrangler deploy` preferred as wrangler is on PATH at `/usr/bin/wrangler`
