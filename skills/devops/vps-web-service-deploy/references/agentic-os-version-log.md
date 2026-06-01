@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r27 | 2026-06-01 | `0e69ecc3-d91c-4576-9d4a-11f12f16c521` | 18 | ~11.4s | 0 |
 | r26 | 2026-06-01 | `8fd3af90-4169-4b40-b7b7-79d3a81e2632` | 18 | ~11s | 0 |
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
@@ -17,18 +18,24 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r26)
+## Current State (r27)
 
-- **Version ID**: `8fd3af90-4169-4b40-b7b7-79d3a81e2632`
+- **Version ID**: `0e69ecc3-d91c-4576-9d4a-11f12f16c521`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.07s + SSR 77ms = ~11.15s total (incremental)
-- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 17.15 KiB (4.35 KiB gzip), 15ms startup
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $30.07 value 7d
-- **Deploy method**: placeholder `dist/server/index.js` → `bun run build` → `wrangler deploy` (bare wrangler v4.86.0)
+- **Build**: client 11.41s + SSR 112ms = ~11.52s total (incremental)
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 37.55 KiB (5.78 KiB gzip), 15ms startup
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $20.70 value 7d
+- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` → `wrangler deploy` (bare wrangler v4.86.0, update to v4.96.0 available)
 - **No errors at any stage**
 
-## r26 Notes
+## r27 Notes
+
+- Clean cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Task description references `/root/ulak/memory/` (singular) — corrected to `/root/.hermes/memories/` at execution time (known pitfall, documented in SKILL.md path table).
+- Memory file count: 18 (consistent with r26).
+- wrangler v4.86.0 (update to v4.96.0 available — non-critical).
+- Value 7d: $20.70 (down from r26's $30.07 — usage fluctuation, normal).
 
 - **New technique**: `dist/server/index.js` must exist before `bun run build` (Cloudflare Vite plugin validates `main` field in config hook before building). `dist/server/` existed but was empty — directory alone isn't enough.
 - Workaround: `mkdir -p dist/server && echo 'export default { fetch: () => new Response("placeholder") };' > dist/server/index.js`
