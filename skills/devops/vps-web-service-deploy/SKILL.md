@@ -552,6 +552,59 @@ If stat tiles show non-zero numbers (e.g. "24 files indexed", "18 Active") but t
 
 **Key insight**: `memory-graph-3d.tsx` `buildData()` checks BOTH `nodes.length` AND `links.length`. Even if nodes exist, if links array is empty (e.g. aggregate bug), the entire real data path is skipped and mock fallback is used — which produces a different-looking graph than expected.
 
+### Memory graph blank: client/server chunk hash mismatch (CRITICAL)
+
+If stat tiles show correct numbers (e.g. "22 files indexed") but the 3D graph area is stuck on "Loading memory graph" with no canvas, the root cause may be a **client/server chunk hash mismatch** in the Vite build output.
+
+**Symptom chain:**
+1. `memory-graph-3d-CkAuc5B5-...js` referenced by server-rendered HTML
+2. But client bundle produced `memory-graph-3d-x5E0NbAC.js` (different hash)
+3. The server-referenced file returns 404 from the Worker
+4. Dynamic `import("react-force-graph-3d")` fails silently
+5. Canvas never renders — stays in loading skeleton forever
+
+**Diagnosis:**
+```bash
+# Check server-side chunk references (in HTML/manifest)
+grep -r "memory-graph-3d" dist/server/assets/ | head
+
+# Check client-side actual chunk files
+ls dist/client/assets/memory-graph-3d-*
+
+# If hashes differ, the mismatch is confirmed
+```
+
+Or in browser dev console:
+```javascript
+// Check if the referenced chunk exists on the Worker
+fetch('/assets/memory-graph-3d-<server-hash>.js').then(r => r.status)
+// 404 = hash mismatch, 200 = file exists
+```
+
+**Fix:** Clean rebuild to re-synchronize client/server hashes:
+```bash
+cd /root/code/agentic-os
+rm -rf dist
+export PATH="/root/.bun/bin:$PATH"
+bun run build
+# Then verify hashes match before deploying
+diff <(ls dist/server/assets/memory-graph-3d-* | sed 's/.*memory-graph-3d-//' | sed 's/\.js//') \
+     <(ls dist/client/assets/memory-graph-3d-* | sed 's/.*memory-graph-3d-//' | sed 's/\.js//')
+wrangler deploy
+```
+
+**Why this happens:** Vite/TanStack Start produces separate client and server bundles. In normal builds, chunk hashes are synchronized. But incremental builds, cached `dist/` from previous builds, or wrangler's asset dedup ("No updated asset files to upload") can cause the server manifest to reference stale hashes while the client has newer ones. A clean `rm -rf dist` rebuild resolves it.
+
+**Pre-deploy verification:** After `bun run build`, spot-check that at least the lazy-loaded chunks exist on both sides with matching hashes:
+```bash
+for chunk in memory-graph-3d react-force-graph-3d three.module; do
+  server=$(ls dist/server/assets/${chunk}-*.js 2>/dev/null | head -1)
+  client=$(ls dist/client/assets/${chunk}-*.js 2>/dev/null | head -1)
+  echo "$chunk: server=$(basename $server 2>/dev/null) client=$(basename $client 2>/dev/null)"
+done
+```
+If any line shows "server= client=" with empty values or mismatched hashes, do a clean rebuild before deploying.
+
 ## Reference Files
 
 - `references/agentic-os.md` — Agentic OS deployment notes (architecture, Swarm, Caddy, mount config, debug lessons)
@@ -560,6 +613,7 @@ If stat tiles show non-zero numbers (e.g. "24 files indexed", "18 Active") but t
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync procedure, filter tab checklist, full refresh pipeline (consolidated from `agentic-os-deploy`)
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r20): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
+- `references/2026-06-01-memory-graph-hash-mismatch.md` — Client/server chunk hash mismatch causing memory-graph-3d 404 on Worker; diagnosis steps, fix, wrangler asset dedup limitation
 - `references/2026-06-01-cron-run-full-refresh-deploy-r22.md` — Run 22: Version ID `f16d5536`, 24 files, ~19s build, pipeline stable, no new issues
 - `references/2026-06-01-cron-run-full-refresh-deploy-r21.md` — Run 21: Version ID `18411418`, 24 files, ~18s build, pipeline stable
 - `references/2026-06-01-cron-run-full-refresh-deploy-r20.md` — Run 20: Version ID `3d22dc78`, 24 files, ~18s build, identical Hermes/Ulak memory confirmed
