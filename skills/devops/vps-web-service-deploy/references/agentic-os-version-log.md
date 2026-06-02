@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r30 | 2026-06-02 | `6e42fb84-6b76-44c2-8dc6-8ba57f05bbb9` | 18 | ~11.3s | 0 |
 | r29 | 2026-06-02 | `72419e42-a3c7-438f-b1cd-ebec50416ce7` | 18 | ~11.7s | 0 |
 | r28 | 2026-06-02 | `0433753c-9fee-445d-aa87-49a8196c33e7` | 18 | ~10.9s | 0 |
 | r27 | 2026-06-01 | `0e69ecc3-d91c-4576-9d4a-11f12f16c521` | 18 | ~11.4s | 0 |
@@ -20,16 +21,25 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r29)
+## Current State (r30)
 
-- **Version ID**: `72419e42-a3c7-438f-b1cd-ebec50416ce7`
+- **Version ID**: `6e42fb84-6b76-44c2-8dc6-8ba57f05bbb9`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.69s + SSR 116ms = ~11.81s total
-- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 118.80 KiB (10.50 KiB gzip), 25ms startup
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $11.49 value 7d
-- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` → `npx wrangler deploy` (wrangler v4.90.0)
+- **Build**: client 11.12s + SSR 144ms = ~11.26s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 139.04 KiB (11.66 KiB gzip), 23ms startup
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $9.14 value 7d
+- **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` → bare `wrangler deploy` (wrangler v4.86.0)
 - **No errors at any stage**
+
+## r30 Notes
+
+- Clean cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Memory sync: `cp /root/ulak/memories/*.md + ~/.hermes/memories/*.md → /tmp/hermes-memory/` (hermes first, ulak second so newer timestamps win).
+- `bun` not found in PATH — `export PATH="/root/.bun/bin:$PATH"` required (persistent infra fact).
+- Bare `wrangler deploy` used (wrangler v4.86.0 at `/usr/bin/wrangler`).
+- Value 7d: $9.14 (down from r29's $11.49 — usage fluctuation, normal).
+- Task description again referenced `/root/ulak/memory/` (singular) — corrected to plurals, already documented pitfall.
 
 ## r29 Notes
 

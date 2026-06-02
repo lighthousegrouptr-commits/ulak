@@ -70,6 +70,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r30 | v4.86.0 | — |
 | r29 | v4.90.0 | 4.96.0 |
 | r28 | v4.90.0 | — |
 | r27 | v4.86.0 | v4.96.0 |
@@ -705,6 +706,7 @@ bun run build   # Vite overwrites this with the real bundle
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
 - `references/2026-06-01-memory-graph-hash-mismatch.md` — Client/server chunk hash mismatch causing memory-graph-3d 404 on Worker; diagnosis steps, fix, wrangler asset dedup limitation
 - `references/2026-06-02-cron-run-full-refresh-deploy-r29.md` — Run 29: Version ID `72419e42`, 18 files, ~11.7s build, pipeline stable, `npx wrangler deploy` confirmed equivalent
+- `references/2026-06-02-cron-run-full-refresh-deploy-r30.md` — Run 30: Version ID `6e42fb84`, 18 files, ~11.3s build, pipeline stable, bare `wrangler deploy` (v4.86.0)
 - `references/2026-06-01-cron-run-full-refresh-deploy-r25.md` — Run 25: Version ID `828f7b8a`, 18 files, ~19.3s build, pipeline stable, `/root/ulak/memory/` vs `memories/` path typo identified
 - `references/2026-06-01-cron-run-full-refresh-deploy-r24.md` — Run 24: Version ID `a4e2c842`, 18 files, ~17.7s build, `rm -rf` on staging dir avoided (use `mkdir -p` + `cp`)
 - `references/2026-06-01-cron-run-full-refresh-deploy-r22.md` — Run 22: Version ID `f16d5536`, 24 files, ~19s build, pipeline stable, no new issues
