@@ -70,9 +70,9 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r32 | v4.86.0 | — |
+| r31 | v4.86.0 | — |
 | r30 | v4.86.0 | — |
-| r29 | v4.90.0 | 4.96.0 |
-| r28 | v4.90.0 | — |
 | r27 | v4.86.0 | v4.96.0 |
 | r22 | v4.90.0 | — |
 | r21 | v4.90.0 | — |
@@ -186,8 +186,6 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 ## Security scanner blocks `rm -rf` on `/tmp/hermes-memory/`
 
 The host security scanner blocks `rm -rf` on paths containing `hermes` in the name. However, `mkdir -p /tmp/hermes-memory` and `cp *.md /tmp/hermes-memory/` work fine (confirmed r12, r13, r15, r21, r24). **Safe pattern**: use `mkdir -p` + `cp` only; never `rm -rf` the staging dir. There is no need to clean it first — `cp` silently overwrites in place.
-
-**Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r24.
 
 **Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r24.
 
@@ -708,6 +706,7 @@ bun run build   # Vite overwrites this with the real bundle
 - `references/2026-06-02-cron-run-full-refresh-deploy-r29.md` — Run 29: Version ID `72419e42`, 18 files, ~11.7s build, pipeline stable, `npx wrangler deploy` confirmed equivalent
 - `references/2026-06-02-cron-run-full-refresh-deploy-r30.md` — Run 30: Version ID `6e42fb84`, 18 files, ~11.3s build, pipeline stable, bare `wrangler deploy` (v4.86.0)
 - `references/2026-06-02-cron-run-full-refresh-deploy-r31.md` — Run 31: Version ID `0a723bdc`, 18 files, ~10.7s build, pipeline stable, all Hermes memory paths confirmed in aggregate.ts
+- `references/2026-06-02-cron-run-full-refresh-deploy-r32.md` — Run 32: Version ID `81880243`, 18 files, ~10.8s build, pipeline stable, duplicate stale-files paragraph cleaned up
 - `references/2026-06-01-cron-run-full-refresh-deploy-r25.md` — Run 25: Version ID `828f7b8a`, 18 files, ~19.3s build, pipeline stable, `/root/ulak/memory/` vs `memories/` path typo identified
 - `references/2026-06-01-cron-run-full-refresh-deploy-r24.md` — Run 24: Version ID `a4e2c842`, 18 files, ~17.7s build, `rm -rf` on staging dir avoided (use `mkdir -p` + `cp`)
 - `references/2026-06-01-cron-run-full-refresh-deploy-r22.md` — Run 22: Version ID `f16d5536`, 24 files, ~19s build, pipeline stable, no new issues
