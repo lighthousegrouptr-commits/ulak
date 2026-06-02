@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r43 | 2026-06-02 | `7d9aab67-4219-4671-b77d-36e3e796b1a7` | 23 | ~11.0s | 0 |
 | r42 | 2026-06-02 | `efcb91dc-de0c-404d-bde1-9ec91eb8c62a` | 21 | ~11.6s | 0 |
 | r41 | 2026-06-02 | `d9c56121-2b46-49ed-bf2b-6cb22983bbcc` | 20 | ~11.2s | 0 |
 | r40 | 2026-06-02 | `688e7b06-27ee-4a82-a259-d35273af09dc` | 18 | ~11.9s | 0 |
@@ -23,17 +24,25 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r42)
+## Current State (r43)
 
-- **Version ID**: `efcb91dc-de0c-404d-bde1-9ec91eb8c62a`
+- **Version ID**: `7d9aab67-4219-4671-b77d-36e3e796b1a7`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory**: 21 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Memory**: 23 files / 2 workspaces / 14 events / 0 Pinecone indexes
 - **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
-- **Build**: client 11.62s + SSR 247ms = ~11.9s total
+- **Build**: client 10.96s + SSR 52ms = ~11.0s total
 - **Deploy**: 77 files scanned, 21 uploaded (56 cached), 15.57 KiB (4.27 KiB gzip)
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $4.92 value 7d
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
 - **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0, update available v4.97.0)
 - **No errors at any stage**
+
+## r43 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Memory count 23 (up from 21 in r42): `/tmp/hermes-memory/` accumulates files across runs because `rm` in `/tmp` is blocked by tool policy. Stale `.lock` and `sync.sh` files persist but are harmless (aggregator only picks up `.md` files). **This is expected and not a problem** — do not attempt to clean `/tmp` in cron contexts.
+- **`wrangler.jsonc` new warning**: build now prints "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **informational only** — Vite uses its own bundling, and these keys are legacy from the pre-Vite Worker pattern. Safe to ignore; removing them from `wrangler.jsonc` is optional and has no effect on the build.
+- wrangler v4.86.0 (update available v4.97.0) — consistent with r41/r42.
+- `CLOUDFLARE_API_TOKEN` already in environment — no `source /root/.profile` needed.
 
 ## r42 Notes
 
