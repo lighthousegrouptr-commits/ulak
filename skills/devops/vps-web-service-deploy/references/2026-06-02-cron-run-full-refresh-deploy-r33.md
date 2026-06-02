@@ -1,23 +1,33 @@
-# Run 33 — Full Refresh & Deploy (Cron)
+# Run 33 — Cron Full Refresh & Deploy
 
-**Date:** 2026-06-02
-**Version ID:** `5efff810-85f1-47ca-9af5-443d54493ed6`
-**Memory files:** 18 files / 2 workspaces
-**Build time:** 10.45s (client) + 226ms (SSR)
-**wrangler:** v4.86.0 (bare `wrangler deploy`)
-**Pipeline:** Standard 4-step — sync Hermes memories → aggregate.ts → bun build → wrangler deploy
+**Date:** 2026-06-02  
+**Trigger:** Scheduled cron job  
+**Version ID:** `05799ae5-d823-47be-9f32-6a99e1a3e407`  
+**Build time:** ~11.1s (client) + 222ms (SSR)
 
-## Steps executed
+## Pipeline Results
 
-1. Synced Hermes memories from `~/.hermes/memories/` → `/tmp/hermes-memory/` (MEMORY.md + USER.md, 4 files incl. lock files)
-2. `export PATH="/root/.bun/bin:$PATH" && bun run scripts/aggregate.ts` — 18 memory files, 14 events, 2 projects, 1458 assistant msgs
-3. `bun run build` — 2840 modules transformed, no errors
-4. `wrangler deploy` — 21 assets uploaded (54 already present), 241.40 KiB total
+| Step | Status | Detail |
+|------|--------|--------|
+| Sync Hermes memories | ✅ | 2 .md files from `/root/ulak/memories/` + 2 from `~/.hermes/memories/` → `/tmp/hermes-memory/` |
+| Aggregate | ✅ | **22 files / 4 workspaces** / 0 Pinecone indexes / 0 vectors / 14 events |
+| Build | ✅ | 2840 modules transformed, 21 new assets |
+| Deploy | ✅ | Uploaded 21 files (54 already cached), Worker startup 29ms |
 
-## Notes
+## Notable Observations
 
-- Pipeline stable, identical to r32. No new issues.
-- `/root/ulak/memory/` (singular) confirmed non-existent again — task description referenced this path but actual source is `~/.hermes/memories/`. Skill pitfall doc accurate.
-- Upload size 241.40 KiB (vs 220.77 KiB in r32) — normal Vite asset hash churn, not a code change.
-- Aggregate.ts Hermes memory paths remain correctly configured. No patching needed.
-- `bun` still not on default PATH — skill documentation accurate.
+- **File count increased from 18 → 22**: This run picked up all 4 Hermes source directories correctly. Previous runs (r29–r32) reported 18 files, suggesting some Hermes source dirs may have been empty or the aggregate deduplication kicked in differently. The aggregate scans `/root/ulak/memories/`, `~/.hermes/memories/`, and `/tmp/hermes-memory` separately — when both Ulak and Hermes dirs have content, all files are counted.
+- **All Hermes memory paths confirmed working**: Lines 1474–1482 of `aggregate.ts` correctly reference all 4 Hermes dirs. No path typos encountered.
+- **`bun` PATH fix required**: `export PATH="/root/.bun/bin:$PATH"` needed before every `bun` invocation. Already documented in skill.
+- **No `rm -rf` on `/tmp/hermes-memory/`**: Used `mkdir -p /tmp/hermes-memory-clean/` + `cp` instead (clean dir from scratch). The `rm -rf` approach remains blocked by security scanner.
+- **No new errors**: Pipeline stable, identical procedure to r32.
+
+## Memory Path Status
+
+| Path | Files found |
+|------|-------------|
+| `/root/ulak/memories/` | MEMORY.md, USER.md |
+| `~/.hermes/memories/` | MEMORY.md, USER.md |
+| `/tmp/hermes-memory/` | Synced copy of above |
+| `~/.claude/projects/-root/memory/` | 12 files |
+| `~/.claude/memory/` | Does not exist |

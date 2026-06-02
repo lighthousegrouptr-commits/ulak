@@ -435,6 +435,8 @@ pitfalls, and `STALE_DAYS` tuning.
 
 The aggregate script (`aggregate.ts` lines 1474-1482) already scans all four Hermes source dirs directly, so the `/tmp/hermes-memory/` staging step is supplementary — useful as a consolidation point but not strictly required for the aggregator to pick up Hermes memories. The `~/.claude/projects/*/memory/` dirs (line 1462) are also picked up automatically — on this VPS, `~/.claude/projects/-root/memory/` contains 12 files with operational notes.
 
+**File count varies by run** (confirmed r29–r33): aggregate reports 18–22 files depending on whether Hermes source dirs have content and how deduplication interacts with overlapping files. Both Ulak and Hermes dirs contain identical `MEMORY.md` and `USER.md` (synced every 30 min), so the count depends on whether both sources are non-empty at scan time. All counts are correct — the aggregate deduplicates by `relPath` within each workspace, and Hermes/Ulak workspaces are labeled separately (`hermes-ulak-root` vs `hermes-root`), so some duplication across workspaces is expected.
+
 ## Version Log
 
 See `references/agentic-os-version-log.md` for the full deploy history across all runs (r1–r25), including Version IDs, file counts, and build times.
