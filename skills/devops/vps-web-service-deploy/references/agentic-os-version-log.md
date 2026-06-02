@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r29 | 2026-06-02 | `72419e42-a3c7-438f-b1cd-ebec50416ce7` | 18 | ~11.7s | 0 |
 | r28 | 2026-06-02 | `0433753c-9fee-445d-aa87-49a8196c33e7` | 18 | ~10.9s | 0 |
 | r27 | 2026-06-01 | `0e69ecc3-d91c-4576-9d4a-11f12f16c521` | 18 | ~11.4s | 0 |
 | r26 | 2026-06-01 | `8fd3af90-4169-4b40-b7b7-79d3a81e2632` | 18 | ~11s | 0 |
@@ -19,16 +20,25 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r28)
+## Current State (r29)
 
-- **Version ID**: `0433753c-9fee-445d-aa87-49a8196c33e7`
+- **Version ID**: `72419e42-a3c7-438f-b1cd-ebec50416ce7`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 10.87s + SSR 108ms = ~10.98s total
-- **Deploy**: 77 files scanned, 21 uploaded (56 cached), 98.31 KiB (9.31 KiB gzip), 14ms startup
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, $13.18 value 7d
+- **Build**: client 11.69s + SSR 116ms = ~11.81s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 118.80 KiB (10.50 KiB gzip), 25ms startup
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $11.49 value 7d
 - **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` → `npx wrangler deploy` (wrangler v4.90.0)
 - **No errors at any stage**
+
+## r29 Notes
+
+- Clean cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Memory sync: `rsync -a /root/ulak/memories/ + ~/.hermes/memories/ → /tmp/hermes-memory/` (4 files including locks; 2 unique .md).
+- `bun` not found in PATH — `export PATH="/root/.bun/bin:$PATH"` required (persistent infra fact).
+- `npx wrangler deploy` used (wrangler v4.90.0). Both bare and npx work.
+- Value 7d: $11.49 (down from r28's $13.18 — usage fluctuation, normal).
+- Task description again referenced `/root/ulak/memory/` (singular) — corrected to plurals, already documented pitfall.
 
 ## r28 Notes
 
