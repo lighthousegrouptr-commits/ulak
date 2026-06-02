@@ -45,8 +45,20 @@ Increase if rarely-updated knowledge files trigger too many stale warnings.
 
 ## Deploy
 
-Primary: Cloudflare Worker via `wrangler deploy` (bare, on PATH at `/usr/bin/wrangler`). No cache purge needed.
-`npx wrangler deploy` works as fallback but bare `wrangler deploy` is preferred (faster, no resolution overhead).
+Primary: Cloudflare Worker via `npx wrangler deploy --outdir dist/client`.
+**Do NOT use bare `wrangler deploy`** — it fails with "Could not detect a directory containing static files" because wrangler can't auto-detect the static dir for TanStack Start SSR apps. The `--outdir dist/client` flag is required.
+
+```bash
+cd /root/code/agentic-os
+bun run build                     # produces dist/server/ + dist/client/
+npx wrangler deploy --outdir dist/client   # uploads to Cloudflare Workers CDN
+```
+
+- wrangler is on PATH at `/usr/bin/wrangler` (v4.90+); `npx wrangler deploy` also works
+- Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
+- Deploy is immediate — new version goes live globally within ~30s
+- No Cloudflare cache purge needed for Worker deploys
+
 Cron: `agentic-wrangler-deploy` (30min) auto-builds + deploys.
 
 ## live-data.json
