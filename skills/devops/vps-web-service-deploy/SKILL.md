@@ -224,7 +224,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **TanStack Start SSR is broken** (v1.167+): `@tanstack/react-start/server-entry` was removed. Vite plugin silently produces "placeholder" handler. Use static SPA Worker pattern instead. See `references/tanstack-start-1167-server-entry-removed.md`.
 
-- **Python pipe-to-interpreter blocked**: `cat file | python3 -c "..."` is blocked by the host security scanner. Use `execute_code` with Python `open()` instead.
+- **Pipe-to-interpreter blocked**: `cat file | python3 -c "..."` AND `cat file | bun -e "..."` are both blocked by the host security scanner (tirith pattern: `pipe_to_interpreter`). Use `read_file` for direct file access, or `execute_code` with Python `open()` / Bun `Bun.file()` instead. Never pipe shell output into any interpreter (`python3`, `bun`, `node`, `ruby`, etc.).
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
