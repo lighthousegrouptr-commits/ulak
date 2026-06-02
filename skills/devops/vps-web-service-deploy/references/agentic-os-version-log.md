@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r33 | 2026-06-02 | `5efff810-85f1-47ca-9af5-443d54493ed6` | 18 | ~10.5s | 0 |
 | r32 | 2026-06-02 | `81880243-f06f-4e6b-ac69-605e71adc606` | 18 | ~10.8s | 0 |
 | r31 | 2026-06-02 | `0a723bdc` | 18 | ~10.7s | 0 |
 | r30 | 2026-06-02 | `6e42fb84-6b76-44c2-8dc6-8ba57f05bbb9` | 18 | ~11.3s | 0 |
@@ -23,27 +24,26 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r32)
+## Current State (r33)
 
-- **Version ID**: `81880243-f06f-4e6b-ac69-605e71adc606`
+- **Version ID**: `5efff810-85f1-47ca-9af5-443d54493ed6`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 10.79s + SSR 229ms = ~11s total
-- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 220.77 KiB (16.29 KiB gzip), 22ms startup
+- **Build**: client 10.45s + SSR 226ms = ~10.7s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 241.40 KiB (17.43 KiB gzip), 22ms startup
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $9.02 value 7d
 - **Deploy method**: `export PATH="/root/.bun/bin:$PATH" && bun run build` → bare `wrangler deploy` (wrangler v4.86.0)
 - **No errors at any stage**
 
-## r32 Notes
+## r33 Notes
 
 - Clean cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
-- Memory sync: `cp /root/ulak/memories/*.md ~/.hermes/memories/*.md → /tmp/hermes-memory/` (2 .md files, lock files ignored by aggregate).
+- Memory sync: `cp ~/.hermes/memories/*.md → /tmp/hermes-memory/` (2 .md files + lock files).
+- Task description again referenced `/root/ulak/memory/` (singular) — corrected to `~/.hermes/memories/` at execution time (known pitfall, documented).
 - `bun` not found in PATH — `export PATH="/root/.bun/bin:$PATH"` required (persistent infra fact).
 - Bare `wrangler deploy` used (wrangler v4.86.0 at `/usr/bin/wrangler`).
 - Value 7d: $9.02 (stable).
-- Duplicate "Stale files in /tmp/hermes-memory/" paragraph removed from SKILL.md (was duplicated from r24 notes).
-- Added r32 reference file. Version log updated with correct Version ID.
-- Task description again referenced `/root/ulak/memory/` (singular) — corrected to `/root/ulak/memories/` at execution time (known pitfall, documented).
+- Added r33 reference file. Version log updated.
 
 ## r31 Notes
 
