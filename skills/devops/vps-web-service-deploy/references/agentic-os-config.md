@@ -45,19 +45,23 @@ Increase if rarely-updated knowledge files trigger too many stale warnings.
 
 ## Deploy
 
-Primary: Cloudflare Worker via `npx wrangler deploy --outdir dist/client`.
-**Do NOT use bare `wrangler deploy`** — it fails with "Could not detect a directory containing static files" because wrangler can't auto-detect the static dir for TanStack Start SSR apps. The `--outdir dist/client` flag is required.
+Primary: Cloudflare Worker via bare `wrangler deploy` (no `--outdir` flag needed).
 
 ```bash
 cd /root/code/agentic-os
-bun run build                     # produces dist/server/ + dist/client/
-npx wrangler deploy --outdir dist/client   # uploads to Cloudflare Workers CDN
+export PATH="/root/.bun/bin:$PATH"
+bun run build          # produces dist/server/ + dist/client/
+wrangler deploy        # uploads to Cloudflare Workers CDN
 ```
 
-- wrangler is on PATH at `/usr/bin/wrangler` (v4.90+); `npx wrangler deploy` also works
+**`CLOUDFLARE_API_TOKEN` check:** Before deploying, verify the token is set (`echo $CLOUDFLARE_API_TOKEN`). If empty, `source /root/.profile 2>/dev/null` first. In sessions where the token is already in the environment (e.g. some cron contexts), `wrangler deploy` works without sourcing.
+
+- wrangler is on PATH at `/usr/bin/wrangler` (v4.86+)
 - Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
 - Deploy is immediate — new version goes live globally within ~30s
 - No Cloudflare cache purge needed for Worker deploys
+
+**Do NOT use `--outdir dist/client`** — this flag was a previous workaround and is no longer needed (as of r40, 2026-06-02).
 
 Cron: `agentic-wrangler-deploy` (30min) auto-builds + deploys.
 

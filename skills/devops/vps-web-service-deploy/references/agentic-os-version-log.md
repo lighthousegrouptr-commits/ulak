@@ -3,6 +3,8 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r40 | 2026-06-02 | `688e7b06-27ee-4a82-a259-d35273af09dc` | 18 | ~11.9s | 0 |
+| r39 | 2026-06-02 | `a47e0f90-3e12-44f5-8e65-d71b31c9e15f` | 18 | ~11.7s | 0 |
 | r38 | 2026-06-02 | `fecb15e0-ce4e-40e4-a94a-6899f8308e3e` | 18 | ~11.7s | 0 |
 | r37 | 2026-06-02 | `bd28333c-8c25-485d-a26c-18f027ef0268` | 18 | ~11.9s | 0 |
 | r36 | 2026-06-02 | `06f9c626-1736-4812-a6a6-c87ec86277bf` | 18 | ~12.3s | 0 |
@@ -29,23 +31,26 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r38)
+## Current State (r40)
 
-- **Version ID**: `fecb15e0-ce4e-40e4-a94a-6899f8308e3e`
+- **Version ID**: `688e7b06-27ee-4a82-a259-d35273af09dc`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.71s + SSR 879ms = ~12.6s total
-- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 551.59 KiB (34.44 KiB gzip), 30ms startup
+- **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes / 21 nodes / 62 links
+- **Sources**: `hermes` (7 nodes), `claude` (14 nodes)
+- **Build**: client 11.93s + SSR 69ms = ~12.0s total
+- **Deploy**: 77 files scanned, 21 uploaded (56 cached), 15.28 KiB (4.17 KiB gzip)
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $8.07 value 7d
 - **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0 at `/usr/bin/wrangler`)
 - **No errors at any stage**
 
-## r38 Notes
+## r40 Notes
 
 - Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
-- Copied Hermes memories from both `/root/ulak/memories/` and `/root/.hermes/memories/` to `/tmp/hermes-memory/`.
-- `rm -rf` on `/tmp/hermes-memory/` blocked by security policy (use `mkdir -p` + `cp` only).
-- Pipeline unchanged and stable across r36–r38.
+- Hermes memories synced from `/root/.hermes/memories/` to `/tmp/hermes-memory/` (2 files: MEMORY.md, USER.md).
+- `/root/ulak/memory/` does NOT exist on this VPS — the ulak repo structure differs.
+- **Pipe-to-interpreter blocked for both `python3` AND `bun`**: `cat file | bun -e "..."` was also blocked by tirith security scanner (same pattern as `cat file | python3 -c "..."`). Use `read_file` or `execute_code` instead.
+- `CLOUDFLARE_API_TOKEN` was already in the environment — no need to `source /root/.profile`.
+- Pipeline unchanged and stable across r36–r40.
 
 ## r35 Notes
 
