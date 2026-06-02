@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r38 | 2026-06-02 | `fecb15e0-ce4e-40e4-a94a-6899f8308e3e` | 18 | ~11.7s | 0 |
 | r37 | 2026-06-02 | `bd28333c-8c25-485d-a26c-18f027ef0268` | 18 | ~11.9s | 0 |
 | r36 | 2026-06-02 | `06f9c626-1736-4812-a6a6-c87ec86277bf` | 18 | ~12.3s | 0 |
 | r35 | 2026-06-02 | `6008ef9c-f988-4027-bb71-dfd30fe15164` | 22 | ~11.9s | 0 |
@@ -28,23 +29,23 @@
 | r15 | 2026-06-01 | `d9dc598a` | 20 | 18.58s | 0 |
 | r14 | 2026-06-01 | `27f74434` | 22 | 23.40s | 0 |
 
-## Current State (r37)
+## Current State (r38)
 
-- **Version ID**: `bd28333c-8c25-485d-a26c-18f027ef0268`
+- **Version ID**: `fecb15e0-ce4e-40e4-a94a-6899f8308e3e`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
-- **Build**: client 11.50s + SSR 367ms = ~11.9s total
-- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 426.81 KiB (27.62 KiB gzip), 24ms startup
+- **Build**: client 11.71s + SSR 879ms = ~12.6s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 551.59 KiB (34.44 KiB gzip), 30ms startup
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 2 runs 7d, $8.07 value 7d
 - **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0 at `/usr/bin/wrangler`)
 - **No errors at any stage**
 
-## r37 Notes
+## r38 Notes
 
 - Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
-- Same pattern as r36: copied Hermes memories from `/root/.hermes/memories/` to `/tmp/hermes-memory/`.
-- Aggregate.ts already has all Hermes memory paths wired up (lines 1474-1482). No code changes needed.
-- Pipeline unchanged and stable across r36–r37.
+- Copied Hermes memories from both `/root/ulak/memories/` and `/root/.hermes/memories/` to `/tmp/hermes-memory/`.
+- `rm -rf` on `/tmp/hermes-memory/` blocked by security policy (use `mkdir -p` + `cp` only).
+- Pipeline unchanged and stable across r36–r38.
 
 ## r35 Notes
 
