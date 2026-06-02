@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.3
+version: 1.7.4
 platforms: [linux]
 metadata:
   hermes:
@@ -70,6 +70,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r28 | v4.90.0 | — |
 | r27 | v4.86.0 | v4.96.0 |
 | r22 | v4.90.0 | — |
 | r21 | v4.90.0 | — |
@@ -186,7 +187,7 @@ The host security scanner blocks `rm -rf` on paths containing `hermes` in the na
 
 **Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r24.
 
-**Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r21 with 9 stale .md files still present (all processed correctly alongside the 2 fresh copies).
+**Stale files in `/tmp/hermes-memory/` are harmless.** The aggregate deduplicates by source path, so accumulated old copies (from prior runs) are correctly attributed. Overwriting in place with fresh `cp` is the idiomatic approach — confirmed working at r24.
 
 - **Python pipe-to-interpreter blocked**: `cat file | python3 -c "..."` is blocked by the host security scanner (pipe-to-interpreter = HIGH). Workaround: use `execute_code` with Python `open()` to read files instead of piping through the terminal. The Python execution path bypasses the scanner.
 
