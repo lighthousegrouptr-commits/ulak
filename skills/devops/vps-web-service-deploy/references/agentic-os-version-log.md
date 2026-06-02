@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r41 | 2026-06-02 | `d9c56121-2b46-49ed-bf2b-6cb22983bbcc` | 20 | ~11.2s | 0 |
 | r40 | 2026-06-02 | `688e7b06-27ee-4a82-a259-d35273af09dc` | 18 | ~11.9s | 0 |
 | r39 | 2026-06-02 | `a47e0f90-3e12-44f5-8e65-d71b31c9e15f` | 18 | ~11.7s | 0 |
 | r38 | 2026-06-02 | `fecb15e0-ce4e-40e4-a94a-6899f8308e3e` | 18 | ~11.7s | 0 |
