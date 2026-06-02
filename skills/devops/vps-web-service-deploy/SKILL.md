@@ -105,8 +105,8 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r41 | v4.86.0 | — |
 | r40 | v4.86.0 | — |
-| r39 | v4.86.0 | — |
 | r38 | v4.86.0 | v4.96.0 |
 | r37 | v4.86.0 | v4.96.0 |
 | r36 | v4.86.0 | v4.96.0 |
@@ -225,16 +225,14 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
-- **worker.js HTML embedding**: When baking HTML into a Cloudflare Worker, do NOT use `JSON.stringify()` to embed the HTML string — Vite output uses `\\\"` for attributes which `JSON.stringify` double-escapes into `\\\\\"`, producing unescaped quotes that break JS parsing. Do NOT use backtick template literals either — inline JS in the HTML contains backticks that terminate the outer literal. **Two working approaches:**
-  - **Base64**: `Buffer.from(html).toString("base64")` in build script, `atob()` + `TextDecoder` in worker. Works but adds ~33% size overhead.
-  - **Direct string with `</script>` escaping** (preferred for single-file dashboards): `html.replace(/<\/script>/g, "<\\/script>")` then `JSON.stringify()`. Simpler, no size overhead. Use this when the HTML has no backtick template literals in inline JS.
+- **worker.js HTML embedding**: When baking HTML into a Cloudflare Worker as an inline JS string, `JSON.stringify()` does NOT escape `</script>` or `</style>` tags. These appear literally in the output and the browser's HTML parser treats them as closing tags, breaking the page. **The `<\\/script>` replacement does NOT work** — the HTML parser still recognizes the tag. The correct fix is to serve JS from a separate endpoint (`/__app_js`) via synchronous XHR + `eval()`, keeping `</script>` out of the HTML response entirely. See `references/worker-html-script-escaping.md`.
 - **build-worker.mjs path resolution**: The script lives at `scripts/build-worker.mjs` but must resolve paths from the project root. Always use `const projectRoot = resolve(__dirname, \"..\")` and `resolve(projectRoot, "dist/client/dashboard.html")`.
 - **build-worker.mjs must also update `dist/server/wrangler.json`**: The Vite-generated `wrangler.json` does NOT include `kv_namespaces` from `wrangler.jsonc`. The build script must read, patch, and rewrite it after each build, or `wrangler deploy` will succeed but the Worker will have no KV access.
 - **`wrangler kv key put` requires `--remote`**: Without the flag, writes go to the local dev KV namespace (in `~/.wrangler/state/`), NOT production. Always use `wrangler kv key put --binding=NS --remote "key" --path file.json`.
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. Mitigation: ensure `/tmp/hermes-memory/` only contains files NOT already scanned from `/root/.hermes/memories/`, or accept the duplicates as harmless visual clutter.
 
-- **References directory bloat**: The `references/` directory has grown to 40+ files, mostly individual cron run logs. These are low-value after the fact. Prune run-log references older than the last 5 runs to keep the skill directory manageable. Keep only the most recent run log and the version log.
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
 ## Dokploy uses Docker Swarm
@@ -343,4 +341,5 @@ Key files for agentic-os debugging:
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r39)
 - `references/tanstack-start-ssr-worker-deploy.md` — TanStack Start SSR deploy pattern (pre-1.167)
 - `references/tanstack-start-1167-server-entry-removed.md` — **NEW: v1.167+ SSR breakage + static SPA Worker solution**
+- `references/worker-html-script-escaping.md` — **NEW: `</script>` / `</style>` escaping in Worker-embedded HTML, KV binding patching, build-worker.mjs pattern**
 - `references/2026-06-01-memory-graph-hash-mismatch.md` — Chunk hash mismatch debugging

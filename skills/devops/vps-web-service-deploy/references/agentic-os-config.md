@@ -21,8 +21,10 @@ const hermesMemDirs = [
 
 **Pitfall -- memory dir naming**: The live Hermes dir is `memories/` (plural) at
 `/root/.hermes/memories/`. The legacy path uses `memory/` (singular) — does NOT exist on this VPS,
-but the scanner checks it anyway for portability. Similarly, `~/.claude/memory/` doesn't exist
-yet but is included for future use.
+but the scanner checks it anyway for portability. Similarly, `~/.claude/memory/` does NOT exist
+on this VPS (as of r41, 2026-06-02) but is included for future use. The active memory sources
+are: `~/.claude/projects/-root/memory/` (12 files), `/root/.hermes/memories/` (2 files), and
+`/tmp/hermes-memory/` (4 files, synced from both Hermes and Ulak sources).
 
 **Pitfall -- duplicate sources**: If two paths resolve to the same files, duplicate nodes
 appear in the memory graph. Keep only one source path per physical directory.
