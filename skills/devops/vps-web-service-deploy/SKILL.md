@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r39 | v4.86.0 | — |
 | r38 | v4.86.0 | v4.96.0 |
 | r37 | v4.86.0 | v4.96.0 |
 | r36 | v4.86.0 | v4.96.0 |
@@ -773,6 +774,7 @@ bun run build   # Vite overwrites this with the real bundle
 - `references/agentic-os-version-log.md` — Full deploy history (r1–r38): Version IDs, file counts, build times
 - `references/tanstack-start-ssr-worker-deploy.md` — **Tanstack Start SSR → Cloudflare Worker deploy pattern**: correct wrangler.jsonc format, `no_bundle` + ES module rules, conflict cleanup, verification checklist
 - `references/2026-06-01-memory-graph-hash-mismatch.md` — Client/server chunk hash mismatch causing memory-graph-3d 404 on Worker; diagnosis steps, fix, wrangler asset dedup limitation
+- `references/2026-06-02-cron-run-full-refresh-deploy-r39.md` — Run 39: pipeline stable, 18 files, Version ID `b49efb68-8d3d-40f7-b608-c45a9e67a411`, bare `wrangler deploy` confirmed
 - `references/2026-06-02-cron-run-full-refresh-deploy-r38.md` — Run 38: pipeline stable, 18 files, Version ID `fecb15e0`, bare `wrangler deploy` confirmed
 - `references/2026-06-02-cron-run-full-refresh-deploy-r37.md` — Run 37: pipeline stable, 18 files, Version ID `bd28333c`, bare `wrangler deploy` confirmed
 - `references/2026-06-02-cron-run-full-refresh-deploy-r36.md` — Run 36: bare `wrangler deploy` works, `--outdir` flag ignored for Vite projects, Python `shutil` workaround for `rm -rf`
