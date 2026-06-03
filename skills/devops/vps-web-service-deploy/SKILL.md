@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r59 | v4.90.0 | v4.97.0 |
 | r58 | v4.90.0 | v4.97.0 |
 | r57 | v4.90.0 | v4.97.0 |
 | r56 | v4.90.0 | v4.97.0 |
@@ -436,11 +437,16 @@ cd /root/code/agentic-os && rm -rf .wrangler && npx wrangler deploy
 
 Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
-### Typical r58 results
+### Typical results
 - Memory: 26 files / 4 workspaces / 14 events
-- Build: 2840 modules, ~13.5s
-- Deploy: 21 new assets uploaded, 54 cached, version `c59b3509-2178-4d73-a170-b8efa5d879b4`
+- Build: ~2840 modules, ~11–14s
+- Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
+
+| Run | Version ID | Notes |
+|-----|-----------|-------|
+| r59 | `fba77304-e1d7-4e37-bd88-f46ac4e33557` | Clean cron deploy |
+| r58 | `c59b3509-2178-4d73-a170-b8efa5d879b4` | SPA restore from broken minimal worker |
 
 ## Agentic OS: TanStack SPA deploy (PRIMARY PATH) ⭐
 
@@ -512,6 +518,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
 - `references/2026-06-03-build-index-pattern.md` — Legacy minimal worker pattern (AVOID for new deploys)
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
+- `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
 
 ## Cloudflare edge cache bypass (2026-06-03)
 
