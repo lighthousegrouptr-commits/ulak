@@ -3,7 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
-| r43 | 2026-06-02 | `7d9aab67-4219-4671-b77d-36e3e796b1a7` | 23 | ~11.0s | 0 |
+| r43 | 2026-06-02 | `7ef10c24-9242-4bc2-9212-f67e357e64a2` | 23 | ~10.9s | 0 |
 | r42 | 2026-06-02 | `efcb91dc-de0c-404d-bde1-9ec91eb8c62a` | 21 | ~11.6s | 0 |
 | r41 | 2026-06-02 | `d9c56121-2b46-49ed-bf2b-6cb22983bbcc` | 20 | ~11.2s | 0 |
 | r40 | 2026-06-02 | `688e7b06-27ee-4a82-a259-d35273af09dc` | 18 | ~11.9s | 0 |
@@ -39,10 +39,13 @@
 ## r43 Notes
 
 - Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
-- Memory count 23 (up from 21 in r42): `/tmp/hermes-memory/` accumulates files across runs because `rm` in `/tmp` is blocked by tool policy. Stale `.lock` and `sync.sh` files persist but are harmless (aggregator only picks up `.md` files). **This is expected and not a problem** — do not attempt to clean `/tmp` in cron contexts.
-- **`wrangler.jsonc` new warning**: build now prints "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **informational only** — Vite uses its own bundling, and these keys are legacy from the pre-Vite Worker pattern. Safe to ignore; removing them from `wrangler.jsonc` is optional and has no effect on the build.
-- wrangler v4.86.0 (update available v4.97.0) — consistent with r41/r42.
+- **Deploy command fix**: bare `wrangler deploy` now FAILS with config conflict error (both `wrangler.jsonc` at root AND `.wrangler/deploy/config.json` present). Must use `wrangler deploy --config dist/server/wrangler.json`. This is a regression from r42 where bare deploy worked.
+- Memory count 23 files / 2 workspaces / 14 events.
+- `/tmp/hermes-memory/` accumulates stale files across runs (deletion blocked by tool policy). Harmless.
+- `wrangler.jsonc` Vite warning about `no_bundle`/`rules` being ignored is informational only.
+- wrangler v4.86.0 (update available v4.97.0). Bun v1.3.14.
 - `CLOUDFLARE_API_TOKEN` already in environment — no `source /root/.profile` needed.
+- `build-worker.mjs` produces Worker: 15,822 bytes. 21 new/modified assets uploaded.
 
 ## r42 Notes
 

@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.7
+version: 1.7.8
 platforms: [linux]
 metadata:
   hermes:
@@ -126,23 +126,26 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 **Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39 (wrangler v4.86.0).
 
-**⚠️ agentic-os deploy command (UPDATED 2026-06-02):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-02 run r43):**
 ```bash
 cd /root/code/agentic-os
 export PATH="/root/.bun/bin:$PATH"
 bun run build
-wrangler deploy
+wrangler deploy --config dist/server/wrangler.json
 ```
 
-**`CLOUDFLARE_API_TOKEN` check:** Before deploying, verify the token is set:
-```bash
-echo $CLOUDFLARE_API_TOKEN
+**IMPORTANT:** `wrangler deploy` (bare, no `--config`) FAILS when both `wrangler.jsonc` (project root) and `.wrangler/deploy/config.json` (persisted deploy config pointing to `dist/server/wrangler.json`) exist simultaneously. The error is:
 ```
-If empty, source the profile first:
+ERROR: Found both a user configuration file at "wrangler.json"
+  and a deploy configuration file at "../../.wrangler/deploy/config.json".
+  But these do not share the same base path...
+```
+Always use `--config dist/server/wrangler.json` to resolve the source of truth explicitly.
+
+**`CLOUDFLARE_API_TOKEN` check:** In interactive sessions and many cron runs, the token is already in the inherited environment and `wrangler deploy` works without sourcing. If deploy fails with a token error, source the profile:
 ```bash
 source /root/.profile 2>/dev/null
 ```
-In cron/interactive sessions where the token is already in the environment, `wrangler deploy` works without sourcing.
 
 - Auth: `lighthousegrouptr@gmail.com` (stored in `~/.wrangler/`)
 - Deploy is immediate — new version goes live globally within ~30s
