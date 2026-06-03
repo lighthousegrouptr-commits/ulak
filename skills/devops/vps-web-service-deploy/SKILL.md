@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r57 | v4.90.0 | v4.97.0 |
 | r56 | v4.90.0 | v4.97.0 |
 | r55 | v4.86.0 | v4.97.0 |
 | r54 | v4.90.0 | v4.97.0 |
@@ -139,18 +140,19 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 **⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r57 — TanStack SPA path):**
 
 ```bash
-cd /opt/agentic-os
+cd /root/code/agentic-os
 
-# Build the full SPA (memory 3D, all visualizations included)
+# 1. Refresh data (IMPORTANT — stale build = stale dashboard)
+bun run aggregate
+
+# 2. Build the full SPA (memory 3D, all visualizations included)
 bun run build
 
-# KV binding + routes must be patched into dist/server/wrangler.json
-# (Vite does NOT carry these from wrangler.jsonc)
-# Use execute_code Python to add:
-#   kv_namespaces: [{"binding": "LIVE_DATA", "id": "df2bda58d7bb4abe91569c4c48c5bf5b"}]
-#   routes: [{"pattern": "agentic.lighthousegroup.net.tr/*", "zone_name": "lighthousegroup.net.tr"}]
+# 3. Verify Vite carried kv_namespaces + routes into dist/server/wrangler.json
+#    If missing, patch with execute_code Python json module (see pitfalls)
 
-rm -rf .wrangler   # remove stale deploy config
+# 4. Clean stale deploy config + deploy
+rm -rf .wrangler
 cd dist/server && npx wrangler deploy
 ```
 
@@ -246,18 +248,21 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
-- **Do NOT build minimal HTML/JS Worker dashboards** (2026-06-03 lesson): Minimal workers require base64 encoding, sync XHR, `</script>` escaping, eval+atob hacks — and Zaraz STILL breaks them. The user explicitly rejected this approach ("Çözüm zor"). Always deploy the original TanStack SPA (`bun run build` + `wrangler deploy`). The SPA handles Zaraz because its scripts are bundled references, not inline strings.
+- **Do NOT build minimal HTML/JS Worker dashboards** (2026-06-03 lesson, confirmed by user): Minimal workers require base64 encoding, sync XHR, `</script>` escaping, eval+atob hacks — and Zaraz STILL breaks them. The user explicitly rejected this approach ("Çözüm zor"). Always deploy the original TanStack SPA (`bun run build` + `wrangler deploy`). The SPA handles Zaraz because its scripts are bundled references, not inline strings. When asked "which approach?", the user chose option 2 (restore SPA) over option 1 (Zaraz exclude).
 
 - **`</script>` in JS template literals**: Any attempt to include `</script>` inside a JS template literal that gets embedded in HTML will fail. `<\\/script>` still renders as `</script>`. `${_s}` where `_s = '</script>'` still outputs the literal string. All workarounds (base64 eval, external `<script src>`, XHR eval) are fragile under Zaraz. **Do NOT use this pattern.** deploy the SPA instead.
-- **Cloudflare Zaraz injection** (CRITICAL — most common cause of "no data in browser"): When a custom domain is routed through Cloudflare, Zaraz (Cloudflare Web Analytics) injects `<script>` tags that **blank out or delete the content of your inline AND external scripts**. Symptoms: `<script>` tags in DOM have `textContent.length === 0`, Zaraz-owned script tags appear at `/cdn-cgi/zaraz/s.js`, dashboard shows heading but no data. **This is NOT a JS bug — it is Zaraz destroying your scripts at the DOM level.**
-  - **Fix (SPA)**: Deploy the TanStack SPA instead of minimal HTML worker — React SSR generates bundled script references that Zaraz doesn't destroy.
-  - **Fix (dashboard)**: Cloudflare Dashboard → lighthousegroup.net.tr → Speed → Optimization → Web Analytics (Zaraz) → **Exclude** `agentic.lighthousegroup.net.tr/*`. Does NOT affect the main domain.
+- **Cloudflare Zaraz injection** (CRITICAL — most common cause of "no data in browser"): When a custom domain is routed through Cloudflare, Zaraz (Cloudflare Web Analytics) injects `<script>` tags that **blank out or delete the content of your inline AND external scripts**. Symptoms: `<script>` tags in DOM have `textContent.length === 0`, Zaraz-owned script tags appear at `/cdn-cgi/zaraz/s.js`, dashboard shows heading but no data. **This is NOT a JS bug — it is Zaraz destroying your scripts at the DOM level.** Do NOT attempt workarounds (base64 eval, XHR eval, external `/app.js` endpoint) — none work reliably under Zaraz.
+  - **Fix (PRIMARY — always use this)**: Deploy the TanStack SPA (`bun run build` + `wrangler deploy`). React SSR generates bundled script references that Zaraz doesn't destroy. This is the ONLY reliable fix.
+  - **Fix (Zaraz exclude — optional supplement)**: Cloudflare Dashboard → lighthousegroup.net.tr → Speed → Optimization → Web Analytics (Zaraz) → **Exclude** `agentic.lighthousegroup.net.tr/*`. Does NOT affect the main domain. This can be used alongside the SPA deploy but should not be the primary fix.
   - **Diagnostic**: In browser console: `document.querySelectorAll('script')` — check `textContent.length` for each. If your script has length 0 but a Zaraz script (`/cdn-cgi/zaraz/s.js`) is present, it's Zaraz injection.
   - **Zone ID for lighthousegroup.net.tr**: `6d59ce28d0fc5cdb1a71b401d7e5f366`
+  - **Account ID**: `32eb17ead96931c13af8500327096aaf`
 - **Cloudflare edge cache**: If the dashboard works in the agent's browser but NOT the user's browser, it is ALWAYS a Cloudflare edge cache issue. `Cache-Control: no-store` headers are not always respected. Fix: Cloudflare Dashboard → Caching → Cache Rules → Bypass cache for the subdomain. Do NOT debug JS when the agent browser works.
 - **build-worker.mjs path resolution**: The script lives at `scripts/build-worker.mjs` but must resolve paths from the project root. Always use `const projectRoot = resolve(__dirname, "..")` and `resolve(projectRoot, "dist/client/dashboard.html")`.
 - **build-worker.mjs must also update `dist/server/wrangler.json`**: The Vite-generated `wrangler.json` does NOT include `kv_namespaces` from `wrangler.jsonc`. The build script must read, patch, and rewrite it after each build, or `wrangler deploy` will succeed but the Worker will have no KV access.
-- **`wrangler kv key put` requires `--remote`**: Without the flag, writes go to the local dev KV namespace (in `~/.wrangler/state/`), NOT production. Always use `wrangler kv key put --binding=NS --remote "key" --path file.json`.
+- **Stale data in dashboard** (`live-data.json` too old): Run `bun run aggregate` BEFORE `bun run build` to refresh data. Also upload refreshed data to KV: `npx wrangler kv key put --namespace-id df2bda58d7bb4abe91569c4c48c5bf5b "LIVE_DATA" --path src/data/live-data.json --remote`. Without `--remote`, the write goes to local dev KV only (invisible in production). The SPA bakes data at build time into the JS bundle, so stale build = stale dashboard visible to users.
+- **`wrangler kv key put --remote`** (CRITICAL): Without `--remote`, writes go to the LOCAL dev KV namespace (`~/.wrangler/state/`), NOT production. Always use: `wrangler kv key put --namespace-id <id> "KEY" --path file.json --remote`. Double-check the namespace ID — it was previously wrong in `wrangler-minimal.jsonc` (used `6d7c9aa...` instead of `df2bda5...`).
+- **`bun run build` after aggregate**: The SPA bundles `live-data.json` at build time. If you aggregate but don't rebuild, the deployed SPA still shows old data. Full sequence: aggregate → build → patch wrangler.json → deploy.
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
@@ -267,7 +272,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r54 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r57 (2026-06-03).
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
 ## Dokploy uses Docker Swarm
@@ -387,16 +392,15 @@ The **original TanStack SPA** is the correct deployment target for `agentic.ligh
 ### Deploy sequence
 
 ```bash
-cd /opt/agentic-os
+cd /root/code/agentic-os
 
 # 1. Build the SPA (produces dist/client/ + dist/server/)
 bun run build
 
-# 2. Add KV binding + route to Vite-generated wrangler.json
-#    (Vite does NOT carry kv_namespaces or routes from wrangler.jsonc)
-#    Use execute_code with Python json module to patch dist/server/wrangler.json:
-#    - kv_namespaces: [{"binding": "LIVE_DATA", "id": "df2bda58d7bb4abe91569c4c48c5bf5b"}]
-#    - routes: [{"pattern": "agentic.lighthousegroup.net.tr/*", "zone_name": "lighthousegroup.net.tr"}]
+# 2. Verify/patch KV binding + route in Vite-generated wrangler.json
+#    Vite does NOT reliably carry kv_namespaces or routes from wrangler.jsonc.
+#    Use execute_code with Python json module to verify and patch dist/server/wrangler.json.
+#    See "Common deploy errors → KV binding missing" for the exact patch code.
 
 # 3. Clean stale deploy config
 rm -rf .wrangler
@@ -408,13 +412,24 @@ cd dist/server && npx wrangler deploy
 ### Common deploy errors
 
 - **"Found both a user configuration file... and a deploy configuration file"**: Delete `.wrangler/` directory first.
-- **KV binding missing in production**: `dist/server/wrangler.json` is Vite-generated and does NOT include `kv_namespaces` from `wrangler.jsonc`. Must patch after every `bun run build`.
+- **KV binding missing in production**: Vite does NOT reliably carry `kv_namespaces` or `routes` from `wrangler.jsonc` into `dist/server/wrangler.json`. After every `bun run build`, verify `dist/server/wrangler.json` contains both `kv_namespaces` and `routes`. If missing, patch with `execute_code` Python `json` module:
+  ```python
+  import json
+  with open('dist/server/wrangler.json', 'r') as f: d = json.load(f)
+  d['kv_namespaces'] = [{'binding': 'LIVE_DATA', 'id': 'df2bda58d7bb4abe91569c4c48c5bf5b'}]
+  d['routes'] = [{'pattern': 'agentic.lighthousegroup.net.tr/*', 'zone_name': 'lighthousegroup.net.tr'}]
+  with open('dist/server/wrangler.json', 'w') as f: json.dump(d, f, indent=2)
+  ```
+  Do NOT assume Vite will propagate these fields — always verify post-build.
 - **Zone ID**: `6d59ce28d0fc5cdb1a71b401d7e5f366` for `lighthousegroup.net.tr`
 
 ### Wrangler.jsonc setup (source of truth)
 
+The canonical `wrangler.jsonc` MUST include `kv_namespaces` and `routes`:
+
 ```jsonc
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
@@ -428,12 +443,15 @@ cd dist/server && npx wrangler deploy
 }
 ```
 
+**CRITICAL**: After `bun run build`, Vite generates `dist/server/wrangler.json` which may NOT include `kv_namespaces` or `routes`. Always verify post-build and patch if missing (see "Common deploy errors → KV binding missing").
+
 ### Zaraz handling for SPA
 
 The TanStack SPA handles Zaraz correctly out of the box — React SSR generates proper HTML with bundled script references that Zaraz doesn't break. If Zaraz still causes issues, exclude `agentic.lighthousegroup.net.tr/*` via Cloudflare Dashboard → Zaraz → Settings → Exclude Pages.
 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
 - `references/2026-06-03-build-index-pattern.md` — Legacy minimal worker pattern (AVOID for new deploys)
+- `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 
 ## Cloudflare edge cache bypass (2026-06-03)
 
