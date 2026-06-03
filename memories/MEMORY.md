@@ -10,4 +10,6 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 §
 Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts already scans this path. No code patch needed.
 §
-agentic-os: /root/code/agentic-os, Cloudflare Worker (tanstack-start-app). Custom domain: agentic.lighthousegroup.net.tr. Deploy: wrangler deploy. Rebuild dist/server/index.js via scripts/build-index.cjs after bun run build. APP_JS must be external (/app.js endpoint) - inline scripts break due to </script> in template literals (NO escape works). XHR sync works, fetch hangs. Pipeline: aggregate.ts -> transform-live-data.ts -> live-data-legacy.json -> KV upload -> build-index.cjs -> deploy. CRITICAL: </script> no-escape, eval(XHR) fails, Zaraz blanks scripts on custom domains, edge cache ignores no-store.
+agentic-os: /opt/agentic-os, Worker: tanstack-start-app. SPA deploy (ONLY path): `bun run build` → patch dist/server/wrangler.json (KV: df2bda58d7bb4abe91569c4c48c5bf5b, route: agentic.lighthousegroup.net.tr/*, zone: 6d59ce28d0fc5cdb1a71b401d7e5f366) → `cd dist/server && npx wrangler deploy`. Minimal HTML workers FAIL — Zaraz destroys scripts. Zaraz fix: exclude subdomain in CF dashboard.
+§
+CF zone ID: 6d59ce28d0fc5cdb1a71b401d7e5f366. KV LIVE_DATA: df2bda58d7bb4abe91569c4c48c5bf5b.

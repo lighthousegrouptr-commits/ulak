@@ -89,7 +89,17 @@ for src, dst in sources.items():
 
 This bypasses all shell approval issues. `write_file` overwrites without needing deletion. Confirmed working r48.
 
-**Shell sync (interactive sessions only):**
+**Subdirectory-based sync (no prefix needed, aggregator finds them automatically):**
+
+```bash
+mkdir -p /tmp/hermes-memory/hermes /tmp/hermes-memory/ulak
+cp /root/.hermes/memories/*.md /tmp/hermes-memory/hermes/
+cp /root/ulak/memories/*.md /tmp/hermes-memory/ulak/
+```
+
+The aggregator recursively walks `/tmp/hermes-memory/` and assigns each subdirectory its own workspace. No filename collisions possible. Confirmed r56 (26 files, 4 workspaces). **This is the preferred pattern for interactive sessions.** For cron sessions, `mkdir -p` with `cp` may still work if the shell isn't blocked; otherwise fall back to `execute_code`.
+
+**Shell sync with prefixed filenames (legacy, interactive sessions only):**
 
 ```bash
 mkdir -p /tmp/hermes-memory
@@ -103,14 +113,15 @@ done
 
 ### Expected Aggregator Output
 
-| Sync Mode | Files | Workspaces |
-|-----------|-------|------------|
-| Full (with claude-project) | 36 | 2 |
-| Minimal (hermes/ulak only) | 20 | 2 |
-| No /tmp sync | ~16 | 2 |
-| /tmp with accumulated extras | 22 | 2 | ← r55: wrong-path cp left extra files in /tmp
+| Sync Mode | Files | Workspaces | Notes |
+|-----------|-------|------------|-------|
+| Subdirectory sync (hermes/ + ulak/) | 26 | 4 | r56: preferred pattern |
+| Flat prefixed sync | 22 | 2-4 | Depends on prior /tmp contents |
+| Full (with claude-project) | ~36 | 2+ | Older runs with different source set |
+| Minimal (hermes/ulak only) | 20 | 2 | |
+| No /tmp sync | ~16 | 2 | |
 
-**r55 note**: If `/tmp/hermes-memory/` contains extra files from a prior wrong-path `cp` (e.g., `hermes-MEMORY.md`, `ulak-MEMORY.md` from copying `/root/ulak/memory/` instead of `/root/ulak/memories/`), the aggregator counts them all. This inflates the file count (22 vs baseline 18) but is harmless. The fix is to use `execute_code` with `read_file`/`write_file` to write exactly the 2 target files, avoiding accumulation.
+The count varies based on how many Claude project memory dirs exist and whether `/tmp/hermes-memory/` has accumulated files from prior runs. The aggregator only reads `.md` files; extra non-.md files are harmless.
 
 ---
 
