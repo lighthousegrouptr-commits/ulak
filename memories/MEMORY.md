@@ -13,3 +13,5 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts already scans this path. No code patch needed.
 §
 agentic-os: Cloudflare Worker deploy (primary). wrangler deploy from /root/code/agentic-os. Worker name: tanstack-start-app. STALE_DAYS=30 in aggregate.ts. Hermes memory path: /root/ulak/memories/. Bun: export PATH=$PATH:/root/.bun/bin. Cron 2655c3b31f43 auto-deploys. live-data.json committed to git (un-ignored). Do NOT add [start] to nixpacks.toml for pure SPA — but SSR Worker deploy is preferred path.
+§
+Agentic-OS: /root/code/agentic-os, Cloudflare Worker deploy (wrangler). Worker name: tanstack-start-app. Primary deploy path: Cloudflare Worker. STALE_DAYS=30 in aggregate.ts. live-data.json committed to git. Cron 2655c3b31f43 auto-deploys.
