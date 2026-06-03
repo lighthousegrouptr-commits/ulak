@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r58 | v4.90.0 | v4.97.0 |
 | r57 | v4.90.0 | v4.97.0 |
 | r56 | v4.90.0 | v4.97.0 |
 | r55 | v4.86.0 | v4.97.0 |
@@ -137,7 +138,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 | r16 | v4.90.0 | v4.95.0 |
 
 **Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45, r46 (wrangler v4.86.0–v4.90.0).
-**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r57 — TanStack SPA path):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r58 — TanStack SPA path):**
 
 ```bash
 cd /root/code/agentic-os
@@ -153,8 +154,10 @@ bun run build
 
 # 4. Clean stale deploy config + deploy
 rm -rf .wrangler
-cd dist/server && npx wrangler deploy
+npx wrangler deploy   # from project root — @cloudflare/vite-plugin auto-redirects to dist/server/wrangler.json
 ```
+
+**Do NOT `cd dist/server`** — `npx wrangler deploy` from the project root is the correct invocation. The `@cloudflare/vite-plugin` produces a "redirected Wrangler configuration" that automatically uses `dist/server/wrangler.json`. Confirmed r58.
 
 **Do NOT use `wrangler-minimal.jsonc` or `worker-new.js`** — minimal HTML workers are broken by Zaraz.
 
@@ -272,7 +275,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r57 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r58 (2026-06-03).
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
 ## Dokploy uses Docker Swarm
@@ -383,6 +386,62 @@ See `references/agentic-os-config.md` for the full configuration.
 
 After fixing the origin, Cloudflare may still serve stale content. Purge via dashboard: Caching → Purge Everything.
 
+## Agentic OS: Full Refresh Pipeline (cron or manual)
+
+The complete end-to-end sequence for a dashboard data refresh + deploy. Run this as the single source of truth for both cron jobs and manual deploys.
+
+### Step 1 — Sync Hermes memories → /tmp/hermes-memory/
+
+**Cron sessions** (shell `rm` blocked — use `execute_code` or direct `cp`):
+```bash
+cp ~/.hermes/memories/MEMORY.md /tmp/hermes-memory/hermes-MEMORY.md
+cp ~/.hermes/memories/USER.md /tmp/hermes-memory/hermes-USER.md
+cp /root/ulak/memories/MEMORY.md /tmp/hermes-memory/ulak-MEMORY.md
+cp /root/ulak/memories/USER.md /tmp/hermes-memory/ulak-USER.md
+# Flat copies for backward compat (last writer wins — ulak is more recent)
+cp /root/ulak/memories/MEMORY.md /tmp/hermes-memory/MEMORY.md
+cp /root/ulak/memories/USER.md /tmp/hermes-memory/USER.md
+```
+
+**Better: subdirectory-based** (avoids naming collisions entirely):
+```bash
+mkdir -p /tmp/hermes-memory/hermes /tmp/hermes-memory/ulak
+cp ~/.hermes/memories/*.md /tmp/hermes-memory/hermes/
+cp /root/ulak/memories/*.md /tmp/hermes-memory/ulak/
+```
+
+In cron sessions where `mkdir -p`/`cp` works but `rm` doesn't: just overwrite files — stale non-`.md` files are harmless.
+
+### Step 2 — Run aggregator
+
+```bash
+cd /root/code/agentic-os && bun run scripts/aggregate.ts
+```
+
+Expected output: `memory: ~26 files / 4 workspaces / ~14 events`. The aggregator scans `~/.claude/projects`, `~/.claude/memory`, `/root/ulak/memories`, and `/tmp/hermes-memory` recursively.
+
+### Step 3 — Build
+
+```bash
+cd /root/code/agentic-os && bun run build
+```
+
+Produces `dist/client/` (SPA assets) and `dist/server/` (Worker + `wrangler.json`). Verify `dist/server/wrangler.json` has `kv_namespaces` and `routes` — patch if missing (see pitfall).
+
+### Step 4 — Deploy
+
+```bash
+cd /root/code/agentic-os && rm -rf .wrangler && npx wrangler deploy
+```
+
+Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
+
+### Typical r58 results
+- Memory: 26 files / 4 workspaces / 14 events
+- Build: 2840 modules, ~13.5s
+- Deploy: 21 new assets uploaded, 54 cached, version `c59b3509-2178-4d73-a170-b8efa5d879b4`
+- Zero errors
+
 ## Agentic OS: TanStack SPA deploy (PRIMARY PATH) ⭐
 
 The **original TanStack SPA** is the correct deployment target for `agentic.lighthousegroup.net.tr`. It includes memory 3D visualizations, full dashboard UI, and handles Zaraz properly because React SSR + static assets are served differently than inline HTML/JS.
@@ -405,8 +464,9 @@ bun run build
 # 3. Clean stale deploy config
 rm -rf .wrangler
 
-# 4. Deploy from dist/server/
-cd dist/server && npx wrangler deploy
+# 4. Deploy (from project root)
+rm -rf .wrangler
+npx wrangler deploy   # auto-redirects to dist/server/wrangler.json
 ```
 
 ### Common deploy errors

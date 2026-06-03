@@ -115,7 +115,7 @@ done
 
 | Sync Mode | Files | Workspaces | Notes |
 |-----------|-------|------------|-------|
-| Subdirectory sync (hermes/ + ulak/) | 26 | 4 | r56: preferred pattern |
+| Subdirectory sync (hermes/ + ulak/) | 26 | 4 | r56, r58: preferred pattern |
 | Flat prefixed sync | 22 | 2-4 | Depends on prior /tmp contents |
 | Full (with claude-project) | ~36 | 2+ | Older runs with different source set |
 | Minimal (hermes/ulak only) | 20 | 2 | |
