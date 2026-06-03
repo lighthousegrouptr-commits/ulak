@@ -108,6 +108,9 @@ done
 | Full (with claude-project) | 36 | 2 |
 | Minimal (hermes/ulak only) | 20 | 2 |
 | No /tmp sync | ~16 | 2 |
+| /tmp with accumulated extras | 22 | 2 | ← r55: wrong-path cp left extra files in /tmp
+
+**r55 note**: If `/tmp/hermes-memory/` contains extra files from a prior wrong-path `cp` (e.g., `hermes-MEMORY.md`, `ulak-MEMORY.md` from copying `/root/ulak/memory/` instead of `/root/ulak/memories/`), the aggregator counts them all. This inflates the file count (22 vs baseline 18) but is harmless. The fix is to use `execute_code` with `read_file`/`write_file` to write exactly the 2 target files, avoiding accumulation.
 
 ---
 

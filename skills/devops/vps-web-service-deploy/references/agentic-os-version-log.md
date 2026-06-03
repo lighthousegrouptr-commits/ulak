@@ -36,17 +36,27 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r54)
+## Current State (r55)
 
-- **Version ID**: `023d165d-4a58-42e8-93bf-772f84362111`
+- **Version ID**: `920ee716-e088-427a-a611-b7deb7b5edf6`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Memory**: 22 files / 2 workspaces / 14 events / 0 Pinecone indexes
 - **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
-- **Build**: client 11.84s + SSR 355ms = ~12.2s total
+- **Build**: client 10.79s + SSR 65ms = ~10.9s total
 - **Deploy**: 77 files scanned, 21 uploaded (56 cached), 15.57 KiB (4.27 KiB gzip)
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
-- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.90.0, update available v4.97.0)
+- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0, update available v4.97.0)
 - **No errors at any stage**
+
+## r55 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- **Memory count 22 (vs 18 baseline)**: `/tmp/hermes-memory/` accumulated extra files from a prior wrong-path `cp` that copied `hermes-*.md` and `ulak-*.md` files. The aggregator counted all `.md` files across all 4 Hermes paths. This is harmless but inflates the file count. The baseline 18 is with a clean `/tmp/hermes-memory/` (2 files). **Recommendation**: in cron sessions, use `execute_code` with `read_file`/`write_file` to write exactly the files you need — avoids accumulation.
+- **Memory sync**: terminal `cp` from both `/root/ulak/memories/` and `/root/.hermes/memories/` to `/tmp/hermes-memory/`. Both sources also scanned directly by aggregator.
+- **Build**: 10.79s client + 65ms SSR — fastest in recent runs.
+- wrangler v4.86.0 (update available v4.97.0). `CLOUDFLARE_API_TOKEN` already in environment.
+- Worker bundle: 15,822 bytes. 21 new/modified assets uploaded (54 already cached).
+- Pipeline unchanged and stable across r43–r55 (13 consecutive clean runs).
 
 ## r54 Notes
 

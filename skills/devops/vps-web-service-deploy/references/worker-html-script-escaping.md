@@ -8,54 +8,67 @@ Symptoms:
 - Dashboard HTML renders, but all JS values stay at their default placeholders ("—")
 - Browser JS appears to not run at all
 
-## Why `<\\/script>` Does NOT Work
+## What Does NOT Work
 
-Replacing `</script>` with `<\\/script>` in the JSON string does NOT work. The HTML parser still recognizes the closing tag. The only reliable fix is to keep `</script>` out of the HTML response entirely.
+| Attempt | Result |
+|---------|--------|
+| `<\/script>` in JS string | Still recognized by HTML parser |
+| `` ${_s} `` where `_s = '</script>'` | Still outputs literal `</script>` |
+| `<scr"+"ipt>` | Not valid JS in template literals |
+| `eval(XHR.responseText)` | Fails silently in browser/CF contexts |
+| `JSON.stringify(html).replace('</script>', '<\\/script>')` | Backslash is not a valid HTML escape |
 
-## Correct Fix: Separate JS Endpoint
+## Correct Fix: External JS Endpoint + `<script src="">`
 
-Serve JS from a separate Worker endpoint (`/__app_js`) and load via synchronous XHR + `eval()`. Since the JS is a separate plain-text response (not inside a `<script>` HTML block), `</script>` in it is just text.
-
-**`scripts/build-worker.mjs` pattern:**
+**The ONLY reliable pattern is `<script src="/endpoint">`:**
 
 ```js
-const scriptMatch = html.match(/<script>([\s\S]+?)<\/script>/);
-const jsCode = scriptMatch[1].trim();
+// Worker code (dist/server/index.js)
+const HTML = `<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <div id="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>`;
 
-// Replace inline script with XHR loader
-html = html.replace(
-  /<script>[\s\S]+?<\/script>/,
-  '<script>var _r=new XMLHttpRequest();_r.open("GET","/__app_js",false);_r.send();eval(_r.responseText);<\/script>'
-);
-writeFileSync("dist/client/dashboard.html", html);
-const dashboardHtml = readFileSync("dist/client/dashboard.html", "utf-8");
+const APP_JS = `function loadData(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET','/data/live-data.json?t='+Date.now(),false);
+  xhr.send();
+  if(xhr.status!==200){document.getElementById('status').textContent='HTTP '+xhr.status;return}
+  var d=JSON.parse(xhr.responseText);
+  if(!d||!d.meta){document.getElementById('status').textContent='No data';return}
+  // ... populate DOM ...
+}
+loadData();
+setInterval(loadData,60000);`;
 
-const workerCode = `const DASHBOARD_HTML = ${JSON.stringify(dashboardHtml)};
-const APP_JS = ${JSON.stringify(jsCode)};
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname === "/__app_js") return new Response(APP_JS, { headers: {"Content-Type":"application/javascript"} });
-    if (url.pathname === "/data/live-data.json") { /* KV fetch */ }
-    return new Response(DASHBOARD_HTML, { headers: {"Content-Type":"text/html"} });
+    if (url.pathname === "/app.js") {
+      return new Response(APP_JS, {
+        headers: { "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "no-cache" },
+      });
+    }
+    if (url.pathname === "/data/live-data.json") {
+      let data = "{}";
+      try { const kv = await env.LIVE_DATA.get("live-data", { type: "text" }); if (kv) data = kv; } catch(e) {}
+      return new Response(data, { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+    }
+    return new Response(HTML, {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" },
+    });
   },
 };
-`;
-writeFileSync("dist/server/index.js", workerCode);
-
-// Patch wrangler.json with KV binding
-const wj = JSON.parse(readFileSync("dist/server/wrangler.json","utf-8"));
-if (!wj.kv_namespaces) wj.kv_namespaces = [];
-wj.kv_namespaces.push({ binding: "LIVE_DATA", id: "<KV_ID>" });
-writeFileSync("dist/server/wrangler.json", JSON.stringify(wj, null, 2));
 ```
 
-Verified working (2026-06-02).
+## Cloudflare Zaraz Injection Issue
 
-## KV Namespace Binding
+When a custom domain is routed through Cloudflare, **Zaraz** may inject scripts that blank out your scripts. Fix: Disable Zaraz for the subdomain in Cloudflare Dashboard.
 
-Vite-generated `dist/server/wrangler.json` does NOT include `kv_namespaces`. Build script must patch it.
+## Cloudflare Edge Cache
 
-## KV Writes: `--remote` Required
-
-`wrangler kv key put` without `--remote` writes to local dev KV, not production.
+If dashboard works in agent browser but NOT user browser, it is ALWAYS edge cache. Fix: Cloudflare Dashboard -> Caching -> Cache Rules -> Bypass.

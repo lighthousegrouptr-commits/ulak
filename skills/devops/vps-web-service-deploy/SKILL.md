@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r55 | v4.86.0 | v4.97.0 |
 | r54 | v4.90.0 | v4.97.0 |
 | r53 | v4.86.0 | v4.97.0 |
 | r52 | v4.86.0 | v4.97.0 |
@@ -234,7 +235,9 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
-- **worker.js HTML embedding**: When baking HTML into a Cloudflare Worker as an inline JS string, `JSON.stringify()` does NOT escape `</script>` or `</style>` tags. These appear literally in the output and the browser's HTML parser treats them as closing tags, breaking the page. **The `<\\/script>` replacement does NOT work** — the HTML parser still recognizes the tag. The correct fix is to serve JS from a separate endpoint (`/__app_js`) via synchronous XHR + `eval()`, keeping `</script>` out of the HTML response entirely. See `references/worker-html-script-escaping.md`.
+- **`</script>` in JS template literals**: Any attempt to include `</script>` inside a JS template literal that gets embedded in HTML will fail. `<\/script>` still renders as `</script>`. `${_s}` where `_s = '</script>'` still outputs the literal string. `<scr"+"ipt>` is not valid JS in template literals. `eval(atob(base64))` works but `eval(XHR.responseText)` fails silently. The ONLY reliable approach is `<script src="/endpoint">` with a separate Worker route serving the JS file.
+- **Cloudflare Zaraz injection**: When a custom domain is routed through Cloudflare, Zaraz (Cloudflare analytics) may inject `<script>` tags that blank out or override your inline/external scripts. Symptoms: `<script>` tags in DOM have empty `textContent`, Zaraz script tags appear (`/cdn-cgi/zaraz/s.js`). Fix: Disable Zaraz for the subdomain in Cloudflare Dashboard, or add a Cache Rule to bypass.
+- **Cloudflare edge cache**: If the dashboard works in the agent's browser but NOT the user's browser, it is ALWAYS a Cloudflare edge cache issue. `Cache-Control: no-store` headers are not always respected. Fix: Cloudflare Dashboard → Caching → Cache Rules → Bypass cache for the subdomain. Do NOT debug JS when the agent browser works.
 - **build-worker.mjs path resolution**: The script lives at `scripts/build-worker.mjs` but must resolve paths from the project root. Always use `const projectRoot = resolve(__dirname, "..")` and `resolve(projectRoot, "dist/client/dashboard.html")`.
 - **build-worker.mjs must also update `dist/server/wrangler.json`**: The Vite-generated `wrangler.json` does NOT include `kv_namespaces` from `wrangler.jsonc`. The build script must read, patch, and rewrite it after each build, or `wrangler deploy` will succeed but the Worker will have no KV access.
 - **`wrangler kv key put` requires `--remote`**: Without the flag, writes go to the local dev KV namespace (in `~/.wrangler/state/`), NOT production. Always use `wrangler kv key put --binding=NS --remote "key" --path file.json`.
@@ -366,9 +369,9 @@ For Worker-served dashboards, `dist/server/index.js` must be rebuilt after each 
 2. `node scripts/build-index.cjs` → Rebuilds with `/app.js` + `/data/live-data.json` endpoints
 3. `wrangler deploy` → Deploys updated worker
 
-**APP_JS must be served externally** (`<script src="/app.js">`), NOT inlined in HTML string. Inline scripts break due to JS string escaping (`\\n`, `\\"`, `\\\\`).
+**APP_JS must be served externally** (`<script src="/app.js">`), NOT inlined in HTML string. Inline scripts break due to JS string escaping. **Do NOT use `eval(XHR.responseText)`** — it fails silently in Cloudflare contexts.
 
-**Use synchronous XHR in APP_JS**, not `fetch()`. `fetch()` hangs when page is served from Cloudflare Worker (likely `zaraz` monkey-patching). Pattern:
+**Use synchronous XHR in APP_JS**, not `fetch()`. `fetch()` may hang when page is served from Cloudflare Worker (likely `zaraz` monkey-patching). Pattern:
 ```js
 var xhr = new XMLHttpRequest();
 xhr.open('GET', '/data/live-data.json?_=' + Date.now(), false);
@@ -376,13 +379,20 @@ xhr.send();
 var d = JSON.parse(xhr.responseText);
 ```
 
-**Do NOT use `eval(XHR.responseText)` pattern.** `eval()` of XHR-fetched JS fails silently in some browser/Cloudflare contexts. Always use `<script src="/endpoint">` for external JS.
-
-**Data format transform required.** `scripts/aggregate.ts` produces arrays (`modelUsage: []`, `daily: []`, `recentProjects: []`) but the dashboard JS expects objects keyed by name/date (`modelUsage: {"claude-sonnet-4-6": {...}}`, `dailyUsage: {"2026-05-25": {...}}`). Run `bun run scripts/transform-live-data.ts` after each aggregate to produce `src/data/live-data-legacy.json`, then upload that to KV.
+**Data format transform required.** `scripts/aggregate.ts` produces arrays but dashboard JS expects objects keyed by name/date. Run `bun run scripts/transform-live-data.ts` after each aggregate to produce `src/data/live-data-legacy.json`, then upload that to KV.
 
 See `references/2026-06-03-build-index-pattern.md` for full pipeline details.
 
 ## Cloudflare edge cache bypass (2026-06-03)
+
+If the dashboard works in the agent's browser but NOT in the user's browser, it is a **Cloudflare edge cache** issue. The Worker returns correct `Cache-Control: no-store` headers, but Cloudflare may still cache at the edge.
+
+**Fixes (in order of preference):**
+1. Add a version query parameter to the URL: `agentic.lighthousegroup.net.tr?v=42`
+2. Cloudflare Dashboard → Caching → Purge Everything
+3. Add a Cache Rule in Cloudflare Dashboard: `agentic.lighthousegroup.net.tr/*` → Cache Level: Bypass
+
+**Do NOT waste time debugging JS if the agent browser shows data correctly.** The issue is always cache.
 
 If the dashboard works in the agent's browser but NOT in the user's browser, it is a **Cloudflare edge cache** issue. The Worker returns correct `Cache-Control: no-store` headers, but Cloudflare may still cache at the edge.
 
