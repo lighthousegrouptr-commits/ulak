@@ -105,8 +105,8 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r53 | v4.86.0 | v4.97.0 |
 | r52 | v4.86.0 | v4.97.0 |
-| r51 | v4.86.0 | v4.97.0 |
 | r49 | v4.86.0 | v4.97.0 |
 | r48 | v4.86.0 | v4.97.0 |
 | r47 | v4.86.0 | v4.97.0 |
@@ -229,7 +229,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **TanStack Start SSR is broken** (v1.167+): `@tanstack/react-start/server-entry` was removed. Vite plugin silently produces "placeholder" handler. Use static SPA Worker pattern instead. See `references/tanstack-start-1167-server-entry-removed.md`.
 
-- **Pipe-to-interpreter blocked**: `cat file | python3 -c "..."` AND `cat file | bun -e "..."` are both blocked by the host security scanner (tirith pattern: `pipe_to_interpreter`). Use `read_file` for direct file access, or `execute_code` with Python `open()` / Bun `Bun.file()` instead. Never pipe shell output into any interpreter (`python3`, `bun`, `node`, `ruby`, etc.).
+- **Pipe-to-interpreter blocked**: `cat file | python3 -c "..."` AND `cat file | bun -e "..."` are both blocked by the host security scanner (tirith pattern: `pipe_to_interpreter`). Use `read_file` for direct file access, or `execute_code` with Python `open()` / Bun `Bun.file()` instead. Never pipe shell output into any interpreter (`python3`, `bun`, `node`, `ruby`, etc.). Confirmed r53 — even `cat json | python3 -c "import json,sys; d=json.load(sys.stdin)"` triggers the block.
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
@@ -246,7 +246,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r52 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r53 (2026-06-03).
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
 ## Dokploy uses Docker Swarm
