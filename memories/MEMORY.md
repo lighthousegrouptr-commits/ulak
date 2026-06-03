@@ -10,6 +10,6 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 §
 Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts was missing this path - added 2026-06-03. See agentic-os aggregate script memory path fix entry.
 §
-Cloudflare Zaraz (Web Analytics) destroys ALL script types in minimal HTML Workers: inline scripts, external script src references, and even eval(atob()) base64 workarounds. The ONLY reliable approach is deploying a Vite-bundled SPA (TanStack Start) where scripts are referenced as bundled assets. This was confirmed 2026-06-03 on agentic.lighthousegroup.net.tr.
+agentic-os (2026-06-03 r63): aggregate source labeling fixed (hermes/ulak → "hermes" not "obsidian"). Memory graph: All-Obsidian-Claude-Hermes. Browser can't render CF Worker SPAs. <synthetic> JSONL = 0 tokens. KV: df2bda58d7bb4abe91569c4c48c5bf5b.
 §
-agentic-os (2026-06-03): aggregate paths fixed (ulak/hermes memories, ulak skills). Memory graph filter added "hermes". 16 mem files, 30 skills. deploy.sh handles wrangler.jsonc rename. KV: df2bda58d7bb4abe91569c4c48c5bf5b.
+agentic-os (r63 2026-06-03): dist/server/index.js old static HTML not overwritten by TanStack build. KV stale ($8.07 vs $0). $0 cost correct (no Claude usage 7d). Fix: verify post-build (head -3 dist/server/index.js ≠ "Static dashboard server"), upload KV after aggregate. Browser bot detection = blank page is normal.

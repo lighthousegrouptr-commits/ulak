@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.9.0
+version: 1.10.0
 platforms: [linux]
 metadata:
   hermes:
@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r62 | v4.86.0 | v4.97.0 |
 | r61 | v4.86.0 | v4.97.0 |
 | r60 | v4.90.0 | v4.97.0 |
 | r58 | v4.90.0 | v4.97.0 |
@@ -292,6 +293,12 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Memory graph source filter missing "hermes"** (2026-06-03): `src/routes/memory.tsx` has hardcoded `BASE_SOURCES = ["obsidian", "claude"]` — no "hermes". Even after adding Hermes to aggregate paths, the memory page filter buttons won't show Hermes unless `BASE_SOURCES`, `PINECONE_SOURCES`, `SourceId` type, and the `pills` array in `SourceFilter` are all updated. See `references/2026-06-03-memory-graph-source-filter-fix.md`.
 
+- **Aggregate source labeling bug** (2026-06-03): The aggregate script's `parseMemoryFolder` determines workspace source (`wsSource`) only by checking for `claude-` prefix — all other workspaces default to `"obsidian"`. Hermes workspace files appear under "Obsidian" in the memory graph. Fix: add explicit source mapping for `hermes`/`ulak` workspace IDs in both `parseMemoryFolder` and `fileNodes` creation. See `references/2026-06-03-aggregate-source-labeling-fix.md`.
+
+- **Claude JSONL `<synthetic>` model rows** (2026-06-03): Claude JSONL files contain assistant rows with `model: "<synthetic>"` that have `input_tokens: 0, output_tokens: 0`. These are cache hits / synthetic responses and should be skipped for cost/turn counting. The aggregate code already filters `model === "<synthetic>"` in the model tokens loop but NOT in the assistant turn counter. If cost/turns seem too low, check that synthetic rows are excluded from the turn count.
+
+- **Browser can't render Cloudflare Worker SPAs** (2026-06-03): The browser tool (stealth mode) cannot render the Agentic OS SPA at `agentic.lighthousegroup.net.tr` — the page returns empty HTML because bot detection blocks JS execution. This means browser-based UI debugging is NOT possible on this domain. For UI issues, ask the user to: (1) open browser console, (2) run `document.body.innerText` to check rendered content, (3) check for JS errors. The `curl` tool or `execute_code` with Python `urllib` can fetch raw HTML but won't execute JS.
+
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
@@ -299,9 +306,11 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`wrangler.jsonc` Vite warning (NEW)**: Since the build migrated to Vite, `bun run build` prints: "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **purely informational** — Vite manages its own bundling and ignores these Cloudflare Worker-specific keys. Do NOT remove them from `wrangler.jsonc` unless you're certain they aren't needed for the deploy step. They are for the pre-Vite Worker pattern and cause no harm being present.
 
+- **Stale asset hash race condition** (2026-06-03, r63): If `wrangler deploy` fails with `ENOENT` on an asset file like `workspaces._id-<OLD_HASH>.js`, it means the build output changed between the `bun run build` and `wrangler deploy` calls. This can happen if the build is re-invoked or if there's a timing issue. **Fix**: immediately re-run `bun run build` then `wrangler deploy` — the second build will produce fresh hashes that match what wrangler expects. Do NOT try to manually create the missing file. The `rm -rf .wrangler` step is only needed when `.wrangler/` exists from a previous *failed* deploy; a clean second attempt without it is fine.
+
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r61 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r62 (2026-06-03).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -549,7 +558,8 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
 - `references/2026-06-03-zaraz-destroys-all-script-types.md` — **NEW: Zaraz breaks ALL script types (inline, external, base64 eval) — evidence, failed workarounds, why SPA works**
-- `references/2026-06-03-build-index-pattern.md` — Legacy minimal worker pattern (AVOID for new deploys)
+- `references/2026-06-03-r63-dashboard-debug.md` — r63 debug: $0 cost correct (no 7d usage), dist/server/index.js not overwritten by build, KV stale, bot detection
+- `references/2026-06-03-aggregate-legacy-transform.md` — Legacy minimal worker pattern (AVOID for new deploys)
 - `references/2026-06-03-deploy-script-jsonc-rename.md` — **NEW: Canonical deploy script with wrangler.jsonc rename pattern (2026-06-03)**
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
@@ -609,3 +619,4 @@ Key files for agentic-os debugging:
 - `references/tanstack-start-1167-server-entry-removed.md` — **NEW: v1.167+ SSR breakage + static SPA Worker solution**
 - `references/worker-html-script-escaping.md` — **NEW: `</script>` / `</style>` escaping in Worker-embedded HTML, KV binding patching, build-worker.mjs pattern**
 - `references/2026-06-01-memory-graph-hash-mismatch.md` — Chunk hash mismatch debugging
+- `references/2026-06-03-aggregate-source-labeling-fix.md` — **NEW: Aggregate source labeling bug fix (Hermes → "obsidian" mislabel)**

@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r62 | 2026-06-03 | `a6d68bf1-9627-49eb-9b78-2112af7708e1` | 26 | ~11.7s | 0 |
 | r61 | 2026-06-03 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | 26 | ~11.7s | 0 |
 | r57 | 2026-06-03 | `64a812c6-ee13-4771-8372-d6971d6866d5` | 26 | ~10.8s | 0 |
 | r56 | 2026-06-03 | `6fc7e75f-8e4a-4e48-859d-1e684ad0a10d` | 26 | ~20.6s | 0 |
@@ -39,7 +40,30 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r61)
+## Current State (r62)
+
+- **Version ID**: `a6d68bf1-9627-49eb-9b78-2112af7708e1`
+- **URL**: https://agentic.lighthousegroup.net.tr
+- **Memory**: 26 files / 4 workspaces / 14 events / 0 Pinecone indexes
+- **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
+- **Build**: client 11.67s + SSR 247ms = ~11.9s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 15.57 KiB (4.27 KiB gzip)
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
+- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0, update available v4.97.0)
+- **No errors at any stage**
+
+## r62 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- **Memory sync**: flat `cp` from both sources to `/tmp/hermes-memory/` with source-suffixed names (`hermes-MEMORY.md`, `ulak-MEMORY.md`, etc.) plus plain names for backward compat. Also cleaned stale subdirectories (`/tmp/hermes-memory/hermes/`, `/tmp/hermes-memory/ulak/`) left from r56+ experiments — these accumulated over many runs and are harmless but clutter the directory.
+- **Aggregator output**: "memory: 26 files / 4 workspaces / 0 Pinecone indexes / 0 vectors / 14 events" — stable baseline confirmed.
+- **Build**: 11.67s client + 247ms SSR. `wrangler.jsonc` Vite warning about `no_bundle`/`rules` confirmed informational.
+- wrangler v4.86.0 (update available v4.97.0). `CLOUDFLARE_API_TOKEN` already in environment.
+- Worker bundle: 15,822 bytes. 21 new/modified assets uploaded (54 already cached).
+- Pipeline unchanged and stable across r43–r62 (20 consecutive clean runs).
+- **Project path**: `/root/code/agentic-os` (NOT `/opt/agentic-os`).
+
+## r61 Notes
 
 - **Version ID**: `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2`
 - **URL**: https://agentic.lighthousegroup.net.tr
