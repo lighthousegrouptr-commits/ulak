@@ -12,4 +12,4 @@ Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts was missing this
 §
 agentic-os (2026-06-03 r63): aggregate source labeling fixed (hermes/ulak → "hermes" not "obsidian"). Memory graph: All-Obsidian-Claude-Hermes. Browser can't render CF Worker SPAs. <synthetic> JSONL = 0 tokens. KV: df2bda58d7bb4abe91569c4c48c5bf5b.
 §
-agentic-os (r63 2026-06-03): dist/server/index.js old static HTML not overwritten by TanStack build. KV stale ($8.07 vs $0). $0 cost correct (no Claude usage 7d). Fix: verify post-build (head -3 dist/server/index.js ≠ "Static dashboard server"), upload KV after aggregate. Browser bot detection = blank page is normal.
+agentic-os (2026-06-03 r64): Deploy fixed - removed build-worker.mjs from package.json (was overwriting TanStack Start SSR output). TanStack outputs server.js not index.js - copy after build. wrangler deploy --config dist/server/wrangler.json. scripts/deploy.sh canonical. KV: df2bda58d7bb4abe91569c4c48c5bf5b. Browser blank = bot detection (normal). <synthetic> JSONL = 0 tokens.

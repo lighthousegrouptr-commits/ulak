@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r63 | v4.86.0 | v4.97.0 |
 | r62 | v4.86.0 | v4.97.0 |
 | r61 | v4.86.0 | v4.97.0 |
 | r60 | v4.90.0 | v4.97.0 |
@@ -252,6 +253,8 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **TanStack Start SSR is broken** (v1.167+): `@tanstack/react-start/server-entry` was removed. Vite plugin silently produces "placeholder" handler. Use static SPA Worker pattern instead. See `references/tanstack-start-1167-server-entry-removed.md`.
 
+- **TanStack Start `startInstance.fetch` error** (2026-06-03, CONFIRMED): `createStart()` from `@tanstack/react-start` returns an object WITHOUT a `.fetch()` method. Error: `TypeError: startInstance.fetch is not a function`. The SSR path is fundamentally broken for Cloudflare Worker. **Fix**: copy `dist/server/server.js` → `dist/server/index.js`, patch `dist/server/wrangler.json` with routes + KV, deploy with `wrangler deploy --config dist/server/wrangler.json`. See `references/2026-06-03-tanstack-ssr-broken-deploy-fix.md`.
+
 - **Pipe-to-interpreter blocked**: `cat file | python3 -c "..."` AND `cat file | bun -e "..."` are both blocked by the host security scanner (tirith pattern: `pipe_to_interpreter`). Use `read_file` for direct file access, or `execute_code` with Python `open()` / Bun `Bun.file()` instead. Never pipe shell output into any interpreter (`python3`, `bun`, `node`, `ruby`, etc.). Confirmed r53 — even `cat json | python3 -c "import json,sys; d=json.load(sys.stdin)"` triggers the block.
 
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
@@ -277,13 +280,11 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **Do NOT re-deploy a working dashboard unnecessarily** (2026-06-03 lesson, user frustration: "Son yaptığımız şey bozdu"): If the SPA is live and showing data, do NOT run aggregate+build+deploy unless the user explicitly asks for a data refresh. Each unnecessary rebuild+deploy cycle risks breaking things (`.wrangler` cache conflicts, asset hash mismatches, Vite wrangler.json missing KV/routes). If the user reports stale data, suggest a refresh — don't preemptively chain aggregate→build→deploy just because data might be old. When you DO need to refresh, follow the full pipeline carefully and verify each step.
 - **Deploy from project root, NEVER from dist/server/** (2026-06-03 confirmed): Running `cd dist/server && npx wrangler deploy` causes `.wrangler` config path conflict errors. The correct command is always `cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy`. The `@cloudflare/vite-plugin` auto-redirects to `dist/server/wrangler.json`. If `.wrangler/` exists from a previous run, delete it first or deploy fails with "Found both a user configuration file... and a deploy configuration file".
 
-- **`wrangler.jsonc` config conflict** (2026-06-03, NEW): Even when deploying from the project root, if `wrangler.jsonc` exists in the project root AND `dist/server/wrangler.json` exists from the build, wrangler may still report "Found both a user configuration file... and a deploy configuration file". **Fix**: temporarily rename `wrangler.jsonc` before deploy, then restore:
-  ```bash
-  mv /opt/agentic-os/wrangler.jsonc /opt/agentic-os/wrangler.jsonc.bak
-  cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy
-  mv /opt/agentic-os/wrangler.jsonc.bak /opt/agentic-os/wrangler.jsonc
-  ```
-  Or use the `scripts/deploy.sh` script which handles this automatically. The root cause is that wrangler picks up both `wrangler.jsonc` (user config) and `dist/server/wrangler.json` (build output) and can't decide which to use.
+- **`wrangler.jsonc` config conflict** (2026-06-03): Even when deploying from the project root, if `wrangler.jsonc` exists AND `dist/server/wrangler.json` exists, wrangler reports "Found both a user configuration file... and a deploy configuration file". **Fix**: use `bash scripts/deploy.sh` which handles rename/restore automatically. See `references/tanstack-start-server-js-fix.md`.
+
+- **TanStack Start `server.js` vs `index.js`** (2026-06-03, CRITICAL): TanStack Start outputs `dist/server/server.js` but wrangler expects `index.js`. Must copy after build. See `references/tanstack-start-server-js-fix.md`.
+
+- **`build-worker.mjs` must be REMOVED from package.json build script** (2026-06-03, CRITICAL): The script overwrites TanStack Start's SSR output with old static HTML worker. Remove `&& bun run scripts/build-worker.mjs` from build script. See `references/tanstack-start-server-js-fix.md`.
 - **Keep it simple — don't over-engineer** (2026-06-03 user feedback: "Çözüm zor"): When the user says a solution is too complex, STOP and find a simpler path. The minimal HTML worker approach (base64 eval, sync XHR, external script endpoints) was rejected by the user as too complex and fragile. The correct answer was always "restore the original SPA". When facing a broken dashboard, the first question should be "what was working before?" — not "what new approach can I try?"
 
 - **User frustration signals** (2026-06-03): "Son yaptığımız şey bozdu" (our last action broke it) means the user is losing trust. When this happens: (1) acknowledge the regression immediately, (2) identify the exact step that caused it, (3) revert or fix with minimal changes, (4) do NOT attempt additional "improvements" until the user confirms stability. Each unnecessary change cycle increases frustration.
@@ -310,7 +311,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r62 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r63 (2026-06-03).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -480,6 +481,7 @@ Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r63 | `97ccf4d0-1fd8-481a-8e66-8123c0b501f2` | Cron deploy — stale asset hash on 1st attempt, rebuilt + redeployed (26 mem files, 75 assets) |
 | r61 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | Clean cron deploy (26 mem files, 21 assets) |
 | r60 | `e3395e24-81b4-4205-b815-3526d58671fc` | Clean cron deploy (26 mem files, 21 assets) |
 | r58 | `c59b3509-2178-4d73-a170-b8efa5d879b4` | SPA restore from broken minimal worker |
@@ -557,12 +559,14 @@ The canonical `wrangler.jsonc` MUST include `kv_namespaces` and `routes`:
 The TanStack SPA handles Zaraz correctly out of the box — React SSR generates proper HTML with bundled script references that Zaraz doesn't break. If Zaraz still causes issues, exclude `agentic.lighthousegroup.net.tr/*` via Cloudflare Dashboard → Zaraz → Settings → Exclude Pages.
 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
+- `references/2026-06-03-tanstack-ssr-broken-deploy-fix.md` — **NEW: Confirmed broken SSR + working deploy fix (server.js → index.json, --config flag, wrangler.json patch)**
 - `references/2026-06-03-zaraz-destroys-all-script-types.md` — **NEW: Zaraz breaks ALL script types (inline, external, base64 eval) — evidence, failed workarounds, why SPA works**
 - `references/2026-06-03-r63-dashboard-debug.md` — r63 debug: $0 cost correct (no 7d usage), dist/server/index.js not overwritten by build, KV stale, bot detection
 - `references/2026-06-03-aggregate-legacy-transform.md` — Legacy minimal worker pattern (AVOID for new deploys)
 - `references/2026-06-03-deploy-script-jsonc-rename.md` — **NEW: Canonical deploy script with wrangler.jsonc rename pattern (2026-06-03)**
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
+- `references/2026-06-03-cron-deploy-r63.md` — r63 cron full-refresh deploy (stale asset hash race condition, rebuild fix)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
 
 ## Cloudflare edge cache bypass (2026-06-03)
