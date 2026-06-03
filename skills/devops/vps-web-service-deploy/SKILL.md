@@ -311,7 +311,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r63 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r66 (2026-06-03).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -474,13 +474,14 @@ cd /root/code/agentic-os && rm -rf .wrangler && npx wrangler deploy
 Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
 ### Typical results
-- Memory: 26 files / 4 workspaces / 14 events
+- Memory: 24 files / 2 workspaces / 14 events
 - Build: ~2840 modules, ~11–14s
 - Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r66 | `db5477c3-b4aa-4c9d-8bfc-d510dcad56ef` | Cron deploy — 24 mem files, 21 assets, 11.7s build (24th consecutive clean run) |
 | r65 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | Cron deploy — 24 mem files, 21 assets, 11.3s build (23rd consecutive clean run) |
 | r63 | `97ccf4d0-1fd8-481a-8e66-8123c0b501f2` | Cron deploy — stale asset hash on 1st attempt, rebuilt + redeployed (26 mem files, 75 assets) |
 | r61 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | Clean cron deploy (26 mem files, 21 assets) |
