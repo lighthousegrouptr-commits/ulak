@@ -32,17 +32,26 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r50)
+## Current State (r51)
 
-- **Version ID**: `95155acb-b2f5-4f46-8a8b-452fdd0d0257`
+- **Version ID**: `007474e6-4a9b-4747-a37f-e606c2a6e3f0`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 18 files / 2 workspaces / 14 events / 0 Pinecone indexes
 - **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
-- **Build**: client 16.18s + SSR 119ms = ~16.3s total
+- **Build**: client 10.89s + SSR 72ms = ~11.0s total
 - **Deploy**: 77 files scanned, 21 uploaded (56 cached), 15.57 KiB (4.27 KiB gzip)
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
 - **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0, update available v4.97.0)
 - **No errors at any stage**
+
+## r51 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- Memory sync: terminal `cp` (not execute_code) — worked because this run had the copy commands approved.
+- Plain `cp` from `/root/.hermes/memories/` to `/tmp/hermes-memory/` — 2 files. The aggregator also scans `/root/ulak/memories/` and `/root/.hermes/memories/` directly, so `/tmp` is redundant but harmless.
+- Memory count stable at 18 (back to baseline after r49/r50's 23-file tagged experiment).
+- Worker bundle: 15,822 bytes. 21 new/modified assets uploaded.
+- Pipeline unchanged and stable across r43–r51.
 
 ## r50 Notes
 

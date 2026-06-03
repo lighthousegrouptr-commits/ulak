@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r51 | v4.86.0 | v4.97.0 |
 | r50 | v4.86.0 | v4.97.0 |
 | r49 | v4.86.0 | v4.97.0 |
 | r48 | v4.86.0 | v4.97.0 |
