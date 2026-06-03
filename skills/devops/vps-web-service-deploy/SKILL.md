@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r54 | v4.90.0 | v4.97.0 |
 | r53 | v4.86.0 | v4.97.0 |
 | r52 | v4.86.0 | v4.97.0 |
 | r49 | v4.86.0 | v4.97.0 |
@@ -246,7 +247,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r53 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r54 (2026-06-03).
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
 ## Dokploy uses Docker Swarm
@@ -375,7 +376,22 @@ xhr.send();
 var d = JSON.parse(xhr.responseText);
 ```
 
+**Do NOT use `eval(XHR.responseText)` pattern.** `eval()` of XHR-fetched JS fails silently in some browser/Cloudflare contexts. Always use `<script src="/endpoint">` for external JS.
+
+**Data format transform required.** `scripts/aggregate.ts` produces arrays (`modelUsage: []`, `daily: []`, `recentProjects: []`) but the dashboard JS expects objects keyed by name/date (`modelUsage: {"claude-sonnet-4-6": {...}}`, `dailyUsage: {"2026-05-25": {...}}`). Run `bun run scripts/transform-live-data.ts` after each aggregate to produce `src/data/live-data-legacy.json`, then upload that to KV.
+
 See `references/2026-06-03-build-index-pattern.md` for full pipeline details.
+
+## Cloudflare edge cache bypass (2026-06-03)
+
+If the dashboard works in the agent's browser but NOT in the user's browser, it is a **Cloudflare edge cache** issue. The Worker returns correct `Cache-Control: no-store` headers, but Cloudflare may still cache at the edge.
+
+**Fixes (in order of preference):**
+1. Add a version query parameter to the URL: `agentic.lighthousegroup.net.tr?v=42`
+2. Cloudflare Dashboard → Caching → Purge Everything
+3. Add a Cache Rule in Cloudflare Dashboard: `agentic.lighthousegroup.net.tr/*` → Cache Level: Bypass
+
+**Do NOT waste time debugging JS if the agent browser shows data correctly.** The issue is always cache.
 
 ## Overwriting Caddyfile in container
 
