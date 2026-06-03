@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.7.8
+version: 1.7.9
 platforms: [linux]
 metadata:
   hermes:
@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r44 | v4.86.0 | v4.97.0 |
 | r43 | v4.86.0 | v4.97.0 |
 | r42 | v4.86.0 | v4.97.0 |
 | r41 | v4.86.0 | — |
@@ -124,25 +125,19 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 | r20 | v4.86.0 | v4.96.0 |
 | r16 | v4.90.0 | v4.95.0 |
 
-**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39 (wrangler v4.86.0).
+**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44 (wrangler v4.86.0).
 
-**⚠️ agentic-os deploy command (UPDATED 2026-06-02 run r43):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r44):**
 ```bash
 cd /root/code/agentic-os
 export PATH="/root/.bun/bin:$PATH"
 bun run build
-wrangler deploy --config dist/server/wrangler.json
+wrangler deploy
 ```
 
-**IMPORTANT:** `wrangler deploy` (bare, no `--config`) FAILS when both `wrangler.jsonc` (project root) and `.wrangler/deploy/config.json` (persisted deploy config pointing to `dist/server/wrangler.json`) exist simultaneously. The error is:
-```
-ERROR: Found both a user configuration file at "wrangler.json"
-  and a deploy configuration file at "../../.wrangler/deploy/config.json".
-  But these do not share the same base path...
-```
-Always use `--config dist/server/wrangler.json` to resolve the source of truth explicitly.
+**Bare `wrangler deploy` is the correct command.** When both `wrangler.jsonc` (project root) and `.wrangler/deploy/config.json` exist, wrangler prints a "Using redirected Wrangler configuration" notice and automatically uses the deployed config (`dist/server/wrangler.json`). This is **non-fatal** — the deploy proceeds normally. The `--config dist/server/wrangler.json` flag from r43 notes was unnecessary.
 
-**`CLOUDFLARE_API_TOKEN` check:** In interactive sessions and many cron runs, the token is already in the inherited environment and `wrangler deploy` works without sourcing. If deploy fails with a token error, source the profile:
+**`CLOUDFLARE_API_TOKEN` check:** In interactive sessions and most cron runs, the token is already in the inherited environment and `wrangler deploy` works without sourcing. If deploy fails with a token error, source the profile:
 ```bash
 source /root/.profile 2>/dev/null
 ```
@@ -231,7 +226,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **Port conflicts**: VPS ports 80/443 are claimed by Traefik. Use Traefik labels, not host port mapping.
 - **wrangler:modules-watch**: Never try to run `wrangler pages dev` locally on this VPS.
 - **worker.js HTML embedding**: When baking HTML into a Cloudflare Worker as an inline JS string, `JSON.stringify()` does NOT escape `</script>` or `</style>` tags. These appear literally in the output and the browser's HTML parser treats them as closing tags, breaking the page. **The `<\\/script>` replacement does NOT work** — the HTML parser still recognizes the tag. The correct fix is to serve JS from a separate endpoint (`/__app_js`) via synchronous XHR + `eval()`, keeping `</script>` out of the HTML response entirely. See `references/worker-html-script-escaping.md`.
-- **build-worker.mjs path resolution**: The script lives at `scripts/build-worker.mjs` but must resolve paths from the project root. Always use `const projectRoot = resolve(__dirname, \"..\")` and `resolve(projectRoot, "dist/client/dashboard.html")`.
+- **build-worker.mjs path resolution**: The script lives at `scripts/build-worker.mjs` but must resolve paths from the project root. Always use `const projectRoot = resolve(__dirname, "..")` and `resolve(projectRoot, "dist/client/dashboard.html")`.
 - **build-worker.mjs must also update `dist/server/wrangler.json`**: The Vite-generated `wrangler.json` does NOT include `kv_namespaces` from `wrangler.jsonc`. The build script must read, patch, and rewrite it after each build, or `wrangler deploy` will succeed but the Worker will have no KV access.
 - **`wrangler kv key put` requires `--remote`**: Without the flag, writes go to the local dev KV namespace (in `~/.wrangler/state/`), NOT production. Always use `wrangler kv key put --binding=NS --remote "key" --path file.json`.
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
@@ -358,7 +353,7 @@ Key files for agentic-os debugging:
 - `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync
-- `references/agentic-os-version-log.md` — Full deploy history (r1–r39)
+- `references/agentic-os-version-log.md` — Full deploy history (r1–r44)
 - `references/tanstack-start-ssr-worker-deploy.md` — TanStack Start SSR deploy pattern (pre-1.167)
 - `references/tanstack-start-1167-server-entry-removed.md` — **NEW: v1.167+ SSR breakage + static SPA Worker solution**
 - `references/worker-html-script-escaping.md` — **NEW: `</script>` / `</style>` escaping in Worker-embedded HTML, KV binding patching, build-worker.mjs pattern**
