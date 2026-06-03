@@ -247,7 +247,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 ## Pitfalls
 
-- **Cron task source path typo**: Cron task instructions frequently specify `/root/ulak/memory/` (singular). The correct source is `/root/ulak/memories/` (plural). Similarly, `/root/.hermes/memory/` does NOT exist — use `/root/.hermes/memories/`.
+- **Aggregate memory path drift (2026-06-03)**: The Hermes memory directories were renamed from singular to plural (`/root/.hermes/memory/` → `/root/.hermes/memories/`, `/root/ulak/memory/` → `/root/ulak/memories/`). The aggregate.ts `existsSync` guard handles missing paths silently. When debugging low memory file counts, check that the paths in `hermesMemDirs` match the actual directories on disk. Non-existent paths in the array are harmless but add clutter.
 
 - **Decision fatigue**: Levent struggles when offered multiple options. For config/deploy decisions: decide yourself, state the choice and rationale in one sentence, move on. Don't present option menus.
 
@@ -416,8 +416,8 @@ See `references/agentic-os-config.md` for the full configuration.
 | `/root/ulak/memories/` | ✅ Yes | Ulak snapshot, synced every 30 min |
 | `/root/.hermes/memories/` | ✅ Yes | Live Hermes memories (source of truth) |
 | `/tmp/hermes-memory/` | ✅ Yes | Staging dir for deploy pipeline |
-| `/root/.hermes/memory/` | ❌ No | Singular — does NOT exist |
-| `/root/ulak/memory/` | ❌ No | Singular — does NOT exist |
+| `/root/.hermes/memory/` | ❌ No | Singular — renamed to `memories/` |
+| `/root/ulak/memory/` | ❌ No | Singular — renamed to `memories/` |
 
 ## Cloudflare cache invalidation
 
@@ -567,6 +567,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
 - `references/2026-06-03-cron-deploy-r63.md` — r63 cron full-refresh deploy (stale asset hash race condition, rebuild fix)
+- `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
 
 ## Cloudflare edge cache bypass (2026-06-03)
