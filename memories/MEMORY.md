@@ -8,8 +8,8 @@ Lighthousegroup.net.tr email: Resend + Amazon SES. Domain: notify.lighthousegrou
 
 User expects proactive problem-solving. Turkish SEO strategy: block AI engines (noai/noimageai) but allow regular search engines. Blog: weekly Turkish technical posts on AI/GEO/SEO. CMS not yet identified - need repo access or server SSH to connect API. User preferred Semrush MCP but hasn't provided API key yet.
 §
-Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts already scans this path. No code patch needed.
-§
-agentic-os: /opt/agentic-os (active path, not /root/code/agentic-os). Worker: tanstack-start-app. SPA deploy ONLY (minimal HTML workers break under Zaraz). Deploy from project root: aggregate → build → patch dist/server/wrangler.json (KV+routes) → rm -rf .wrangler → wrangler deploy. KV: df2bda5, Zone: 6d59ce28, Account: 32eb17ead. Do NOT re-deploy a working dashboard unnecessarily — each rebuild risks breaking things.
+Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts was missing this path - added 2026-06-03. See agentic-os aggregate script memory path fix entry.
 §
 Cloudflare Zaraz (Web Analytics) destroys ALL script types in minimal HTML Workers: inline scripts, external script src references, and even eval(atob()) base64 workarounds. The ONLY reliable approach is deploying a Vite-bundled SPA (TanStack Start) where scripts are referenced as bundled assets. This was confirmed 2026-06-03 on agentic.lighthousegroup.net.tr.
+§
+agentic-os (2026-06-03): aggregate paths fixed (ulak/hermes memories, ulak skills). Memory graph filter added "hermes". 16 mem files, 30 skills. deploy.sh handles wrangler.jsonc rename. KV: df2bda58d7bb4abe91569c4c48c5bf5b.

@@ -275,7 +275,23 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **`bun run build` after aggregate**: The SPA bundles `live-data.json` at build time. If you aggregate but don't rebuild, the deployed SPA still shows old data. Full sequence: aggregate → build → patch wrangler.json → deploy.
 - **Do NOT re-deploy a working dashboard unnecessarily** (2026-06-03 lesson, user frustration: "Son yaptığımız şey bozdu"): If the SPA is live and showing data, do NOT run aggregate+build+deploy unless the user explicitly asks for a data refresh. Each unnecessary rebuild+deploy cycle risks breaking things (`.wrangler` cache conflicts, asset hash mismatches, Vite wrangler.json missing KV/routes). If the user reports stale data, suggest a refresh — don't preemptively chain aggregate→build→deploy just because data might be old. When you DO need to refresh, follow the full pipeline carefully and verify each step.
 - **Deploy from project root, NEVER from dist/server/** (2026-06-03 confirmed): Running `cd dist/server && npx wrangler deploy` causes `.wrangler` config path conflict errors. The correct command is always `cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy`. The `@cloudflare/vite-plugin` auto-redirects to `dist/server/wrangler.json`. If `.wrangler/` exists from a previous run, delete it first or deploy fails with "Found both a user configuration file... and a deploy configuration file".
+
+- **`wrangler.jsonc` config conflict** (2026-06-03, NEW): Even when deploying from the project root, if `wrangler.jsonc` exists in the project root AND `dist/server/wrangler.json` exists from the build, wrangler may still report "Found both a user configuration file... and a deploy configuration file". **Fix**: temporarily rename `wrangler.jsonc` before deploy, then restore:
+  ```bash
+  mv /opt/agentic-os/wrangler.jsonc /opt/agentic-os/wrangler.jsonc.bak
+  cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy
+  mv /opt/agentic-os/wrangler.jsonc.bak /opt/agentic-os/wrangler.jsonc
+  ```
+  Or use the `scripts/deploy.sh` script which handles this automatically. The root cause is that wrangler picks up both `wrangler.jsonc` (user config) and `dist/server/wrangler.json` (build output) and can't decide which to use.
 - **Keep it simple — don't over-engineer** (2026-06-03 user feedback: "Çözüm zor"): When the user says a solution is too complex, STOP and find a simpler path. The minimal HTML worker approach (base64 eval, sync XHR, external script endpoints) was rejected by the user as too complex and fragile. The correct answer was always "restore the original SPA". When facing a broken dashboard, the first question should be "what was working before?" — not "what new approach can I try?"
+
+- **User frustration signals** (2026-06-03): "Son yaptığımız şey bozdu" (our last action broke it) means the user is losing trust. When this happens: (1) acknowledge the regression immediately, (2) identify the exact step that caused it, (3) revert or fix with minimal changes, (4) do NOT attempt additional "improvements" until the user confirms stability. Each unnecessary change cycle increases frustration.
+- **Aggregate memory path missing** (2026-06-03): The aggregate script does NOT scan `/root/ulak/memories/` or `/root/.hermes/memories/` by default. If memory file count drops after an aggregate run, check if these paths are included in `parseMemory()`. See `references/2026-06-03-aggregate-memory-path-fix.md` for the fix pattern.
+
+- **Aggregate skills path missing** (2026-06-03): `scanInstalledSkills()` only scanned `~/.claude/skills/`, missing `~/ulak/skills/` (28 skills). If dashboard shows fewer skills than expected, add `join(HOME, "ulak", "skills")` to the `skillsDirs` array in `scanInstalledSkills()`. After fix: 30 skills detected (5 from logs + 25 installed but not unused). The fix uses a loop over multiple skills dirs instead of a single hardcoded path. See `references/2026-06-03-aggregate-skills-path-fix.md`.
+
+- **Memory graph source filter missing "hermes"** (2026-06-03): `src/routes/memory.tsx` has hardcoded `BASE_SOURCES = ["obsidian", "claude"]` — no "hermes". Even after adding Hermes to aggregate paths, the memory page filter buttons won't show Hermes unless `BASE_SOURCES`, `PINECONE_SOURCES`, `SourceId` type, and the `pills` array in `SourceFilter` are all updated. See `references/2026-06-03-memory-graph-source-filter-fix.md`.
+
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
@@ -468,7 +484,7 @@ The **original TanStack SPA** is the correct deployment target for `agentic.ligh
 ### Deploy sequence
 
 ```bash
-cd /root/code/agentic-os
+cd /root/code/agentic-os   # or /opt/agentic-os
 
 # 1. Build the SPA (produces dist/client/ + dist/server/)
 bun run build
@@ -478,13 +494,18 @@ bun run build
 #    Use execute_code with Python json module to verify and patch dist/server/wrangler.json.
 #    See "Common deploy errors → KV binding missing" for the exact patch code.
 
-# 3. Clean stale deploy config
+# 3. Clean stale deploy config + rename wrangler.jsonc to avoid config conflict
 rm -rf .wrangler
+mv wrangler.jsonc wrangler.jsonc.bak
 
-# 4. Deploy (from project root)
-rm -rf .wrangler
-npx wrangler deploy   # auto-redirects to dist/server/wrangler.json
+# 4. Deploy (from project root — auto-redirects to dist/server/wrangler.json)
+npx wrangler deploy
+
+# 5. Restore wrangler.jsonc
+mv wrangler.jsonc.bak wrangler.jsonc
 ```
+
+**Or use `scripts/deploy.sh`** which handles all steps including aggregate, build, wrangler.json patching, jsonc rename, deploy, and restore.
 
 ### Common deploy errors
 
@@ -529,6 +550,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
 - `references/2026-06-03-zaraz-destroys-all-script-types.md` — **NEW: Zaraz breaks ALL script types (inline, external, base64 eval) — evidence, failed workarounds, why SPA works**
 - `references/2026-06-03-build-index-pattern.md` — Legacy minimal worker pattern (AVOID for new deploys)
+- `references/2026-06-03-deploy-script-jsonc-rename.md` — **NEW: Canonical deploy script with wrangler.jsonc rename pattern (2026-06-03)**
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
