@@ -142,7 +142,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 | r16 | v4.90.0 | v4.95.0 |
 
 **Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45, r46 (wrangler v4.86.0–v4.90.0).
-**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r58 — TanStack SPA path):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r65 — bare wrangler deploy):**
 
 ```bash
 cd /root/code/agentic-os
@@ -158,12 +158,12 @@ bun run build
 
 # 4. Clean stale deploy config + deploy
 rm -rf .wrangler
-npx wrangler deploy   # from project root — @cloudflare/vite-plugin auto-redirects to dist/server/wrangler.json
+wrangler deploy   # bare wrangler deploy — @cloudflare/vite-plugin auto-redirects to dist/server/wrangler.json
 ```
 
-**Do NOT `cd dist/server`** — `npx wrangler deploy` from the project root is the correct invocation. The `@cloudflare/vite-plugin` produces a "redirected Wrangler configuration" that automatically uses `dist/server/wrangler.json`. Confirmed r58.
+**Do NOT `cd dist/server`** — `wrangler deploy` from the project root is the correct invocation. The `@cloudflare/vite-plugin` produces a "redirected Wrangler configuration" that automatically uses `dist/server/wrangler.json`. Confirmed r43–r65.
 
-**CRITICAL — deploy from project root, NOT dist/server/**: Running `cd dist/server && npx wrangler deploy` causes `.wrangler` config path conflict errors ("Found both a user configuration file... and a deploy configuration file"). Always deploy from the project root: `cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy`. If `.wrangler/` already exists, delete it first or the deploy fails.
+**CRITICAL — deploy from project root, NOT dist/server/**: Running `cd dist/server && wrangler deploy` causes `.wrangler` config path conflict errors ("Found both a user configuration file... and a deploy configuration file"). Always deploy from the project root: `cd /root/code/agentic-os && rm -rf .wrangler && wrangler deploy`. If `.wrangler/` already exists, delete it first or the deploy fails.
 
 **Do NOT use `wrangler-minimal.jsonc` or `worker-new.js`** — minimal HTML workers are broken by Zaraz.
 
@@ -481,6 +481,7 @@ Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r65 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | Cron deploy — 24 mem files, 21 assets, 11.3s build (23rd consecutive clean run) |
 | r63 | `97ccf4d0-1fd8-481a-8e66-8123c0b501f2` | Cron deploy — stale asset hash on 1st attempt, rebuilt + redeployed (26 mem files, 75 assets) |
 | r61 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | Clean cron deploy (26 mem files, 21 assets) |
 | r60 | `e3395e24-81b4-4205-b815-3526d58671fc` | Clean cron deploy (26 mem files, 21 assets) |
@@ -568,6 +569,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
 - `references/2026-06-03-cron-deploy-r63.md` — r63 cron full-refresh deploy (stale asset hash race condition, rebuild fix)
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
+- `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
 
 ## Cloudflare edge cache bypass (2026-06-03)
