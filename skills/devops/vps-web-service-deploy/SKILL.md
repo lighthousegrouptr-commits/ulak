@@ -1,7 +1,7 @@
 ---
 name: vps-web-service-deploy
 description: Deploy and manage web services on the Lighthousegroup VPS (Ubuntu, Docker + Traefik + Dokploy). Covers Docker container creation, Traefik reverse proxy labels, Caddy static file serving, Cloudflare Workers/TanStack Start gotchas, nginx fallbacks, TanStack Start SSR apps (Agentic OS), Hermes memory/skills integration, and full refresh deployment pipelines.
-version: 1.8.0
+version: 1.9.0
 platforms: [linux]
 metadata:
   hermes:
@@ -105,8 +105,8 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r61 | v4.86.0 | v4.97.0 |
 | r60 | v4.90.0 | v4.97.0 |
-| r59 | v4.90.0 | v4.97.0 |
 | r58 | v4.90.0 | v4.97.0 |
 | r57 | v4.90.0 | v4.97.0 |
 | r56 | v4.90.0 | v4.97.0 |
@@ -274,6 +274,8 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **`wrangler kv key put --remote`** (CRITICAL): Without `--remote`, writes go to the LOCAL dev KV namespace (`~/.wrangler/state/`), NOT production. Always use: `wrangler kv key put --namespace-id <id> "KEY" --path file.json --remote`. Double-check the namespace ID — it was previously wrong in `wrangler-minimal.jsonc` (used `6d7c9aa...` instead of `df2bda5...`).
 - **`bun run build` after aggregate**: The SPA bundles `live-data.json` at build time. If you aggregate but don't rebuild, the deployed SPA still shows old data. Full sequence: aggregate → build → patch wrangler.json → deploy.
 - **Do NOT re-deploy a working dashboard unnecessarily** (2026-06-03 lesson, user frustration: "Son yaptığımız şey bozdu"): If the SPA is live and showing data, do NOT run aggregate+build+deploy unless the user explicitly asks for a data refresh. Each unnecessary rebuild+deploy cycle risks breaking things (`.wrangler` cache conflicts, asset hash mismatches, Vite wrangler.json missing KV/routes). If the user reports stale data, suggest a refresh — don't preemptively chain aggregate→build→deploy just because data might be old. When you DO need to refresh, follow the full pipeline carefully and verify each step.
+- **Deploy from project root, NEVER from dist/server/** (2026-06-03 confirmed): Running `cd dist/server && npx wrangler deploy` causes `.wrangler` config path conflict errors. The correct command is always `cd /opt/agentic-os && rm -rf .wrangler && npx wrangler deploy`. The `@cloudflare/vite-plugin` auto-redirects to `dist/server/wrangler.json`. If `.wrangler/` exists from a previous run, delete it first or deploy fails with "Found both a user configuration file... and a deploy configuration file".
+- **Keep it simple — don't over-engineer** (2026-06-03 user feedback: "Çözüm zor"): When the user says a solution is too complex, STOP and find a simpler path. The minimal HTML worker approach (base64 eval, sync XHR, external script endpoints) was rejected by the user as too complex and fragile. The correct answer was always "restore the original SPA". When facing a broken dashboard, the first question should be "what was working before?" — not "what new approach can I try?"
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
@@ -283,7 +285,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. **For cron sessions, the recommended pattern is `execute_code` with Python `read_file`/`write_file` imports** — completely bypasses shell and all approval gates. Confirmed r48.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r60 (2026-06-03).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r61 (2026-06-03).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -453,8 +455,8 @@ Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r61 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | Clean cron deploy (26 mem files, 21 assets) |
 | r60 | `e3395e24-81b4-4205-b815-3526d58671fc` | Clean cron deploy (26 mem files, 21 assets) |
-| r59 | `fba77304-e1d7-4e37-bd88-f46ac4e33557` | Clean cron deploy |
 | r58 | `c59b3509-2178-4d73-a170-b8efa5d879b4` | SPA restore from broken minimal worker |
 
 ## Agentic OS: TanStack SPA deploy (PRIMARY PATH) ⭐
@@ -525,6 +527,7 @@ The canonical `wrangler.jsonc` MUST include `kv_namespaces` and `routes`:
 The TanStack SPA handles Zaraz correctly out of the box — React SSR generates proper HTML with bundled script references that Zaraz doesn't break. If Zaraz still causes issues, exclude `agentic.lighthousegroup.net.tr/*` via Cloudflare Dashboard → Zaraz → Settings → Exclude Pages.
 
 - `references/cloudflare-zaraz-script-destruction.md` — Zaraz diagnosis, Zone ID, exclude pattern
+- `references/2026-06-03-zaraz-destroys-all-script-types.md` — **NEW: Zaraz breaks ALL script types (inline, external, base64 eval) — evidence, failed workarounds, why SPA works**
 - `references/2026-06-03-build-index-pattern.md` — Legacy minimal worker pattern (AVOID for new deploys)
 - `references/2026-06-03-spa-restore-r58.md` — SPA restore from broken minimal worker, Vite wrangler.json propagation fix
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)

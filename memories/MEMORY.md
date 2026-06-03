@@ -11,3 +11,5 @@ User expects proactive problem-solving. Turkish SEO strategy: block AI engines (
 Hermes memory path: /root/ulak/memories/ (plural). Aggregate.ts already scans this path. No code patch needed.
 §
 agentic-os: /opt/agentic-os (active path, not /root/code/agentic-os). Worker: tanstack-start-app. SPA deploy ONLY (minimal HTML workers break under Zaraz). Deploy from project root: aggregate → build → patch dist/server/wrangler.json (KV+routes) → rm -rf .wrangler → wrangler deploy. KV: df2bda5, Zone: 6d59ce28, Account: 32eb17ead. Do NOT re-deploy a working dashboard unnecessarily — each rebuild risks breaking things.
+§
+Cloudflare Zaraz (Web Analytics) destroys ALL script types in minimal HTML Workers: inline scripts, external script src references, and even eval(atob()) base64 workarounds. The ONLY reliable approach is deploying a Vite-bundled SPA (TanStack Start) where scripts are referenced as bundled assets. This was confirmed 2026-06-03 on agentic.lighthousegroup.net.tr.
