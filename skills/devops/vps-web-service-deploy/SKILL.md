@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r50 | v4.86.0 | v4.97.0 |
 | r49 | v4.86.0 | v4.97.0 |
 | r48 | v4.86.0 | v4.97.0 |
 | r47 | v4.86.0 | v4.97.0 |
@@ -238,7 +239,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
-- **`/tmp` file accumulation across cron runs**: In cron sessions, `rm` in `/tmp` triggers "delete in root path" approval gates and fails. Over many runs, `/tmp/hermes-memory/` accumulates stale files (`.lock`, `sync.sh`, old `.md` copies). **This is harmless** — the aggregator only reads `.md` files, and the extra files don't cause errors. Do not waste time trying to clean `/tmp` in cron contexts; only clean up in interactive sessions if needed.
+- **`/tmp/hermes-memory/` copy overwrite gotcha**: When copying memory files from multiple sources (e.g., `/root/ulak/memories/` and `/root/.hermes/memories/`) into `/tmp/hermes-memory/`, files with the same name (MEMORY.md, USER.md) will silently overwrite each other. The last `cp` wins. **Best practice**: copy the live Hermes source (`/root/.hermes/memories/`) LAST so its files take priority, or use `execute_code` with `read_file`/`write_file` to control exactly what gets written. The aggregator deduplicates by workspace ID, so having both sources is fine — but the file content should be from the live (newest) source. In cron sessions, `rm` in `/tmp` triggers "delete in root path" approval gates and fails. Over many runs, `/tmp/hermes-memory/` accumulates stale files (`.lock`, `sync.sh`, old `.md` copies). **This is harmless** — the aggregator only reads `.md` files, and the extra files don't cause errors. Do not waste time trying to clean `/tmp` in cron contexts; only clean up in interactive sessions if needed.
 
 - **`wrangler.jsonc` Vite warning (NEW)**: Since the build migrated to Vite, `bun run build` prints: "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **purely informational** — Vite manages its own bundling and ignores these Cloudflare Worker-specific keys. Do NOT remove them from `wrangler.jsonc` unless you're certain they aren't needed for the deploy step. They are for the pre-Vite Worker pattern and cause no harm being present.
 
@@ -265,9 +266,43 @@ When Dokploy uses Nixpacks (the default), it auto-generates a **Caddyfile** insi
 
 **For pure SPAs, do NOT add a `[start]` section to `nixpacks.toml`.** For SSR apps that need it, use `vite preview` as the start command.
 
+## Cloudflare KV data upload pattern
+
+When a Worker serves live data from KV (not bundled), you MUST upload after every data change:
+
+```bash
+# Put live-data.json into KV
+LIVE_DATA=$(cat src/data/live-data.json)
+wrangler kv key put --binding=LIVE_DATA --remote "live-data" "$LIVE_DATA"
+
+# Verify
+wrangler kv key get --binding=LIVE_DATA --remote "live-data" | head -10
+```
+
+Without this step, Worker returns `"{}"` and dashboard shows all dashes.
+
+## Worker.js HTML storage — KV vs inline
+
+**Never inline large HTML in worker.js.** At ~15KB, `wrangler deploy` fails with `"multipart: message too large"`. Two fixes:
+
+1. **KV HTML pattern** (recommended): Store HTML in KV under `"dashboard-html"`, keep worker.js <2KB as a thin fetcher
+2. **Inline pattern** (tiny dashboards only): Keep HTML under ~5KB total worker size
+
+## wrangler deploy ignores custom file paths
+
+`wrangler deploy worker.js` does NOT deploy `worker.js` if `dist/server/wrangler.json` specifies `"main": "index.js"` with assets. Wrangler always uses its config file. To deploy a custom worker:
+- Either remove/empty the `assets` field in `dist/server/wrangler.json` and set `"main": "worker.js"`
+- Or use the KV HTML pattern with a minimal worker.js
+
+See `references/2026-06-03-static-dashboard-worker-kv.md` for the full pattern.
+
 ## Cloudflare Worker bypass (CRITICAL)
 
 If the repo has `wrangler.jsonc`, it deploys as a **Cloudflare Worker** separate from Dokploy. The Worker may be serving traffic INSTEAD of the Dokploy container. Fix: either remove the Worker route in Cloudflare dashboard or re-deploy the Worker with `wrangler deploy`.
+
+## deploy-dashboard.sh recipe
+
+See `references/deploy-dashboard-sh.md` for a full script that chains aggregate → build → KV upload → deploy. Run this instead of manual steps to avoid forgetting any stage.
 
 ## Build prerequisite: placeholder `dist/server/index.js` (CRITICAL)
 
