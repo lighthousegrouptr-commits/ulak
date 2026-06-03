@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r45 | v4.90.0 | v4.97.0 |
 | r44 | v4.86.0 | v4.97.0 |
 | r43 | v4.86.0 | v4.97.0 |
 | r42 | v4.86.0 | v4.97.0 |
@@ -125,9 +126,9 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 | r20 | v4.86.0 | v4.96.0 |
 | r16 | v4.90.0 | v4.95.0 |
 
-**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44 (wrangler v4.86.0).
+**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45 (wrangler v4.86.0–v4.90.0).
 
-**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r44):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r45):**
 ```bash
 cd /root/code/agentic-os
 export PATH="/root/.bun/bin:$PATH"
@@ -353,7 +354,7 @@ Key files for agentic-os debugging:
 - `references/agentic-os-config.md` — Aggregate memory paths, bun PATH, STALE_DAYS
 - `references/agentic-os-worker-bypass.md` — Cloudflare Worker bypass diagnosis
 - `references/agentic-os-hermes-integration.md` — Hermes skills scanning, memory sync
-- `references/agentic-os-version-log.md` — Full deploy history (r1–r44)
+- `references/agentic-os-version-log.md` — Full deploy history (r1–r45)
 - `references/tanstack-start-ssr-worker-deploy.md` — TanStack Start SSR deploy pattern (pre-1.167)
 - `references/tanstack-start-1167-server-entry-removed.md` — **NEW: v1.167+ SSR breakage + static SPA Worker solution**
 - `references/worker-html-script-escaping.md` — **NEW: `</script>` / `</style>` escaping in Worker-embedded HTML, KV binding patching, build-worker.mjs pattern**
