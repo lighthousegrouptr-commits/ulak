@@ -3,6 +3,8 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r47 | 2026-06-03 | `fbb4cfa1-93cd-4832-bb28-6a44d04f9d79` | 23 | ~12.5s | 0 |
+| r46 | 2026-06-03 | `1be6c877-aa19-4ca5-a261-2c667cd92d59` | 23 | ~10.9s | 0 |
 | r45 | 2026-06-03 | `084ddf9a-c55a-4fbf-900e-e17fb3106d61` | 23 | ~11.0s | 0 |
 | r44 | 2026-06-03 | `71a46a9a-6b2b-4935-810d-a13299abd4b2` | 23 | ~11.0s | 0 |
 | r43 | 2026-06-02 | `7ef10c24-9242-4bc2-9212-f67e357e64a2` | 23 | ~10.9s | 0 |
@@ -26,19 +28,29 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r45)
+## Current State (r46)
 
-- **Version ID**: `084ddf9a-c55a-4fbf-900e-e17fb3106d61`
+- **Version ID**: `1be6c877-aa19-4ca5-a261-2c667cd92d59`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
 - **Memory**: 23 files / 2 workspaces / 14 events / 0 Pinecone indexes
 - **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
-- **Build**: client 10.96s + SSR 377ms = ~11.3s total
+- **Build**: client 10.93s + SSR 65ms = ~11.0s total
 - **Deploy**: 77 files scanned, 21 uploaded (56 cached), 15.57 KiB (4.27 KiB gzip)
 - **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
-- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0, update available v4.97.0)
+- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0)
 - **No errors at any stage**
+- **Memory sync**: Used `write_file` direct-overwrite pattern (no `rm` or `sync.sh` needed) — simplest approach confirmed
 
-## r44 Notes
+## r46 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- **`write_file`-direct-overwrite pattern confirmed as simplest `/tmp` sync method**: read source with `read_file`, write to `/tmp/hermes-memory/`. No deletion, no `sync.sh`, no shell scripting. Stale files in `/tmp` are harmless.
+- Bare `wrangler deploy` works — config conflict warning is non-fatal (r44+ confirmed).
+- Memory count stable at 23 files / 2 workspaces / 14 events.
+- wrangler v4.86.0. `CLOUDFLARE_API_TOKEN` already in environment.
+- `build-worker.mjs` produces Worker: 15,822 bytes. 21 new/modified assets uploaded.
+
+## r45 Notes
 
 - Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
 - **Bare `wrangler deploy` works** — wrangler auto-resolves the `wrangler.jsonc` vs `.wrangler/deploy/config.json` conflict by using the "redirected" config from `.wrangler/deploy/config.json` (which points to `dist/server/wrangler.json`). The r43 note about needing `--config dist/server/wrangler.json` was a false positive — the conflict wrangler warns about is non-fatal and it proceeds with the redirected config automatically.

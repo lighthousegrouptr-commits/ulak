@@ -105,6 +105,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r46 | v4.86.0 | — |
 | r45 | v4.90.0 | v4.97.0 |
 | r44 | v4.86.0 | v4.97.0 |
 | r43 | v4.86.0 | v4.97.0 |
@@ -126,9 +127,9 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 | r20 | v4.86.0 | v4.96.0 |
 | r16 | v4.90.0 | v4.95.0 |
 
-**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45 (wrangler v4.86.0–v4.90.0).
+**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45, r46 (wrangler v4.86.0–v4.90.0).
 
-**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r45):**
+**⚠️ agentic-os deploy command (UPDATED 2026-06-03 run r46):**
 ```bash
 cd /root/code/agentic-os
 export PATH="/root/.bun/bin:$PATH"
@@ -237,16 +238,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **`wrangler.jsonc` Vite warning (NEW)**: Since the build migrated to Vite, `bun run build` prints: "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **purely informational** — Vite manages its own bundling and ignores these Cloudflare Worker-specific keys. Do NOT remove them from `wrangler.jsonc` unless you're certain they aren't needed for the deploy step. They are for the pre-Vite Worker pattern and cause no harm being present.
 
-- **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to create `/tmp/hermes-memory/sync.sh` with the cleanup+copy commands, then execute via `bash /tmp/hermes-memory/sync.sh`. The `write_file` tool is allowed to write files to `/tmp/`, and `bash` can execute them — this bypasses the deletion guard entirely. Example sync.sh:
-  ```bash
-  #!/bin/bash
-  mkdir -p /tmp/hermes-memory
-  rm -f /tmp/hermes-memory/*.md /tmp/hermes-memory/*.lock
-  cp /root/ulak/memories/USER.md /tmp/hermes-memory/USER-ulak.md
-  cp /root/ulak/memories/MEMORY.md /tmp/hermes-memory/MEMORY-ulak.md
-  cp ~/.hermes/memories/USER.md /tmp/hermes-memory/USER-hermes.md
-  cp ~/.hermes/memories/MEMORY.md /tmp/hermes-memory/MEMORY-hermes.md
-  ```
+- **`/tmp` deletion blocked by tool policy**: In non-interactive sessions (cron jobs), `rm -rf /tmp/hermes-memory` and `rm -f /tmp/hermes-memory/*` trigger "delete in root path" approval gates and fail. **Workaround**: use `write_file` to directly overwrite each target file with fresh content — read source files with `read_file`, then write to `/tmp/hermes-memory/`. `write_file` overwrites existing content without needing deletion. Do NOT attempt to clean up stale files (`.lock`, `sync.sh`, old copies) — the aggregator only reads `.md` files and ignores the rest. This is the simplest approach and avoids any deletion or shell scripting.
 
 - **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
