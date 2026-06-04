@@ -3,6 +3,8 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r72 | 2026-06-04 | `33d8c214-0e26-4c3c-8e04-defb022f4533` | 24 | ~13.4s | 0 |
+| r71 | 2026-06-04 | `880fbe96-9fa6-4042-ae91-566f4a24d4f1` | 22 | ~12.1s | 0 |
 | r70 | 2026-06-04 | `282a080d-1275-4474-a06e-e50fada6568f` | 20 | ~11.8s | 0 |
 | r69 | 2026-06-04 | `782d2cab-bafa-46b5-b28c-be7b9cd80d44` | 22 | ~11.3s | 0 |
 | r68 | 2026-06-04 | `8b914c5a-3890-4553-acc3-52dfe3966539` | 22 | ~16.5s | 0 |
@@ -47,28 +49,28 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r70)
+## Current State (r72)
 
-- **Version ID**: `282a080d-1275-4474-a06e-e50fada6568f`
+- **Version ID**: `33d8c214-0e26-4c3c-8e04-defb022f4533`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
-- **Memory**: 20 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Memory**: 24 files / 2 workspaces / 14 events / 0 Pinecone indexes
 - **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
-- **Build**: client 11.82s + SSR 68ms = ~11.9s total
+- **Build**: client 13.39s + SSR 76ms = ~13.5s total
 - **Deploy**: 77 files scanned, 21 uploaded (54 cached), 18.27 KiB (4.80 KiB gzip)
-- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
+- **Aggregator**: 2 Claude projects, 1565 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $2.62 value 7d
 - **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0)
 - **No errors at any stage**
-- **Consecutive clean runs**: 28 (r43–r70)
+- **Consecutive clean runs**: 29 (r43–r72)
 
-## r70 Notes
+## r72 Notes
 
 - Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
-- **Memory sync**: flat `cp` from both sources to `/tmp/hermes-memory/` with source-suffixed names. `rm -rf /tmp/hermes-memory/*` blocked by "delete in root path" approval gate — used `rm -f *.md` in-dir instead. Stale non-`.md` files from prior runs are harmless.
-- **Aggregator output**: "memory: 20 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events" — slight variation from r69 (22) due to sync timing.
-- **Build**: 11.82s client + 68ms SSR. `wrangler.jsonc` Vite warning about `no_bundle`/`rules` confirmed informational (known).
+- **Memory sync**: `cp` from both sources to `/tmp/hermes-memory/` — flat copies with source-suffixed names plus unsuffixed backward-compat copies. `rm` in `/tmp` blocked by approval gate (confirmed again). Stale non-`.md` files from prior runs are harmless and accumulate over time — do NOT attempt cleanup in cron sessions.
+- **Aggregator output**: "memory: 24 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events" — higher file count than r70 (20) because `/tmp/hermes-memory/` now contains both hermes-suffixed and ulak-suffixed copies plus backward-compat flat copies, all picked up by the recursive scanner.
+- **Build**: 13.39s client + 76ms SSR. `wrangler.jsonc` Vite warning about `no_bundle`/`rules` confirmed informational (known).
 - wrangler v4.86.0. `CLOUDFLARE_API_TOKEN` already in environment — no sourcing needed.
 - Worker bundle: 18,270 bytes. 21 new/modified assets uploaded (54 already cached).
 - **Project path**: `/root/code/agentic-os` (NOT `/opt/agentic-os`).
 - **No code changes needed**: aggregate.ts already had all Hermes memory paths including `/tmp/hermes-memory/`.
-- **`rm -rf` in `/tmp` blocked**: Confirmed again — `rm -rf /tmp/hermes-memory/*` triggers approval gate. Workaround: `cd /tmp/hermes-memory && rm -f *.md` or just overwrite with `cp`. Stale files harmless.
+- **`rm -rf` in `/tmp` blocked**: Confirmed again — any `rm` in `/tmp/hermes-memory/` triggers "delete in root path" approval gate. Workaround: just `cp` overwrite. Stale files harmless.
 - **No new pitfalls or corrections** — clean run, pipeline unchanged.

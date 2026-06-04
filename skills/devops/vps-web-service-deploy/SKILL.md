@@ -107,8 +107,8 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r72 | v4.86.0 | — |
 | r69 | v4.86.0 | — |
-| r68 | v4.86.0 | — |
 | r67 | v4.86.0 | v4.97.0 |
 | r63 | v4.86.0 | v4.97.0 |
 | r62 | v4.86.0 | v4.97.0 |
@@ -487,6 +487,7 @@ If deploy fails with "Found both a user configuration file... and a deploy confi
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r72 | `33d8c214-0e26-4c3c-8e04-defb022f4533` | Cron deploy — 24 mem files, 21 assets, 13.4s build (29th consecutive clean run) |
 | r71 | `880fbe96-9fa6-4042-ae91-566f4a24d4f1` | Cron deploy — 22 mem files, rm in /tmp blocked, task used singular path /root/ulak/memory/ (actual: /root/ulak/memories/) |
 | r70 | `282a080d-1275-4474-a06e-e50fada6568f` | Cron deploy — 20 mem files, 21 assets, 11.8s build (28th consecutive clean run) |
 | r68 | `8b914c5a-3890-4553-acc3-52dfe3966539` | Cron deploy — 22 mem files, 21 assets, 16.5s build (27th consecutive clean run) |
@@ -583,6 +584,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-04-cron-deploy-r72.md` — r72 cron full-refresh deploy (24 mem files, 29th consecutive clean run)
 - `references/2026-06-04-cron-deploy-r71.md` — r71 cron full-refresh deploy (22 mem files, singular→plural path correction, rm in /tmp blocked)
 - `references/2026-06-04-cron-deploy-r70.md` — r70 cron full-refresh deploy (20 mem files, rm -rf in /tmp blocked, 28th consecutive clean run)
 - `references/2026-06-04-cron-deploy-r69.md` — r69 cron full-refresh deploy (22 mem files, node -e blocked, bare wrangler confirmed)
