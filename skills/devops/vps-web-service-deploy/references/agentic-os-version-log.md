@@ -3,6 +3,8 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r68 | 2026-06-04 | `8b914c5a-3890-4553-acc3-52dfe3966539` | 22 | ~16.5s | 0 |
+| r67 | 2026-06-03 | `c1419505-845f-48d0-8ddb-1a465586c232` | 20 | ~11.0s | 0 |
 | r66 | 2026-06-03 | `9289331d-5cb4-4b79-818c-1289ae83b403` | 24 | ~12.6s | 0 |
 | r65 | 2026-06-03 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | 24 | ~11.3s | 0 |
 | r64 | 2026-06-03 | `0b6d3dfd-7681-4fcc-b03b-e5aa4f638fb4` | 24 | ~10.5s | 0 |
@@ -43,7 +45,32 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r66)
+## Current State (r68)
+
+- **Version ID**: `8b914c5a-3890-4553-acc3-52dfe3966539`
+- **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
+- **Memory**: 22 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
+- **Build**: client 16.45s + SSR 830ms = ~17.3s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 18.27 KiB (4.80 KiB gzip)
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
+- **Deploy method**: `bun run build` → bare `wrangler deploy` (wrangler v4.86.0)
+- **No errors at any stage**
+
+## r68 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- **Memory sync**: flat `cp` from both sources to `/tmp/hermes-memory/` with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) plus plain names for backward compat. Stale files from previous runs coexist harmlessly.
+- **Aggregator output**: "memory: 22 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events" — stable.
+- **Build**: 16.45s client + 830ms SSR. `wrangler.jsonc` Vite warning about `no_bundle`/`rules` confirmed informational.
+- wrangler v4.86.0. `CLOUDFLARE_API_TOKEN` already in environment.
+- Worker bundle: 18,270 bytes. 21 new/modified assets uploaded (54 already cached).
+- Pipeline unchanged and stable across r43–r68 (26 consecutive clean runs).
+- **Project path**: `/root/code/agentic-os` (NOT `/opt/agentic-os`).
+- **No code changes needed**: aggregate.ts already had all Hermes memory paths. The task to "ensure" these were present was already satisfied.
+- **`/root/ulak/memory/` (singular) confirmed non-existent**: The actual directory is `/root/ulak/memories/` (plural). Same for `/root/.hermes/memory/` → `/root/.hermes/memories/`. The aggregate.ts `existsSync` guard handles missing paths silently. This was already documented in the SKILL.md pitfalls section.
+
+## r67 Notes
 
 - **Version ID**: `9289331d-5cb4-4b79-818c-1289ae83b403`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
