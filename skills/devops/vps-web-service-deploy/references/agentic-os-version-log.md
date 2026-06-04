@@ -3,6 +3,7 @@
 ## Run History
 
 | Run | Date | Version ID | Files | Build | Errors |
+| r66 | 2026-06-03 | `9289331d-5cb4-4b79-818c-1289ae83b403` | 24 | ~12.6s | 0 |
 | r65 | 2026-06-03 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | 24 | ~11.3s | 0 |
 | r64 | 2026-06-03 | `0b6d3dfd-7681-4fcc-b03b-e5aa4f638fb4` | 24 | ~10.5s | 0 |
 | r62 | 2026-06-03 | `a6d68bf1-9627-49eb-9b78-2112af7708e1` | 26 | ~11.7s | 0 |
@@ -42,7 +43,27 @@
 | r25 | 2026-06-01 | `828f7b8a-9587-4d54-bef6-0b964132e401` | 18 | ~19s | 0 |
 | r24 | 2026-06-01 | `a4e2c842-9622-4a2d-a240-1ca88784e856` | 18 | ~18s | 0 |
 
-## Current State (r65)
+## Current State (r66)
+
+- **Version ID**: `9289331d-5cb4-4b79-818c-1289ae83b403`
+- **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev
+- **Memory**: 24 files / 2 workspaces / 14 events / 0 Pinecone indexes
+- **Sources**: `hermes` (via `/tmp/hermes-memory/`, `/root/.hermes/memories/`, `/root/ulak/memories/`), `claude` (via `~/.claude/projects/`)
+- **Build**: client 12.52s + SSR 74ms = ~12.6s total
+- **Deploy**: 77 files scanned, 21 uploaded (54 cached), 18.27 KiB (4.80 KiB gzip)
+- **Aggregator**: 2 Claude projects, 1458 assistant msgs, 8 skills installed, 5 used, 0 runs 7d, $0 value 7d
+- **Deploy method**: `bun run build` → `npx wrangler deploy --config /root/code/agentic-os/dist/server/wrangler.json` (wrangler v4.97.0 via npx)
+- **No errors at any stage**
+
+## r66 Notes
+
+- Cron-triggered run. Pipeline stable: memory sync → aggregate → build → deploy all green.
+- **Memory sync**: `cp -r /root/ulak/memory/* /tmp/hermes-memory/` was a no-op because `/root/ulak/memory/` (singular) doesn't exist. The actual path is `/root/ulak/memories/` (plural). `/tmp/hermes-memory/` already had 8 .md files from prior runs. Aggregate counted 24 files total.
+- **`wrangler` not on PATH in this session**: Used `npx wrangler` instead of bare `wrangler`. Added a wrangler PATH note to the SKILL.md pitfalls section (see "wrangler binary location / PATH issue").
+- **`aggregate.ts` change**: Added `/root/ulak/memory/` to `hermesMemDirs` — harmless dead code since the path doesn't exist.
+- Pipeline unchanged and stable across r43–r66 (24 consecutive clean runs).
+
+## r65 Notes
 
 - **Version ID**: `a4ec30cb-41ad-4f7e-b468-6f195868a27e`
 - **URL**: https://tanstack-start-app.lighthousegrouptr.workers.dev

@@ -81,6 +81,13 @@ ERROR: In a non-interactive environment, it's necessary to set a CLOUDFLARE_API_
 environment variable for wrangler to work.
 ```
 
+**`wrangler` binary location / PATH issue (2026-06-03 r66):** `wrangler` is NOT on `$PATH` as a bare command. Running bare `wrangler deploy` from `/root` fails with command not found. One of these must be used instead:
+- From project root: `cd /root/code/agentic-os && npx wrangler deploy` (npx auto-downloads if missing)
+- From anywhere with absolute config path: `npx wrangler deploy --config /root/code/agentic-os/dist/server/wrangler.json`
+- Via bun: `/root/.bun/bin/bun x wrangler deploy --config dist/server/wrangler.json` (from project root)
+
+The previous "bare `wrangler deploy` from project root" pattern (r43–r65) worked because the shell session had `wrangler` on PATH from a prior `npm install -g` or `npx` usage that cached it. In a fresh cron session or clean shell, bare `wrangler` is not available. **Always use `npx wrangler` or the full path.**
+
 ## Terminal tool loop protection
 
 The terminal tool has a **same-tool-failure guard**: if the same tool fails 3 times in one turn, a warning fires and you must diagnose before retrying. On this VPS, this commonly happens with `bun` commands because `bun` is not on `$PATH`.
@@ -482,7 +489,8 @@ Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory
 | Run | Version ID | Notes |
 |-----|-----------|-------|
 | r66 | `db5477c3-b4aa-4c9d-8bfc-d510dcad56ef` | Cron deploy — 24 mem files, 21 assets, 11.7s build (24th consecutive clean run) |
-| r65 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | Cron deploy — 24 mem files, 21 assets, 11.3s build (23rd consecutive clean run) |
+| r66 | `9289331d-5cb4-4b79-818c-1289ae83b403` | Cron deploy — 24 mem files, 21 assets, 12.6s build (25th consecutive clean run) |
+| r65 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | Cron deploy — 24 mem files, 21 assets, 11.3s build (24th consecutive clean run) |
 | r63 | `97ccf4d0-1fd8-481a-8e66-8123c0b501f2` | Cron deploy — stale asset hash on 1st attempt, rebuilt + redeployed (26 mem files, 75 assets) |
 | r61 | `fe0bfc66-d79e-40f7-8d11-0ad79dad1ec2` | Clean cron deploy (26 mem files, 21 assets) |
 | r60 | `e3395e24-81b4-4205-b815-3526d58671fc` | Clean cron deploy (26 mem files, 21 assets) |
@@ -570,6 +578,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r59.md` — r59 cron full-refresh deploy (clean run, updated version log)
 - `references/2026-06-03-cron-deploy-r63.md` — r63 cron full-refresh deploy (stale asset hash race condition, rebuild fix)
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
+- `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
 
