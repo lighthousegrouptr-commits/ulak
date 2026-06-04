@@ -20,15 +20,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 476
+        "completed": 477
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-24T19:10:28.093507+00:00",
-      "next_run_at": "2026-06-04T13:26:54.689646+00:00",
-      "last_run_at": "2026-06-04T12:25:44.003169+00:00",
+      "next_run_at": "2026-06-04T14:02:51.372626+00:00",
+      "last_run_at": "2026-06-04T12:56:55.928839+00:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -58,17 +58,17 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 193
+        "completed": 194
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-30T19:36:00.679007+00:00",
-      "next_run_at": "2026-06-04T13:25:54.686658+00:00",
-      "last_run_at": "2026-06-04T12:55:54.686658+00:00",
-      "last_status": "error",
-      "last_error": "RuntimeError: HTTP 429: Provider returned error",
+      "next_run_at": "2026-06-04T14:01:51.367881+00:00",
+      "last_run_at": "2026-06-04T13:31:51.367881+00:00",
+      "last_status": "ok",
+      "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
@@ -77,5 +77,5 @@
       "profile": null
     }
   ],
-  "updated_at": "2026-06-04T12:56:54.689859+00:00"
+  "updated_at": "2026-06-04T13:32:51.372872+00:00"
 }
