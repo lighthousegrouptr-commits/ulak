@@ -107,6 +107,8 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r74 | v4.86.0 | v4.98.0 |
+| r73 | v4.86.0 | — |
 | r72 | v4.86.0 | — |
 | r69 | v4.86.0 | — |
 | r67 | v4.86.0 | v4.97.0 |
@@ -490,6 +492,7 @@ If deploy fails with "Found both a user configuration file... and a deploy confi
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r74 | `a01228af-99ee-4ad8-993b-28b06d72825b` | Cron deploy — 22 mem files (flat sync), 6 files in /tmp/hermes-memory/, wrangler v4.86.0 (update v4.98.0) |
 | r73 | `e6bf2519-0f74-4af9-b31a-5b93024e7713` | Cron deploy — 18 mem files (flat sync), python3 -c blocked, bun -e workaround confirmed (30th consecutive clean run) |
 | r72 | `33d8c214-0e26-4c3c-8e04-defb022f4533` | Cron deploy — 24 mem files, 21 assets, 13.4s build (29th consecutive clean run) |
 | r71 | `880fbe96-9fa6-4042-ae91-566f4a24d4f1` | Cron deploy — 22 mem files, rm in /tmp blocked, task used singular path /root/ulak/memory/ (actual: /root/ulak/memories/) |
@@ -588,6 +591,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-04-cron-deploy-r74.md` — r74 cron full-refresh deploy (22 mem files, wrangler v4.86.0, 42+ consecutive clean runs)
 - `references/2026-06-04-cron-deploy-r73.md` — r73 cron full-refresh deploy (18 mem files flat sync, python3 -c blocked, bun -e workaround)
 - `references/2026-06-04-cron-deploy-r72.md` — r72 cron full-refresh deploy (24 mem files, 29th consecutive clean run)
 - `references/2026-06-04-cron-deploy-r71.md` — r71 cron full-refresh deploy (22 mem files, singular→plural path correction, rm in /tmp blocked)
