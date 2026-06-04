@@ -112,6 +112,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r67 | v4.86.0 | v4.97.0 |
 | r63 | v4.86.0 | v4.97.0 |
 | r62 | v4.86.0 | v4.97.0 |
 | r61 | v4.86.0 | v4.97.0 |
@@ -481,13 +482,14 @@ cd /root/code/agentic-os && rm -rf .wrangler && npx wrangler deploy
 Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
 ### Typical results
-- Memory: 24 files / 2 workspaces / 14 events
-- Build: ~2840 modules, ~11–14s
+- Memory: 20 files / 2 workspaces / 14 events
+- Build: ~2840 modules, ~11s
 - Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r67 | `c1419505-845f-48d0-8ddb-1a465586c232` | Cron deploy — 20 mem files, 21 assets, 11.0s build (26th consecutive clean run) |
 | r66 | `db5477c3-b4aa-4c9d-8bfc-d510dcad56ef` | Cron deploy — 24 mem files, 21 assets, 11.7s build (24th consecutive clean run) |
 | r66 | `9289331d-5cb4-4b79-818c-1289ae83b403` | Cron deploy — 24 mem files, 21 assets, 12.6s build (25th consecutive clean run) |
 | r65 | `a4ec30cb-41ad-4f7e-b468-6f195868a27e` | Cron deploy — 24 mem files, 21 assets, 11.3s build (24th consecutive clean run) |
