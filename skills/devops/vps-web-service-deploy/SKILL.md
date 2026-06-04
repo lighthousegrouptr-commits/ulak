@@ -478,14 +478,15 @@ cd /root/code/agentic-os && wrangler deploy
 If deploy fails with "Found both a user configuration file... and a deploy configuration file", retry with `rm -rf .wrangler` first. Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
 ### Typical results
-- Memory: 22 files / 2 workspaces / 14 events (flat sync; subdirectory sync yields 26 files / 4 workspaces)
-- Build: ~2840 modules, ~11s
+- Memory: 20 files / 2 workspaces / 14 events (flat sync; subdirectory sync yields 26 files / 4 workspaces)
+- Build: ~2840 modules, ~12s
 - Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
-| r68 | `8b914c5a-3890-4553-acc3-52dfe3966539` | Cron deploy — 22 mem files, 21 assets, 16.5s build (26th consecutive clean run) |
+| r70 | `282a080d-1275-4474-a06e-e50fada6568f` | Cron deploy — 20 mem files, 21 assets, 11.8s build (28th consecutive clean run) |
+| r68 | `8b914c5a-3890-4553-acc3-52dfe3966539` | Cron deploy — 22 mem files, 21 assets, 16.5s build (27th consecutive clean run) |
 | r67 | `c1419505-845f-48d0-8ddb-1a465586c232` | Cron deploy — 20 mem files, 21 assets, 11.0s build (26th consecutive clean run) |
 | r66 | `db5477c3-b4aa-4c9d-8bfc-d510dcad56ef` | Cron deploy — 24 mem files, 21 assets, 11.7s build (24th consecutive clean run) |
 | r66 | `9289331d-5cb4-4b79-818c-1289ae83b403` | Cron deploy — 24 mem files, 21 assets, 12.6s build (25th consecutive clean run) |
@@ -579,6 +580,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-04-cron-deploy-r70.md` — r70 cron full-refresh deploy (20 mem files, rm -rf in /tmp blocked, 28th consecutive clean run)
 - `references/2026-06-04-cron-deploy-r69.md` — r69 cron full-refresh deploy (22 mem files, node -e blocked, bare wrangler confirmed)
 - `references/2026-06-03-cron-deploy-r60.md` — r60 cron full-refresh deploy (clean, 26 mem files)
 
