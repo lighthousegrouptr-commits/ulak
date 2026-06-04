@@ -11,4 +11,4 @@ Levent ile keyword tercihleri: Docker/Nixpasks config konusunda karar vermekte z
 Whatsapp üzerinden iletişim, markdown kullanmamalı.
 Garip Unicode karakterleri mesajlarda kullanma (WhatsApp render etmez).
 §
-Levent prefers stable, simple solutions. Don't re-deploy working dashboards unnecessarily. When he says "Çözüm zor", find simpler path. Don't over-engineer or present option menus - decide and move on.
+Levent: stable basit çözümler tercih eder. Çalışan dashboard'u gereksiz yere yeniden deploy etme. "Çözüm zor" derse daha basit yol bul. Don't over-engineer. WhatsApp kuralları: Arka plan işlemi SIRASINDA mesaj atma (ne "still working" ne başka). Sadece iş BİTTİĞİNDE sonucu gönder. Ara mesajlar endişelendiriyor.
