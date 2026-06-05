@@ -4,6 +4,10 @@ Full history of Agentic OS dashboard deployments. Each entry is a successful `wr
 
 | Run | Date | Version ID | Notes |
 |-----|------|-----------|-------|
+| r81 | 2026-06-05 | `3cae1315-de0f-43a4-b517-e20d70a8ef3f` | Cron deploy — 18 mem files (clean copy, no /tmp accumulation), wrangler v4.86.0, rm in /tmp blocked (known). Zero errors. |
+| r80 | 2026-06-05 | `995393b6-fa9e-4893-b5f5-ff31a1c2d54a` | Cron deploy — 22 mem files / 2 workspaces, wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
+| r79 | 2026-06-05 | `b4770ff2-14f0-4358-bd0c-a769968a68a7` | Cron deploy — 26 mem files (flat sync, /tmp accumulation effect), wrangler v4.86.0. Zero errors. |
+| r78 | 2026-06-05 | `44fd56ed-72bc-4b89-811c-3c2371f4899c` | Cron deploy — 26 mem files (flat sync, /tmp accumulation effect), wrangler v4.86.0. Zero errors. |
 | r77 | 2026-06-05 | `c7749665-4693-4e2c-b16f-572879604a57` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0 (update v4.98.0), bun at `/usr/local/bin/bun` (no PATH prefix needed), `rm` in /tmp blocked by approval gate (known), `cat | python3` pipe-to-interpreter blocked (known). Zero errors. |
 | r76 | 2026-06-05 | `ad098804-e137-41ba-9a53-86bd630d0182` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, `export PATH` prefix for bun confirmed |
 | r75 | 2026-06-05 | `53a73f3d-9370-49b1-a49a-95009180f1e2` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0 (update v4.98.0), `export PATH` prefix for bun confirmed |
