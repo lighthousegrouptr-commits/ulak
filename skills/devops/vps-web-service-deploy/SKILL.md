@@ -523,13 +523,14 @@ cd /root/code/agentic-os && wrangler deploy
 If deploy fails with "Found both a user configuration file... and a deploy configuration file", retry with `rm -rf .wrangler` first. Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
 ### Typical results
-- Memory: 26 files / 2 workspaces / 14 events (flat sync — `/tmp/hermes-memory/` accumulates across runs, aggregator also scans `~/.claude/projects/` memory dirs directly)
+- Memory: 18–26 files / 2 workspaces / 14 events (varies: flat sync in /tmp accumulates across runs, Claude project count fluctuates; all counts are correct)
 - Build: ~2840 modules, ~11s
 - Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r80 | `ea743d79-2f72-46d6-884d-a1fc8b6d32cc` | Cron deploy — 20 mem files / 2 workspaces (variance: 18–26 range confirmed), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r79 | `b4770ff2-14f0-4358-bd0c-a769968a68a7` | Cron deploy — 26 mem files (flat sync, /tmp accumulates across runs), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r78 | `44fd56ed-72bc-4b89-811c-3c2371f4899c` | Cron deploy — 26 mem files (flat sync, /tmp accumulates across runs), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r77 | `c7749665-4693-4e2c-b16f-572879604a57` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, bun at `/usr/local/bin/bun` (no PATH prefix needed), rm in /tmp blocked (known), cat|python3 blocked (known). Zero errors. |
