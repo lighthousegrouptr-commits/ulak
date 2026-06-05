@@ -20,15 +20,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 518
+        "completed": 519
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-24T19:10:28.093507+00:00",
-      "next_run_at": "2026-06-05T13:59:37.769610+00:00",
-      "last_run_at": "2026-06-05T12:59:36.308520+00:00",
+      "next_run_at": "2026-06-05T14:29:40.163201+00:00",
+      "last_run_at": "2026-06-05T13:29:39.278694+00:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -58,15 +58,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 235
+        "completed": 236
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-30T19:36:00.679007+00:00",
-      "next_run_at": "2026-06-05T13:58:37.767311+00:00",
-      "last_run_at": "2026-06-05T13:28:37.767311+00:00",
+      "next_run_at": "2026-06-05T14:28:40.160942+00:00",
+      "last_run_at": "2026-06-05T13:58:40.160942+00:00",
       "last_status": "error",
       "last_error": "RuntimeError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'ERROR', 'provider_name': 'Stealth', 'is_byok': False}}, 'user_id': 'user_3E8YehTypGP9eNMG9xpcXxGmTQw'}",
       "last_delivery_error": null,
@@ -77,5 +77,5 @@
       "profile": null
     }
   ],
-  "updated_at": "2026-06-05T13:29:37.770267+00:00"
+  "updated_at": "2026-06-05T13:59:40.163367+00:00"
 }
