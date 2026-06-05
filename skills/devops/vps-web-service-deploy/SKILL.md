@@ -105,51 +105,87 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 ## wrangler version tracking
 
-| Run | wrangler version | update available |
-|---|---|---|
+| r79 | v4.86.0 | v4.98.0 |
+| r78 | v4.86.0 | v4.98.0 |
+| r77 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r78 | v4.86.0 | v4.98.0 |
+| r77 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
 | r75 | v4.86.0 | v4.98.0 |
-| r74 | v4.86.0 | v4.98.0 |
-| r73 | v4.86.0 | — |
-| r72 | v4.86.0 | — |
-| r69 | v4.86.0 | — |
-| r67 | v4.86.0 | v4.97.0 |
-| r63 | v4.86.0 | v4.97.0 |
-| r62 | v4.86.0 | v4.97.0 |
-| r61 | v4.86.0 | v4.97.0 |
-| r60 | v4.90.0 | v4.97.0 |
-| r58 | v4.90.0 | v4.97.0 |
-| r57 | v4.90.0 | v4.97.0 |
-| r56 | v4.90.0 | v4.97.0 |
-| r55 | v4.86.0 | v4.97.0 |
-| r54 | v4.90.0 | v4.97.0 |
-| r53 | v4.86.0 | v4.97.0 |
-| r52 | v4.86.0 | v4.97.0 |
-| r49 | v4.86.0 | v4.97.0 |
-| r48 | v4.86.0 | v4.97.0 |
-| r47 | v4.86.0 | v4.97.0 |
-| r46 | v4.86.0 | — |
-| r45 | v4.90.0 | v4.97.0 |
-| r44 | v4.86.0 | v4.97.0 |
-| r43 | v4.86.0 | v4.97.0 |
-| r42 | v4.86.0 | v4.97.0 |
-| r41 | v4.86.0 | — |
-| r40 | v4.86.0 | — |
-| r38 | v4.86.0 | v4.96.0 |
-| r37 | v4.86.0 | v4.96.0 |
-| r36 | v4.86.0 | v4.96.0 |
-| r35 | v4.90.0 | — |
-| r34 | v4.90.0 | — |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 | | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 | | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
 | r33 | v4.86.0 | — |
-| r32 | v4.86.0 | — |
-| r31 | v4.86.0 | — |
-| r30 | v4.86.0 | v4.96.0 |
-| r27 | v4.86.0 | v4.96.0 |
-| r22 | v4.90.0 | — |
-| r21 | v4.90.0 | — |
-| r20 | v4.86.0 | v4.96.0 |
-| r16 | v4.90.0 | v4.95.0 |
-
-**Bare `wrangler deploy` confirmed working** at r33, r36, r37, r38, r39, r44, r45, r46 (wrangler v4.86.0–v4.90.0).
+| r79 | v4.86.0 | v4.98.0 |
+| r78 | v4.86.0 | v4.98.0 |
+| r77 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 | | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 | | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 || r77 | v4.86.0 | v4.98.0 |
+| r76 | v4.86.0 | v4.98.0 |
+| r75 | v4.86.0 | v4.98.0 |
 **⚠️ agentic-os deploy command (UPDATED 2026-06-04 r69 — bare wrangler deploy, no cleanup needed):**
 
 ```bash
@@ -324,7 +360,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Task description path correction (2026-06-04, r71)**: The cron task description says "Source: /root/ulak/memory/ (Hermes agent memories)" but the actual directories are **plural**: `/root/ulak/memories/` and `/root/.hermes/memories/`. The singular paths (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist on disk. The `ulak_sync.sh` script copies into `memories/` (plural). The aggregate.ts handles missing paths gracefully via `existsSync`, but when manually syncing (Step 1 of the pipeline), copying from a non-existent singular path silently produces no files — the aggregate then only picks up Claude data, missing all Hermes memories. **Always verify paths with `ls` before copying.** The correct sync sources are `/root/ulak/memories/*.md` and `/root/.hermes/memories/*.md`.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r78 (2026-06-05).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r79 (2026-06-05).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -494,6 +530,7 @@ If deploy fails with "Found both a user configuration file... and a deploy confi
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r79 | `b4770ff2-14f0-4358-bd0c-a769968a68a7` | Cron deploy — 26 mem files (flat sync, /tmp accumulates across runs), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r78 | `44fd56ed-72bc-4b89-811c-3c2371f4899c` | Cron deploy — 26 mem files (flat sync, /tmp accumulates across runs), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r77 | `c7749665-4693-4e2c-b16f-572879604a57` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, bun at `/usr/local/bin/bun` (no PATH prefix needed), rm in /tmp blocked (known), cat|python3 blocked (known). Zero errors. |
 | r76 | `ad098804-e137-41ba-9a53-86bd630d0182` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, `export PATH` prefix for bun confirmed |
@@ -597,6 +634,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-05-cron-deploy-r79.md` — r79 cron full-refresh deploy (26 mem files, flat sync, /tmp accumulation effect, wrangler v4.86.0)
 - `references/2026-06-05-cron-deploy-r78.md` — r78 cron full-refresh deploy (26 mem files, /tmp accumulation effect, flat sync)
 - `references/2026-06-05-cron-deploy-r77.md` — r77 cron full-refresh deploy (18 mem files flat sync, bun at /usr/local/bin/bun, rm in /tmp blocked, cat|python3 blocked)
 - `references/2026-06-05-cron-deploy-r76.md` — r76 cron full-refresh deploy (18 mem files flat sync, export PATH prefix confirmed, wrangler v4.86.0)
