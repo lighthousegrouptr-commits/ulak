@@ -4,6 +4,7 @@ Full history of Agentic OS dashboard deployments. Each entry is a successful `wr
 
 | Run | Date | Version ID | Notes |
 |-----|------|-----------|-------|
+| r82 | 2026-06-05 | `ab8aa923-692e-4b41-8e30-e0eff550bd26` | Cron deploy — 19 mem files / 2 workspaces (subdirectory sync: hermes + ulak subdirs), wrangler v4.86.0, node -e blocked (known), clean run. Zero errors. |
 | r81 | 2026-06-05 | `3cae1315-de0f-43a4-b517-e20d70a8ef3f` | Cron deploy — 18 mem files (clean copy, no /tmp accumulation), wrangler v4.86.0, rm in /tmp blocked (known). Zero errors. |
 | r80 | 2026-06-05 | `995393b6-fa9e-4893-b5f5-ff31a1c2d54a` | Cron deploy — 22 mem files / 2 workspaces, wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r79 | 2026-06-05 | `b4770ff2-14f0-4358-bd0c-a769968a68a7` | Cron deploy — 26 mem files (flat sync, /tmp accumulation effect), wrangler v4.86.0. Zero errors. |
