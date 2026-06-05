@@ -107,6 +107,7 @@ This applies to ALL `bun` invocations: `bun run scripts/aggregate.ts`, `bun run 
 
 | Run | wrangler version | update available |
 |---|---|---|
+| r75 | v4.86.0 | v4.98.0 |
 | r74 | v4.86.0 | v4.98.0 |
 | r73 | v4.86.0 | — |
 | r72 | v4.86.0 | — |
@@ -321,7 +322,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Task description path correction (2026-06-04, r71)**: The cron task description says "Source: /root/ulak/memory/ (Hermes agent memories)" but the actual directories are **plural**: `/root/ulak/memories/` and `/root/.hermes/memories/`. The singular paths (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist on disk. The `ulak_sync.sh` script copies into `memories/` (plural). The aggregate.ts handles missing paths gracefully via `existsSync`, but when manually syncing (Step 1 of the pipeline), copying from a non-existent singular path silently produces no files — the aggregate then only picks up Claude data, missing all Hermes memories. **Always verify paths with `ls` before copying.** The correct sync sources are `/root/ulak/memories/*.md` and `/root/.hermes/memories/*.md`.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r73 (2026-06-04).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r75 (2026-06-04).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -492,6 +493,7 @@ If deploy fails with "Found both a user configuration file... and a deploy confi
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r75 | `53a73f3d-9370-49b1-a49a-95009180f1e2` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0 (update v4.98.0), `export PATH` prefix for bun confirmed |
 | r74 | `a01228af-99ee-4ad8-993b-28b06d72825b` | Cron deploy — 22 mem files (flat sync), 6 files in /tmp/hermes-memory/, wrangler v4.86.0 (update v4.98.0) |
 | r73 | `e6bf2519-0f74-4af9-b31a-5b93024e7713` | Cron deploy — 18 mem files (flat sync), python3 -c blocked, bun -e workaround confirmed (30th consecutive clean run) |
 | r72 | `33d8c214-0e26-4c3c-8e04-defb022f4533` | Cron deploy — 24 mem files, 21 assets, 13.4s build (29th consecutive clean run) |
@@ -591,6 +593,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-04-cron-deploy-r75.md` — r75 cron full-refresh deploy (18 mem files flat sync, export PATH prefix confirmed, wrangler v4.86.0)
 - `references/2026-06-04-cron-deploy-r74.md` — r74 cron full-refresh deploy (22 mem files, wrangler v4.86.0, 42+ consecutive clean runs)
 - `references/2026-06-04-cron-deploy-r73.md` — r73 cron full-refresh deploy (18 mem files flat sync, python3 -c blocked, bun -e workaround)
 - `references/2026-06-04-cron-deploy-r72.md` — r72 cron full-refresh deploy (24 mem files, 29th consecutive clean run)
