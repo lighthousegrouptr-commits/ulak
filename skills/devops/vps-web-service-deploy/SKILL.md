@@ -312,6 +312,8 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 - **Sibling subagent file conflicts**: When multiple subagents edit the same file (e.g., `src/worker-template.js`, `scripts/build-worker.mjs`, `package.json`), always re-read the file before writing. The `_warning` field in patch/write_file output signals this — do not ignore it.
 - **Hermes memory duplicate nodes**: When multiple Hermes memory paths in the aggregator point to the same physical files (e.g., `/root/.hermes/memories/` and `/tmp/hermes-memory/` containing identical MEMORY.md/USER.md), the memory graph shows duplicate nodes. The aggregator deduplicates by workspace ID but not across workspace sources. **Mitigation**: copy files with source-suffixed names (`MEMORY-ulak.md`, `MEMORY-hermes.md`, `USER-ulak.md`, `USER-hermes.md`) so both sources are preserved distinctly. The ulak versions are more recent (synced every 30 min).
 
+- **Memory file count variance across runs**: The aggregator reports different file counts (18 vs 26) depending on how many files accumulate in `/tmp/hermes-memory/` across runs. Since `rm` is blocked in cron sessions, old files persist. The count also varies based on how many `~/.claude/projects/` memory dirs exist. Both 18 and 26 are "correct" — the dashboard renders fine either way. Don't chase exact counts.
+
 - **`/tmp/hermes-memory/` copy overwrite gotcha**: When copying memory files from multiple sources (e.g., `/root/ulak/memories/` and `/root/.hermes/memories/`) into `/tmp/hermes-memory/`, files with the same name (MEMORY.md, USER.md) will silently overwrite each other. The last `cp` wins. **Best practice**: use **subdirectory-based copy** to avoid collisions entirely — `mkdir -p /tmp/hermes-memory/hermes /tmp/hermes-memory/ulak` then `cp /root/.hermes/memories/*.md /tmp/hermes-memory/hermes/` and `cp /root/ulak/memories/*.md /tmp/hermes-memory/ulak/`. The aggregator recursively scans all subdirs and assigns each its own workspace. Alternative: prefix filenames (`hermes-MEMORY.md`, `ulak-MEMORY.md`) or use `execute_code` with `read_file`/`write_file`. In cron sessions, `rm` in `/tmp` triggers "delete in root path" approval gates and fails. Over many runs, `/tmp/hermes-memory/` accumulates stale files. **This is harmless** — the aggregator only reads `.md` files, and the extra files don't cause errors. Do not waste time trying to clean `/tmp` in cron contexts; only clean up in interactive sessions if needed.
 
 - **`wrangler.jsonc` Vite warning (NEW)**: Since the build migrated to Vite, `bun run build` prints: "your worker config contains configuration options which are ignored since they are not applicable when using Vite: `no_bundle`, `rules`". This is **purely informational** — Vite manages its own bundling and ignores these Cloudflare Worker-specific keys. Do NOT remove them from `wrangler.jsonc` unless you're certain they aren't needed for the deploy step. They are for the pre-Vite Worker pattern and cause no harm being present.
@@ -322,7 +324,7 @@ The host has nginx at `/etc/nginx/`. Sites go in `/etc/nginx/sites-enabled/`. **
 
 - **Task description path correction (2026-06-04, r71)**: The cron task description says "Source: /root/ulak/memory/ (Hermes agent memories)" but the actual directories are **plural**: `/root/ulak/memories/` and `/root/.hermes/memories/`. The singular paths (`/root/ulak/memory/`, `/root/.hermes/memory/`) do NOT exist on disk. The `ulak_sync.sh` script copies into `memories/` (plural). The aggregate.ts handles missing paths gracefully via `existsSync`, but when manually syncing (Step 1 of the pipeline), copying from a non-existent singular path silently produces no files — the aggregate then only picks up Claude data, missing all Hermes memories. **Always verify paths with `ls` before copying.** The correct sync sources are `/root/ulak/memories/*.md` and `/root/.hermes/memories/*.md`.
 
-- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r77 (2026-06-05).
+- **References directory**: Kept pruned to recent runs (r24+) plus structural references. Older run logs (>30 days or >15 versions back) are removed to keep the skill directory manageable. The version log (`references/agentic-os-version-log.md`) retains the full history. Last updated: r78 (2026-06-05).
 - **Project path**: Can be `/root/code/agentic-os/` OR `/opt/agentic-os/` — check which exists before `cd`. Both are the same repo; symlink or clone depending on how it was set up. Use `ls -d /root/code/agentic-os /opt/agentic-os 2>/dev/null` to find.
 - **Project identity confusion**: Multiple projects coexist on this VPS (`musikapp`, `agentic-os`, etc.). **Always confirm which project the user means before touching repos, containers, or configs.**
 
@@ -485,14 +487,14 @@ cd /root/code/agentic-os && wrangler deploy
 If deploy fails with "Found both a user configuration file... and a deploy configuration file", retry with `rm -rf .wrangler` first. Watch for `Current Version ID: <uuid>` in the output. Report that ID plus memory file count.
 
 ### Typical results
-- Memory: 18 files / 2 workspaces / 14 events (flat sync — simpler, sufficient for dashboard)
-- Memory: 26 files / 4 workspaces / 14 events (subdirectory sync — distinguishes Hermes vs Ulak workspaces)
+- Memory: 26 files / 2 workspaces / 14 events (flat sync — `/tmp/hermes-memory/` accumulates across runs, aggregator also scans `~/.claude/projects/` memory dirs directly)
 - Build: ~2840 modules, ~11s
 - Deploy: ~21 new assets uploaded, ~54 cached
 - Zero errors
 
 | Run | Version ID | Notes |
 |-----|-----------|-------|
+| r78 | `44fd56ed-72bc-4b89-811c-3c2371f4899c` | Cron deploy — 26 mem files (flat sync, /tmp accumulates across runs), wrangler v4.86.0, bun at /usr/local/bin/bun, rm in /tmp blocked (known). Zero errors. |
 | r77 | `c7749665-4693-4e2c-b16f-572879604a57` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, bun at `/usr/local/bin/bun` (no PATH prefix needed), rm in /tmp blocked (known), cat|python3 blocked (known). Zero errors. |
 | r76 | `ad098804-e137-41ba-9a53-86bd630d0182` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0, `export PATH` prefix for bun confirmed |
 | r75 | `53a73f3d-9370-49b1-a49a-95009180f1e2` | Cron deploy — 18 mem files (flat sync), wrangler v4.86.0 (update v4.98.0), `export PATH` prefix for bun confirmed |
@@ -595,6 +597,7 @@ The TanStack SPA handles Zaraz correctly out of the box — React SSR generates 
 - `references/2026-06-03-cron-deploy-r64.md` — r64 cron full-refresh deploy (24 mem files, memory directory singular→plural rename, flat sync)
 - `references/2026-06-03-cron-deploy-r66.md` — r66 cron full-refresh deploy (24 mem files, wrangler PATH issue, npx fallback)
 - `references/2026-06-03-cron-deploy-r65.md` — r65 cron full-refresh deploy (24 mem files, no code changes needed, bare wrangler deploy confirmed)
+- `references/2026-06-05-cron-deploy-r78.md` — r78 cron full-refresh deploy (26 mem files, /tmp accumulation effect, flat sync)
 - `references/2026-06-05-cron-deploy-r77.md` — r77 cron full-refresh deploy (18 mem files flat sync, bun at /usr/local/bin/bun, rm in /tmp blocked, cat|python3 blocked)
 - `references/2026-06-05-cron-deploy-r76.md` — r76 cron full-refresh deploy (18 mem files flat sync, export PATH prefix confirmed, wrangler v4.86.0)
 - `references/2026-06-04-cron-deploy-r75.md` — r75 cron full-refresh deploy (18 mem files flat sync, export PATH prefix confirmed, wrangler v4.86.0)
