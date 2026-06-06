@@ -121,13 +121,7 @@ grep -v "api_key\|password\|secret\|token\|TOKEN\|SECRET\|PASSWORD" \
 - Token read from `~/.hermes/.env` as `GITHUB_TOKEN`
 - Repo: `/root/ulak` → `github.com/lighthousegrouptr-commits/ulak`
 
-### 2D. Sync Script
-
-`scripts/ulak_sync.sh` handles the full backup + git commit + push. See `references/sync-script.md` for the complete script.
-
-### 2E. Full Rebrand Script (ulak_apply.sh)
-
-After `hermes update`, re-apply all customizations in one shot:
+### 2D. Sync Script\n\n`scripts/ulak_sync.sh` handles the full backup + git commit + push. See `references/sync-script.md` for the complete script.\n\n### 2E. External Agent Memory Synchronization\n\nFor external agents (like Agentic OS) that need access to Hermes memory files, synchronize to `/tmp/hermes-memory/` which is scanned by the Agentic OS aggregator. See `references/sync-hermes-memory-external.md` for the standard synchronization procedure.\n\n### 2F. Full Rebrand Script (ulak_apply.sh)\n\nAfter `hermes update`, re-apply all customizations in one shot:
 
 ```bash
 #!/bin/bash
@@ -154,11 +148,4 @@ The `memory` tool has a hard character limit (2,200 chars). When full:
 
 ---
 
-## Reference Files
-
-- `references/lighthouse-caduceus.md` — ASCII art for Lighthouse Group favicon logo
-- `references/sync-script.md` — Full `ulak_sync.sh` script reference
-
-## Scripts
-
-- `scripts/ulak_sync.sh` — Config backup & GitHub sync script
+## Reference Files\n\n- `references/lighthouse-caduceus.md` — ASCII art for Lighthouse Group favicon logo\n- `references/sync-script.md` — Full `ulak_sync.sh` script reference\n- `references/sync-hermes-memory-external.md` — Synchronizing Hermes memory for external agents like Agentic OS\n\n## Scripts\n\n- `scripts/ulak_sync.sh` — Config backup & GitHub sync script\n- `scripts/ulak_apply.sh` — Full rebrand script to run after `hermes update`\n
