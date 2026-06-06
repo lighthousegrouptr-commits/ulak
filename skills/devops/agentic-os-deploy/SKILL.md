@@ -29,10 +29,10 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 1. **Sync Hermes memory files to a temporary location**
    ```bash
    mkdir -p /tmp/hermes-memory
-   # Sync from both possible locations (synced snapshot and live memories)
+   # First copy synced snapshot (if exists), then overwrite with live memories
    cp -r /root/ulak/memories/* /tmp/hermes-memory/ 2>/dev/null || true
    cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
-   # Deduplicate by copying live memories last (they overwrite synced snapshots)
+   # Note: Live memories copied last to ensure they take precedence over synced snapshots
    ```
 
 2. **Run the aggregator to incorporate both Claude and Hermes memories**
