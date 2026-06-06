@@ -870,6 +870,39 @@ hermes config set auxiliary.vision.model <model_name>
 | Gateway logs | `~/.hermes/logs/gateway.log` |
 | Session files | `hermes sessions browse` (reads state.db) |
 | Source code | `~/.hermes/hermes-agent/` |
+| Agentic OS deployment | See "Agentic OS Deployment" subsection below |
+
+### Agentic OS Deployment
+
+For Ulak/Hermes Agent deployments that integrate with the Agentic OS dashboard (used by Lighthouse Group), you can perform a full refresh and deploy using this procedure:
+
+#### 1. Sync Hermes Memory Files
+```bash
+# Create target directory
+mkdir -p /tmp/hermes-memory
+
+# Sync memory files from Ulak storage (note: memories, not memory)
+cp -r /root/ulak/memories/* /tmp/hermes-memory/
+
+# Verify sync
+find /tmp/hermes-memory -type f | wc -l  # Should show count of memory files
+```
+
+#### 2. Run the Aggregator
+```bash
+cd /root/code/agentic-os
+bun run scripts/aggregate.ts
+```
+This scans ~/.claude/, memory folders (including /tmp/hermes-memory/), and other sources to compile live-data.json.
+
+#### 3. Build and Deploy
+```bash
+bun run build
+wrangler deploy
+```
+The deployment will output a version ID (UUID format) upon success.
+
+This workflow ensures the Agentic OS dashboard reflects the latest Hermes agent memories and configurations.
 
 ---
 
