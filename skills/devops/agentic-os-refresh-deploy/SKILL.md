@@ -54,7 +54,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    - Any errors encountered during the process
 
 ## Pitfalls
-- **Memory source path**: Ensure the Hermes memories are located at `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`). If using a different Hermes instance, adjust the source path accordingly.
+- **Memory source path**: Ensure the Hermes memories are located at `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`). The directory is named `memories` (plural); a common mistake is to use `memory` (singular) which does not exist. If using a different Hermes instance, adjust the source path accordingly.
 - **Environment keys**: The aggregator expects `ANTHROPIC_API_KEY` in `.env.local` for full functionality; missing keys will be reported as "needed".
 - **Linux platform warning**: The aggregator will warn about skipped macOS-only signals; this does not affect core functionality.
 - **Build warnings**: Chunk size warnings (>500 kB) are non‑fatal but indicate opportunities for code‑splitting optimization.
