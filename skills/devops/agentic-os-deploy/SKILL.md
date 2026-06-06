@@ -1,7 +1,7 @@
 ---
 name: agentic-os-deploy
 description: Refresh and deploy the Agentic OS dashboard after syncing Hermes memories.
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 platforms: [linux]
@@ -76,3 +76,4 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 - This skill assumes a Linux host; macOS‑specific signals (Keychain credentials) are intentionally skipped by the aggregator.
 - The skill does not modify Hermes agent configuration; it only reads synced memory files.
 - For frequent updates, consider adding a cron job that runs this skill automatically.
+- See `references/memory-sync-details.md` for detailed information about the memory synchronization process.
