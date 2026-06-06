@@ -26,6 +26,9 @@ Both locations should contain:
 - `MEMORY.md` - Agent's persistent memory/notes
 - `USER.md` - User profile information
 
+Additionally, the following files are synced from the root of the Hermes directories:
+- `SOUL.md` - Agent persona/identity file
+
 ## Aggregator Integration
 
 The aggregator script (`scripts/aggregate.ts`) is configured to scan:

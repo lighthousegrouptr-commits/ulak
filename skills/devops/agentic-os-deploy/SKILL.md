@@ -70,8 +70,13 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 
 ## Verification
 - After deployment, visit the provided URL and confirm the dashboard shows updated memory/conversation data (e.g., recent projects, token usage).
-- Check the aggregator output for memory file count (should show "memory: X files" where X is the total from both sources).
-- Check that the `value extracted last 7d` metric in the aggregator output matches expectations.
+- **Understanding the memory count**: The aggregator output line `[aggregate] memory: X files / Y workspaces ...` shows files from `~/.claude/memory/` (Claude Code memories), **not** the Hermes memories we synced. The Hermes memories we copied to `/tmp/hermes-memory/` are used by the aggregator but are not directly counted in this line.
+- To verify Hermes memories were processed:
+  - Look for `[aggregate] scanning memory fields ...` in the aggregator output - this indicates it's reading from `HERMES_MEMORIES_DIR` (which we set to `/tmp/hermes-memory/`)
+  - Check that no errors occurred during memory processing
+  - The aggregator combines both sources (`~/.claude/` and `/tmp/hermes-memory/`) when building the final data
+- Check that the `value extracted last 7d` metric in the aggregator output matches expectations (e.g., showed `$9.13` in the last run).
+- **Memory file count verification**: To count the actual Hermes memory files we synced, run: `find /tmp/hermes-memory -type f | wc -l` (should match the number of files in `/root/ulak/memories/` or `~/.hermes/memories/`).
 
 ## Notes
 - This skill assumes a Linux host; macOS‑specific signals (Keychain credentials) are intentionally skipped by the aggregator.
