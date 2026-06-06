@@ -70,6 +70,7 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 
 ## Verification
 - After deployment, visit the provided URL and confirm the dashboard shows updated memory/conversation data (e.g., recent projects, token usage).
+- Check the aggregator output for memory file count (should show "memory: X files" where X is the total from both sources).
 - Check that the `value extracted last 7d` metric in the aggregator output matches expectations.
 
 ## Notes
