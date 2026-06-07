@@ -78,6 +78,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 - See `references/memory-sync.md` for details on the memory synchronization process and file layout.
 - See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy
 - See `references/session-2026-06-07-detailed.md`: Detailed session logs and learnings from the 2026-06-07 Agentic OS refresh and deploy
+- See `references/session-2026-06-07-agentic-os-refresh.md`: Session 2026-06-07: Agentic OS Refresh and Deploy
 
 ## Session-Specific Learnings (2026-06-07)
 - The memory source `/root/ulak/memory/` (singular) does not exist on this system; the correct synced snapshot is at `/root/ulak/memories/` (plural). The skill's fallback loop handles this gracefully by trying multiple locations.
