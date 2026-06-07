@@ -32,7 +32,10 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
      # Overwrite with live memories from ~/.hermes/memories/ if available (ensures latest data)
      cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
      ```
-   - Verify count: `find /tmp/hermes-memory -type f | wc -l`
+   - Verify count:
+     ```bash
+     find /tmp/hermes-memory -type f | wc -l
+     ```
    - Note: The synced snapshot (`/root/ulak/memories/`) is updated every 30 minutes and has secrets filtered out (lines containing `api_key`, `password`, etc. are removed). The live memories (`~/.hermes/memories/`) contain the most recent data but may require the Hermes agent to be running and not lock the files. In practice, both work for the aggregator; the live memories are copied last to take precedence.
 3. **Run the aggregator**
    - Change to the Agentic OS project:
