@@ -20,13 +20,20 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    mkdir -p /tmp/hermes-memory
    ```
 2. **Sync Hermes memory files**
-   - Source: `~/.hermes/memories/` (contains `MEMORY.md`, `USER.md`, etc. - the live Hermes agent memories)
-   - Copy all files to the sync directory:
-   ```bash
-   cp -r ~/.hermes/memories/* /tmp/hermes-memory/
-   ```
+   - The Agentic OS aggregator expects Hermes memories in `/tmp/hermes-memory/`.
+   - Copy files from the Hermes memory source (try multiple locations in order of preference):
+     ```bash
+     # Try the synced snapshot under /root/ulak/ (both singular and plural)
+     for src in /root/ulak/memory /root/ulak/memories; do
+       if [ -d "$src" ]; then
+         cp -r "$src"/* /tmp/hermes-memory/ 2>/dev/null || true
+       fi
+     done
+     # Overwrite with live memories from ~/.hermes/memories/ if available (ensures latest data)
+     cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
+     ```
    - Verify count: `find /tmp/hermes-memory -type f | wc -l`
-   - Note: Do NOT use `/root/ulak/memories/` as that is a cron-synced snapshot (updated every 30 minutes) that may have secrets filtered out. For the freshest, complete data, always use the live Hermes memories at `~/.hermes/memories/`.
+   - Note: The synced snapshot (`/root/ulak/memories/`) is updated every 30 minutes and has secrets filtered out (lines containing `api_key`, `password`, etc. are removed). The live memories (`~/.hermes/memories/`) contain the most recent data but may require the Hermes agent to be running and not lock the files. In practice, both work for the aggregator; the live memories are copied last to take precedence.
 3. **Run the aggregator**
    - Change to the Agentic OS project:
    ```bash
@@ -56,6 +63,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## Pitfalls
 - **Memory source path**: Ensure the Hermes memories are located at `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`). The directory is named `memories` (plural); a common mistake is to use `memory` (singular) which does not exist. If using a different Hermes instance, adjust the source path accordingly.
+- **Aggregator scans**: The Agentic OS aggregator script (`scripts/aggregate.ts`) must scan `/tmp/hermes-memory/` for Hermes memories. Verify this path is hardcoded in the script (look for `HERMES_MEMORIES_DIR` constant). If the aggregator doesn't scan this directory, Hermes memories won't appear in the dashboard.
 - **Environment keys**: The aggregator expects `ANTHROPIC_API_KEY` in `.env.local` for full functionality; missing keys will be reported as "needed".
 - **Linux platform warning**: The aggregator will warn about skipped macOS-only signals; this does not affect core functionality.
 - **Build warnings**: Chunk size warnings (>500 kB) are non‑fatal but indicate opportunities for code‑splitting optimization.
@@ -68,3 +76,4 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## References
 - See `references/memory-sync.md` for details on the memory synchronization process and file layout.
+- See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy
