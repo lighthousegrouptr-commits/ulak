@@ -84,5 +84,5 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 - We successfully copied live memories from `~/.hermes/memories/` to `/tmp/hermes-memory/` to ensure the most recent data was used for aggregation.
 - The aggregator correctly processed both `~/.claude/projects` and the synced Hermes memories from `/tmp/hermes-memory/`, reporting 19 memory files across 2 workspaces.
 - Build warnings about chunk size (>500 kB) are expected for this application and non‑fatal.
-- The deployed version ID from this session is: `df16cc41-a033-44cf-b923-d6b5d2db1f04`.
+- The deployed version ID from this session is: `b0807c26-fe3f-47b3-8a3d-c008594cf2df`.
 - The `wrangler deploy` command warns about `workers_dev` and `preview_urls` being enabled by default; these can be overridden explicitly in `wrangler.jsonc` if desired.
