@@ -11,7 +11,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## Trigger Conditions
 - You need to update the Agentic OS dashboard with the latest Hermes agent memories.
-- After making changes to Hermes memories or skills that should reflect in the dashboard.
+- After making changes to Hermes memories or skills that should reflect in the dashboard.mes memories or skills that should reflect in the dashboard.
 - Periodic refresh via cron or manual request.
 
 ## Steps
@@ -26,11 +26,11 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
      # Try the synced snapshot under /root/ulak/ (both singular and plural)
      for src in /root/ulak/memory /root/ulak/memories; do
        if [ -d "$src" ]; then
-         cp -r "$src"/* /tmp/hermes-memory/ 2>/dev/null || true
+cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
        fi
      done
      # Overwrite with live memories from ~/.hermes/memories/ if available (ensures latest data)
-     cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
+cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
      ```
    - Verify count:
      ```bash
