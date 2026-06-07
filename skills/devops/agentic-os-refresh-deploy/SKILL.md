@@ -63,7 +63,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## Pitfalls
 - **Memory source path**: Ensure the Hermes memories are located at `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`). The directory is named `memories` (plural); a common mistake is to use `memory` (singular) which does not exist. If using a different Hermes instance, adjust the source path accordingly.
-- **Aggregator scans**: The Agentic OS aggregator script (`scripts/aggregate.ts`) must scan `/tmp/hermes-memory/` for Hermes memories. Verify this path is hardcoded in the script (look for `HERMES_MEMORIES_DIR` constant). If the aggregator doesn't scan this directory, Hermes memories won't appear in the dashboard.
+- **Aggregator scans**: The Agentic OS aggregator script (`scripts/aggregate.ts`) scans multiple Hermes memory locations, including `/tmp/hermes-memory/`, `/root/ulak/memories/`, `/root/.hermes/memories/`, and others. Verify the `HERMES_MEMORIES_DIR` constant in the script includes `/tmp/hermes-memory/` (it should be the last in the array to take precedence). If the aggregator doesn't scan these directories, Hermes memories won't appear in the dashboard.
 - **Environment keys**: The aggregator expects `ANTHROPIC_API_KEY` in `.env.local` for full functionality; missing keys will be reported as "needed".
 - **Linux platform warning**: The aggregator will warn about skipped macOS-only signals; this does not affect core functionality.
 - **Build warnings**: Chunk size warnings (>500 kB) are non‑fatal but indicate opportunities for code‑splitting optimization.
@@ -72,8 +72,9 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 ## Verification
 - After deployment, verify the version ID matches the output of `wrangler deploy`.
 - Check that `src/data/live-data.json` was updated by looking at the aggregator's log line: `[aggregate] wrote /root/code/agentic-os/src/data/live-data.json`.
-- Confirm memory file count matches the number of files copied from `/root/ulak/memories/`.
+- Confirm the aggregator scanned Hermes memories by checking its log line for memory file count (should be >0).
 
 ## References
 - See `references/memory-sync.md` for details on the memory synchronization process and file layout.
 - See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy
+- See `references/session-2026-06-07-detailed.md`: Detailed session logs and learnings from the 2026-06-07 Agentic OS refresh and deploy
