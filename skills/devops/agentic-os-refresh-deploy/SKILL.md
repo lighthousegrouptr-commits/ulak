@@ -82,7 +82,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 ## Session-Specific Learnings (2026-06-07)
 - The memory source `/root/ulak/memory/` (singular) does not exist on this system; the correct synced snapshot is at `/root/ulak/memories/` (plural). The skill's fallback loop handles this gracefully by trying multiple locations.
 - We successfully copied live memories from `~/.hermes/memories/` to `/tmp/hermes-memory/` to ensure the most recent data was used for aggregation.
-- The aggregator correctly processed both `~/.claude/projects` and the synced Hermes memories from `/tmp/hermes-memory/`, reporting 19 memory files across 2 workspaces.
+- The aggregator correctly processed both `~/.claude/projects` and the synced Hermes memories from `/tmp/hermes-memory/`, reporting 19 memory files across 2 workspaces (note: this count refers to individual memory entries processed by the aggregator, not the raw file count).
 - Build warnings about chunk size (>500 kB) are expected for this application and non‑fatal.
-- The deployed version ID from this session is: `b0807c26-fe3f-47b3-8a3d-c008594cf2df`.
+- The deployed version ID from this session is: `f3b7fb8e-1ae5-4a92-9f83-5da8b80321bf`.
 - The `wrangler deploy` command warns about `workers_dev` and `preview_urls` being enabled by default; these can be overridden explicitly in `wrangler.jsonc` if desired.
