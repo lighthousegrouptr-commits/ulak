@@ -23,12 +23,12 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    - The Agentic OS aggregator expects Hermes memories in `/tmp/hermes-memory/`.
    - Copy files from the Hermes memory source (try multiple locations in order of preference):
      ```bash
-     # Try the synced snapshot under /root/ulak/ (both singular and plural)
-     for src in /root/ulak/memory /root/ulak/memories; do
-       if [ -d "$src" ]; then
-cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
-       fi
-     done
+   # Try the synced snapshot under /root/ulak/ (both singular and plural)
+   for src in /root/ulak/memory /root/ulak/memories; do
+     if [ -d "$src" ]; then
+       cp -r "$src"/* /tmp/hermes-memory/ 2>/dev/null || true
+     fi
+   done
      # Overwrite with live memories from ~/.hermes/memories/ if available (ensures latest data)
 cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
      ```
