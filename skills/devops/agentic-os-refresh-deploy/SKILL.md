@@ -84,9 +84,9 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 - See `references/session-2026-06-07-agentic-os-refresh.md`: Session 2026-06-07: Agentic OS Refresh and Deploy
 
 ## Session-Specific Learnings (2026-06-07)
-- The memory source `/root/ulak/memory/` (singular) does not exist on this system; the correct synced snapshot is at `/root/ulak/memories/` (plural). The skill's fallback loop handles this gracefully by trying multiple locations.
-- We successfully copied live memories from `~/.hermes/memories/` to `/tmp/hermes-memory/` to ensure the most recent data was used for aggregation.
-- The aggregator correctly processed both `~/.claude/projects` and the synced Hermes memories from `/tmp/hermes-memory/`, reporting 19 memory files across 2 workspaces (note: this count refers to individual memory entries processed by the aggregator, not the raw file count).
+- The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and overwrote with live memories from `~/.hermes/memories/` to ensure the most recent data.
+- We copied Hermes memory files to `/tmp/hermes-memory/` for the aggregator to consume.
+- The aggregator correctly processed both `~/.claude/projects` and the synced Hermes memories from `/tmp/hermes-memory/`, reporting 19 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events.
 - Build warnings about chunk size (>500 kB) are expected for this application and non‑fatal.
-- The deployed version ID from this session is: `f3b7fb8e-1ae5-4a92-9f83-5da8b80321bf`.
+- The deployed version ID from this session is: `c1d01e11-c10a-4d23-a2c4-217328bf731a`.
 - The `wrangler deploy` command warns about `workers_dev` and `preview_urls` being enabled by default; these can be overridden explicitly in `wrangler.jsonc` if desired.

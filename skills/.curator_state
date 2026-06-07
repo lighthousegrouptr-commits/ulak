@@ -1,9 +1,9 @@
 {
-  "last_report_path": "/root/.hermes/logs/curator/20260531-154148",
-  "last_run_at": "2026-05-31T15:41:48.158371+00:00",
-  "last_run_duration_seconds": 999.62262,
-  "last_run_summary": "auto: no changes; llm: ---\n\n## Human Summary\n\n### Clusters Processed\n\n**Cluster 1: Hermes Identity/Persona (`hermes-agent-persona` + `hermes-config-backup`)**\n\nThese two skills served the same class: customizing the Hermes agent's identity and branding. `hermes-a…\narchived 2 skill(s):\n  • agentic-os-deploy → vps-web-service-deploy\n  • hermes-agent-persona → hermes-config-backup\nfull report: hermes curator status\nkeep an umbrella stable: hermes curator pin hermes-config-backup",
+  "last_report_path": "/root/.hermes/logs/curator/20260607-155349",
+  "last_run_at": "2026-06-07T15:53:49.878183+00:00",
+  "last_run_duration_seconds": 1.26672,
+  "last_run_summary": "auto: no changes; llm: no change",
   "last_run_summary_shown_at": "2026-05-24T15:39:57.204640+00:00",
   "paused": false,
-  "run_count": 1
+  "run_count": 2
 }
