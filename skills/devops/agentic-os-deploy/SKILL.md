@@ -30,3 +30,4 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 - See `references/memory-sync-details.md` for detailed information about the memory synchronization process.
 - See `references/agentic-os-deploy-lessons.md` for lessons learned from deployments.
 - See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy
+- See `references/session-2026-06-07-agentic-os-deploy.md`: Detailed session log and version ID from the 2026-06-07 Agentic OS deployment (version: 966305cc-6589-4697-a514-bb9d2c7ce4f2)
