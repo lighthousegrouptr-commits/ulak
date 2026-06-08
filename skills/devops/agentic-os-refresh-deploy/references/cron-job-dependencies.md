@@ -1,0 +1,3 @@
+In a cron job environment, the `node_modules` directory may not be persisted between runs. Before executing the build step (`bun run build`), ensure dependencies are installed by running `bun install` in the Agentic OS directory (`/root/code/agentic-os`). This ensures that `vite` and other required dependencies are available.
+
+If you encounter the error "Script not found \"build\"", it may be due to missing dependencies. Running `bun install` first resolves this issue.

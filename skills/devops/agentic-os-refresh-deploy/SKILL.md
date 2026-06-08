@@ -103,6 +103,9 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 - Check that `src/data/live-data.json` was updated by looking at the aggregator's log line: `[aggregate] wrote /root/code/agentic-os/src/data/live-data.json`.
 - Confirm the aggregator scanned Hermes memories by checking its log line for memory file count (should be >0).
 
+## References
+- See `references/cron-job-dependencies.md` for notes on handling missing dependencies in cron job environments.
+
 ## References\n- See `references/memory-sync.md` for details on the memory synchronization process and file layout.\n- See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy\n- See `references/session-2026-06-07-detailed.md`: Detailed session logs and learnings from the 2026-06-07 Agentic OS refresh and deploy\n- See `references/session-2026-06-07-agentic-os-refresh.md`: Session 2026-06-07: Agentic OS Refresh and Deploy
 - See `references/session-2026-06-08.md`: Session notes from the 2026-06-08 Agentic OS refresh and deploy
 - See `references/session-2026-06-08-detailed.md`: Detailed session logs and learnings from the 2026-06-08 Agentic OS refresh and deploy (this session)
