@@ -15,6 +15,27 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 - Periodic refresh via cron or manual request.
 
 ## Steps
+
+1. Sync Hermes memory files from the Hermes server:
+   - Source: /root/ulak/memory/ (Hermes agent memories on this machine)
+   - Copy relevant memory files to /tmp/hermes-memory/
+
+2. Run the aggregator so it picks up both ~/.claude/ AND the synced Hermes memories:
+   - Ensure aggregate.ts scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/
+   - cd /root/code/agentic-os && bun run scripts/aggregate.ts
+
+3. Build and deploy using the provided deploy.sh script (handles seed:data, build, and wrangler deploy with proper config):
+   - cd /root/code/agentic-os && bash scripts/deploy.sh
+
+## Pitfalls
+- If you run `bun run build` directly, you may encounter "Script not found \\\"build\\\"". The build script is defined as `bun run seed:data && vite build`. Using deploy.sh avoids this.
+- After building, the output is `dist/server/server.js` but Wrangler expects `index.js`. The deploy.sh copies it for you.
+- The deploy.sh also fixes wrangler.json to include routes and assets directory.
+
+## Verification
+- Check the deployed version ID from wrangler deploy output.
+- Confirm total memory files count from the aggregate step.
+- No errors should appear; if there are warnings about chunk size, they can be ignored for initial deployment.
 1. **Prepare memory sync directory**
    ```bash
    mkdir -p /tmp/hermes-memory
