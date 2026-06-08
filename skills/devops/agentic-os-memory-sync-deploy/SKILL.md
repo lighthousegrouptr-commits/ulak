@@ -18,13 +18,14 @@ Sync Hermes memories to a temporary location, run the Agentic OS aggregator, bui
    mkdir -p /tmp/hermes-memory
    ```
 2. **Sync Hermes memories**
-   - Prefer live Hermes memories at `~/.hermes/memories/`.
-   - Fallback to Ulak snapshot at `/root/ulak/memories/` if live path missing.
+   - If live Hermes memories exist at `~/.hermes/memories/`, sync from there.
+   - Otherwise, fallback to the Ulak snapshot at `/root/ulak/memories/`.
+   - This ensures only one source is used, avoiding duplication.
    ```bash
    if [ -d ~/.hermes/memories ]; then
-     rsync -av ~/.hermes/memories/ /tmp/hermes-memory/
+     rsync -av --delete ~/.hermes/memories/ /tmp/hermes-memory/
    else
-     rsync -av /root/ulak/memories/ /tmp/hermes-memory/
+     rsync -av --delete /root/ulak/memories/ /tmp/hermes-memory/
    fi
    ```
 3. **Run aggregator** (scans `~/.claude/` and synced Hermes memories)
