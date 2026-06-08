@@ -118,12 +118,12 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 
 
 ## Session-Specific Learnings (2026-06-08)
-- The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and copied the memory files (4 files: MEMORY.md, USER.md, and 2 other files) to `/tmp/hermes-memory/` for the aggregator.
+- The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and copied the memory files (4 files: MEMORY.md, USER.md, MEMORY.md.lock, USER.md.lock) to `/tmp/hermes-memory/` for the aggregator.
 - The aggregator scans multiple Hermes memory locations, including `/tmp/hermes-memory/` (which we populated), `/root/ulak/memories/`, `/root/.hermes/memories/`, and `~/.claude/memory/`, thus capturing both synced snapshot and live memories.
 - We copied 4 memory files from `/root/ulak/memories/` to `/tmp/hermes-memory/`.
 - The aggregator processed both `~/.claude/projects` and the Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
 - Build warnings about chunk size (>500 kB) are expected for this application and non‑fatal.
-- The deployed version ID from this session is: `5ed2365c-abfb-4b1b-ac9d-7f32ebcf02f2`.
+- The deployed version ID from this session is: `65b246fd-6592-4715-a24f-7694e6fda2cd`.
 - The `wrangler deploy` command warns about `workers_dev` and `preview_urls` being enabled by default; these can be overridden explicitly in `wrangler.jsonc` if desired.
 - Note: When running as a cron job, the terminal tool may prompt for approval when deleting files in root paths (like `/tmp/hermes-memory/`). To avoid this, we copied only the needed memory files without deleting the directory contents first.
 - No errors were encountered during the process.
