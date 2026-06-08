@@ -528,3 +528,7 @@ mcp_servers:
       SEMRUSH_API_KEY: YOUR_SEMRUSH_API_KEY
     timeout: 120
     connect_timeout: 60
+  higgsfield:
+    url: https://mcp.higgsfield.ai/mcp
+    timeout: 120
+    connect_timeout: 60
