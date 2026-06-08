@@ -17,15 +17,19 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 ## Steps
 
 1. Sync Hermes memory files from the Hermes server:
-   - Source: /root/ulak/memory/ (Hermes agent memories on this machine)
+   - Note: The Hermes memories may be located at either `/root/ulak/memory/` (singular) or `/root/ulak/memories/` (plural). Check which directory exists.
+   - Source: /root/ulak/memories/ (Hermes agent memories on this machine - the synced snapshot from ~/.hermes/)
    - Copy relevant memory files to /tmp/hermes-memory/
+   - Example command: `mkdir -p /tmp/hermes-memory && rsync -av /root/ulak/memories/ /tmp/hermes-memory/`
 
 2. Run the aggregator so it picks up both ~/.claude/ AND the synced Hermes memories:
    - Ensure aggregate.ts scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/
    - cd /root/code/agentic-os && bun run scripts/aggregate.ts
 
-3. Build and deploy using the provided deploy.sh script (handles seed:data, build, and wrangler deploy with proper config):
-   - cd /root/code/agentic-os && bash scripts/deploy.sh
+3. Build and deploy:
+   - Build the application: `cd /root/code/agentic-os && bun run build`
+   - Deploy via Wrangler: `cd /root/code/agentic-os && wrangler deploy`
+   - Note: wrangler deploy does not accept `--yes` or `-y` flags; it will prompt for confirmation if needed.
 
 ## Pitfalls
 - If you run `bun run build` directly, you may encounter "Script not found \\\"build\\\"". The build script is defined as `bun run seed:data && vite build`. Using deploy.sh avoids this.
@@ -34,7 +38,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## Verification
 - Check the deployed version ID from wrangler deploy output.
-- Confirm total memory files count from the aggregate step.
+- Confirm total memory files count from the aggregate step (we found 4 memory files in /tmp/hermes-memory/).
 - No errors should appear; if there are warnings about chunk size, they can be ignored for initial deployment.
 1. **Prepare memory sync directory**
    ```bash
@@ -86,11 +90,12 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
    - Any errors encountered during the process
 
 ## Pitfalls
-- **Memory source path**: Ensure the Hermes memories are located at `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`). The directory is named `memories` (plural); a common mistake is to use `memory` (singular) which does not exist. If using a different Hermes instance, adjust the source path accordingly.
+- **Memory source path**: The Hermes memories may be located at either `/root/ulak/memory/` (singular) or `/root/ulak/memories/` (plural). On this system, `/root/ulak/memory/` does not exist, but `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`) does exist. A common mistake is to use the wrong directory name. If using a different Hermes instance, adjust the source path accordingly.
 - **Aggregator scans**: The Agentic OS aggregator script (`scripts/aggregate.ts`) scans multiple Hermes memory locations, including `/tmp/hermes-memory/`, `/root/ulak/memories/`, `/root/.hermes/memories/`, and others. Verify the `HERMES_MEMORIES_DIR` constant in the script includes `/tmp/hermes-memory/` (it should be the last in the array to take precedence). If the aggregator doesn't scan these directories, Hermes memories won't appear in the dashboard.
 - **Environment keys**: The aggregator expects `ANTHROPIC_API_KEY` in `.env.local` for full functionality; missing keys will be reported as "needed".
 - **Linux platform warning**: The aggregator will warn about skipped macOS-only signals; this does not affect core functionality.
 - **Build warnings**: Chunk size warnings (>500 kB) are non‑fatal but indicate opportunities for code‑splitting optimization.
+- **Wrangler deploy flags**: The `wrangler deploy` command does not accept `--yes` or `-y` flags for automatic confirmation. Using `timeout` with `wrangler deploy` may work, but be aware that it might still prompt for input in some environments.
 - **Wrangler defaults**: If `workers_dev` or `preview_urls` are not set in `wrangler.jsonc`, they will be enabled by default; override explicitly if desired.
 
 ## Verification
@@ -100,6 +105,7 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 
 ## References\n- See `references/memory-sync.md` for details on the memory synchronization process and file layout.\n- See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy\n- See `references/session-2026-06-07-detailed.md`: Detailed session logs and learnings from the 2026-06-07 Agentic OS refresh and deploy\n- See `references/session-2026-06-07-agentic-os-refresh.md`: Session 2026-06-07: Agentic OS Refresh and Deploy
 - See `references/session-2026-06-08.md`: Session notes from the 2026-06-08 Agentic OS refresh and deploy
+- See `references/session-2026-06-08-detailed.md`: Detailed session logs and learnings from the 2026-06-08 Agentic OS refresh and deploy (this session)
 
 ## Session-Specific Learnings (2026-06-07)
 - The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and copied it to `/tmp/hermes-memory/` for the aggregator.
@@ -112,12 +118,13 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 
 
 ## Session-Specific Learnings (2026-06-08)
-- The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and copied the memory files (2 files: MEMORY.md, USER.md) to `/tmp/hermes-memory/` for the aggregator.
+- The memory source `/root/ulak/memory/` (singular) does not exist on this system; we used the synced snapshot at `/root/ulak/memories/` (plural) and copied the memory files (4 files: MEMORY.md, USER.md, and 2 other files) to `/tmp/hermes-memory/` for the aggregator.
 - The aggregator scans multiple Hermes memory locations, including `/tmp/hermes-memory/` (which we populated), `/root/ulak/memories/`, `/root/.hermes/memories/`, and `~/.claude/memory/`, thus capturing both synced snapshot and live memories.
-- We copied 2 memory files from `/root/ulak/memories/` to `/tmp/hermes-memory/`.
-- The aggregator processed both `~/.claude/projects` and the Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1692 assistant msgs from ~/.claude/projects).
+- We copied 4 memory files from `/root/ulak/memories/` to `/tmp/hermes-memory/`.
+- The aggregator processed both `~/.claude/projects` and the Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
 - Build warnings about chunk size (>500 kB) are expected for this application and non‑fatal.
-- The deployed version ID from this session is: `67177be2-4e61-4455-976d-4d7a77981542`.
+- The deployed version ID from this session is: `5ed2365c-abfb-4b1b-ac9d-7f32ebcf02f2`.
 - The `wrangler deploy` command warns about `workers_dev` and `preview_urls` being enabled by default; these can be overridden explicitly in `wrangler.jsonc` if desired.
 - Note: When running as a cron job, the terminal tool may prompt for approval when deleting files in root paths (like `/tmp/hermes-memory/`). To avoid this, we copied only the needed memory files without deleting the directory contents first.
 - No errors were encountered during the process.
+- Learned that `wrangler deploy` does not accept `--yes` or `-y` flags; the command must be run interactively or with alternative automation approaches.
