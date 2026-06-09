@@ -17,11 +17,18 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 ## Steps
 
 1. **Sync Hermes memory files**
-   ```bash
-   mkdir -p /tmp/hermes-memory
-   cp -r /root/ulak/memories/* /tmp/hermes-memory/
-   ```
-   Verify files copied: `find /tmp/hermes-memory -type f | wc -l`
+  ```bash
+  mkdir -p /tmp/hermes-memory
+  # Try multiple locations for Hermes memories, in order of preference:
+  # 1. Synced snapshot under /root/ulak/ (both singular and plural)
+  # 2. Live memories from ~/.hermes/memories/
+  for src in /root/ulak/memory /root/ulak/memories ~/.hermes/memories; do
+    if [ -d "$src" ]; then
+      cp -r "$src"/* /tmp/hermes-memory/ 2>/dev/null || true
+    fi
+  done
+  ```
+  Verify files copied: `find /tmp/hermes-memory -type f | wc -l`
 
 2. **Run the aggregator**
    ```bash
