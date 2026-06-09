@@ -20,15 +20,15 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 682
+        "completed": 683
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-24T19:10:28.093507+00:00",
-      "next_run_at": "2026-06-09T13:26:07.693123+00:00",
-      "last_run_at": "2026-06-09T12:22:02.393820+00:00",
+      "next_run_at": "2026-06-09T14:10:48.868783+00:00",
+      "last_run_at": "2026-06-09T12:56:09.074934+00:00",
       "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
@@ -58,17 +58,17 @@
       "schedule_display": "every 30m",
       "repeat": {
         "times": null,
-        "completed": 401
+        "completed": 402
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-30T19:36:00.679007+00:00",
-      "next_run_at": "2026-06-09T13:25:07.686149+00:00",
-      "last_run_at": "2026-06-09T12:55:07.686149+00:00",
-      "last_status": "ok",
-      "last_error": null,
+      "next_run_at": "2026-06-09T14:09:48.863573+00:00",
+      "last_run_at": "2026-06-09T13:39:48.863573+00:00",
+      "last_status": "error",
+      "last_error": "RuntimeError: [Errno 32] Broken pipe",
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
@@ -77,5 +77,5 @@
       "profile": null
     }
   ],
-  "updated_at": "2026-06-09T12:56:07.693358+00:00"
+  "updated_at": "2026-06-09T13:40:48.868996+00:00"
 }
