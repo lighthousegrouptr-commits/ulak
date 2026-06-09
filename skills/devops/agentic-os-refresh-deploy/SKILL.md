@@ -169,7 +169,7 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 - Confirmed that `/root/ulak/memory/` (singular) does not exist, but `/root/ulak/memories/` (plural) exists as the synced snapshot of Hermes memories.
 - Used the skill's recommended approach of trying multiple memory source locations in order of preference, which successfully copied from `/root/ulak/memories/`.
 - Copied 4 memory files (MEMORY.md, USER.md, MEMORY.md.lock, USER.md.lock) from `/root/ulak/memories/` to `/tmp/hermes-memory/`.
-- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
+- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 9 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
 - Build completed successfully with warnings about chunk size (>500 kB), which are expected and non‑fatal for this application.
 - Deployment via Wrangler succeeded with version ID: `8b729481-e790-4592-8303-ba8901660823`.
 - The `wrangler deploy` command warned about `workers_dev` and `preview_urls` being enabled by default (as noted in the skill), which can be overridden explicitly if desired.
