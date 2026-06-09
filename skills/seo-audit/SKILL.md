@@ -85,3 +85,17 @@ NPM: `semrush-mcp` v0.1.5 (thomaswawra, Apr 2026). Config under `mcp_servers.sem
 ## Report Format
 
 Structure findings as: Iyi Olanlar → Sorunku Olanlar → Acil Yapilar (max 5 priority items). Keep actionable.
+
+## Client-Side Rendered Content Pitfall
+
+Some websites (especially SPAs) render meta tags and content via JavaScript after the initial HTML load. The browser snapshot may show an empty `<head>` and `<body>` immediately after navigation, leading to missing meta tags.
+
+**Fallback**: If `browser_console` returns empty or missing meta tags, fetch the raw HTML via terminal:
+
+```bash
+curl -s <URL> | grep -o '<meta name="[^"]*" content="[^"]*"'
+```
+
+Then extract values with `sed` or similar. Alternatively, wait for network idle by using `browser_snapshot` after a short delay or using `browser_console` with a `setTimeout` retry.
+
+**Example** (from session): The page `https://tepeseo.com/ajans?...` initially returned empty head/body; using `curl` revealed the meta tags in the raw HTML.
