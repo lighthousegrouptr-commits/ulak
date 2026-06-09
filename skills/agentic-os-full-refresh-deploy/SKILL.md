@@ -64,3 +64,4 @@ version: 1.0
 - The `ulak` directory is a GitHub-backed snapshot of `~/.hermes/`; the actual live memories live in `~/.hermes/memories/` but are copied to `/root/ulak/memories/` by the sync cron job.
 - If the `memories` directory is missing or empty, the aggregator will still work but will not include Hermes memory data.
 - Always verify the build script exists before running `bun run build` to avoid "Script not found" errors.
+- A helper script is available at `scripts/agentic-os-refresh-deploy.sh` that performs the sync, aggregate, build, deploy and reports the version ID and memory file count.
