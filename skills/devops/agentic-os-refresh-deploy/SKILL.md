@@ -16,6 +16,32 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
 
 ## Steps
 
+1. **Sync Hermes memory files**
+   ```bash
+   mkdir -p /tmp/hermes-memory
+   cp -r /root/ulak/memories/* /tmp/hermes-memory/
+   ```
+   Verify files copied: `find /tmp/hermes-memory -type f | wc -l`
+
+2. **Run the aggregator**
+   ```bash
+   cd /root/code/agentic-os
+   bun run scripts/aggregate.ts
+   ```
+   This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` and updates `src/data/live-data.json`.
+
+3. **Build the project**
+   ```bash
+   bun run build
+   ```
+   Produces optimized client and server assets in `dist/`.
+
+4. **Deploy via Wrangler**
+   ```bash
+   wrangler deploy
+   ```
+   Deploys the Worker to Cloudflare. Output includes the Version ID.
+
 1. Sync Hermes memory files from the Hermes server:
    - Note: The Hermes memories may be located at either `/root/ulak/memory/` (singular) or `/root/ulak/memories/` (plural). Check which directory exists.
    - Source: /root/ulak/memories/ (Hermes agent memories on this machine - the synced snapshot from ~/.hermes/)
