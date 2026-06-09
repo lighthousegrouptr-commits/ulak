@@ -882,6 +882,7 @@ For Ulak/Hermes Agent deployments that integrate with the Agentic OS dashboard (
 mkdir -p /tmp/hermes-memory
 
 # Sync memory files from Ulak storage (note: memories, not memory)
+# Common mistake: the directory is "memories" (plural), not "memory" (singular)
 cp -r /root/ulak/memories/* /tmp/hermes-memory/
 
 # Verify sync
