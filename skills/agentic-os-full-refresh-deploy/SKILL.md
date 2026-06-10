@@ -69,3 +69,9 @@ version: 1.0
 - If the `memories` directory is missing or empty, the aggregator will still work but will not include Hermes memory data.
 - Always verify the build script exists before running `bun run build` to avoid "Script not found" errors.
 - A helper script is available at `scripts/agentic-os-refresh-deploy.sh` that performs the sync, aggregate, build, deploy and reports the version ID and memory file count.
+
+## Pitfalls
+
+- **Wrong source directory**: Ensure you copy from `/root/ulak/memories/` (plural), not `/root/ulak/memory/`. The latter does not exist and will cause a "cannot stat" error.
+- **Lock files**: Copying the entire directory (e.g., `cp -r`) will also copy `.lock` files. These are harmless but unnecessary; prefer copying only `*.md` files to avoid them.
+- **Stale files in destination**: If you do not clear `/tmp/hermes-memory/` before copying, old memory files may linger and be counted incorrectly. Consider clearing the destination first (see step 2).
