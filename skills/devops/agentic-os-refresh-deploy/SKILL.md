@@ -175,3 +175,12 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 - The `wrangler deploy` command warned about `workers_dev` and `preview_urls` being enabled by default (as noted in the skill), which can be overridden explicitly if desired.
 - No errors were encountered during the entire process (memory sync, aggregation, build, or deployment).
 - When running in a non-interactive context (like a cron job), the copy operation proceeded without prompts since we were only copying files, not deleting directory contents.
+
+## Session-Specific Learnings (2026-06-10)
+- As a cron job (no user present), we successfully executed the Agentic OS full refresh and deploy without interaction.
+- Synced Hermes memory files from `/root/ulak/memories/` (the synced snapshot) to `/tmp/hermes-memory/`, copying 4 files: MEMORY.md, USER.md, MEMORY.md.lock, USER.md.lock.
+- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
+- Build completed successfully with warnings about chunk size (>500 kB), which are expected and non‑fatal for this application.
+- Deployment via Wrangler succeeded with version ID: `0794a42d-0fdd-453e-a0cd-a2611f8a975c`.
+- The `wrangler deploy` command warned about `workers_dev` and `preview_urls` being enabled by default (as noted in the skill), which can be overridden explicitly if desired.
+- No errors were encountered during the entire process (memory sync, aggregation, build, or deployment).
