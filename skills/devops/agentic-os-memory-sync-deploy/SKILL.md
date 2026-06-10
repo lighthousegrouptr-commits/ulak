@@ -41,10 +41,7 @@ Sync Hermes memories to a temporary location, run the Agentic OS aggregator, bui
    ```bash
    wrangler deploy
    ```
-6. **Report**
-   - Deployed version ID (from wrangler output)
-   - Total memory files count: `find /tmp/hermes-memory -type f | wc -l`
-   - Any errors from the above steps
+6. **Report**\n   - Deployed version ID (from wrangler output)\n   - Total memory files count: `find /tmp/hermes-memory -type f -not -name "*.lock" | wc -l`\n   - Any errors from the above steps
 
 ## Pitfalls
 - If both memory sources are missing, aggregator runs without Hermes memory data.

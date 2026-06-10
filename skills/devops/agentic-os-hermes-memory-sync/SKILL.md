@@ -20,9 +20,9 @@ When preparing data for the Agentic OS dashboard, Hermes memory files must be co
    cp -r /root/ulak/memories/* /tmp/hermes-memory/
    ```
 
-3. Verify the copy succeeded by counting files:
+3. Verify the copy succeeded by counting files (excluding lock files for accurate count of meaningful memory files):
    ```bash
-   find /tmp/hermes-memory -type f | wc -l
+   find /tmp/hermes-memory -type f -not -name "*.lock" | wc -l
    ```
 
 ## Pitfalls

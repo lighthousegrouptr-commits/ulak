@@ -16,12 +16,16 @@ version: 1.0
    ```
 
 2. **Sync Hermes memory files**
-   - Source: `/root/ulak/memories/` (note: the directory is `memories`, not `memory`)
-   - Copy all files:
+   - Source: `/root/ulak/memories/` (contains `.md` memory files)
+   - Copy only Markdown files to avoid lock files:
      ```bash
-     cp -r /root/ulak/memories/* /tmp/hermes-memory/
+     cd /root/ulak/memories && cp *.md /tmp/hermes-memory/
      ```
-   - If the source directory is empty, the copy will produce no files; that's okay.
+   - Optionally clear the destination first to remove stale files:
+     ```bash
+     rm -rf /tmp/hermes-memory/* && cd /root/ulak/memories && cp *.md /tmp/hermes-memory/
+     ```
+   - If the source directory has no `.md` files, the destination will be empty after copy.
 
 3. **Count synced memory files**
    ```bash
