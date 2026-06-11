@@ -1,77 +1,63 @@
 ---
 name: agentic-os-full-refresh-deploy
-description: Refresh Agentic OS dashboard with Hermes memories and deploy via Wrangler.
-version: 1.0
+description: Refresh Agentic OS dashboard by syncing Hermes memories and deploying the dashboard.
 ---
 
 # Agentic OS Full Refresh and Deploy
 
-**Trigger**: When you need to refresh the Agentic OS dashboard with the latest Hermes memories and redeploy via Wrangler.
+Refresh the Agentic OS dashboard by syncing Hermes memories and deploying the updated dashboard.
+
+## When to Use
+
+Use this skill when you want to update the Agentic OS dashboard with the latest Hermes memories
+and deploy the changes.
 
 ## Steps
 
-1. **Prepare memory sync directory**
+1. **Prepare the temporary Hermes memory directory**:
+   - Create `/tmp/hermes-memory` if it doesn't exist.
+   - Copy Hermes memory files from known locations to this temporary directory.
+     The aggregator script checks multiple sources, but we copy to ensure consistency.
+
    ```bash
    mkdir -p /tmp/hermes-memory
+   # Copy from Ulak project memories (if exists)
+   cp -r /root/ulak/memories/* /tmp/hermes-memory/ 2>/dev/null || true
+   # Copy from Hermes memories (if exists)
+   cp -r /root/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
+   # Also check the non-pluralized directory names (just in case)
+   cp -r /root/ulak/memory/* /tmp/hermes-memory/ 2>/dev/null || true
+   cp -r /root/.hermes/memory/* /tmp/hermes-memory/ 2>/dev/null || true
    ```
 
-2. **Sync Hermes memory files**
-   - Source: `/root/ulak/memories/` (contains `.md` memory files)
-   - Copy only Markdown files to avoid lock files:
-     ```bash
-     cd /root/ulak/memories && cp *.md /tmp/hermes-memory/
-     ```
-   - Optionally clear the destination first to remove stale files:
-     ```bash
-     rm -rf /tmp/hermes-memory/* && cd /root/ulak/memories && cp *.md /tmp/hermes-memory/
-     ```
-   - If the source directory has no `.md` files, the destination will be empty after copy.
-
-3. **Count synced memory files**
+2. **Run the aggregator** to scan ~/.claude/, ~/.claude/memory, and /tmp/hermes-memory/:
    ```bash
-   find /tmp/hermes-memory -type f | wc -l
+   cd /root/code/agentic-os
+   bun run scripts/aggregate.ts
    ```
-   Record this count for the report.
 
-4. **Run the aggregator** (scans `~/.claude/` and synced Hermes memories)
+3. **Build and deploy**:
    ```bash
-   cd /root/code/agentic-os && bun run scripts/aggregate.ts
-   ```
-   - This updates `src/data/live-data.json` with data from both sources.
-
-5. **Build the project**
-   - First, verify that a `build` script exists in `package.json`:
-     ```bash
-     cd /root/code/agentic-os && bun run
-     ```
-   - Look for a `build` entry under `scripts`. If present, run:
-     ```bash
-     bun run build
-     ```
-   - If no `build` script is present, check for alternative build commands (e.g., `bun run build:prod`, `bun build`) and adjust accordingly.
-   - If the build fails, check the error output and ensure dependencies are installed (`bun install`).
-
-6. **Deploy via Wrangler**
-   ```bash
+   bun run build
    wrangler deploy
    ```
-   - Capture the deployed version ID from the output (look for a line like `Deployed <project> (<version_id>)`).
-
-7. **Report**
-   - Deployed version ID
-   - Total memory files count (from step 3)
-   - Any errors encountered during sync, aggregation, build, or deploy
-
-## Notes
-
-- The Hermes agent memories are stored in `/root/ulak/memories/` on this system (mirrored from `~/.hermes/memories/`).
-- The `ulak` directory is a GitHub-backed snapshot of `~/.hermes/`; the actual live memories live in `~/.hermes/memories/` but are copied to `/root/ulak/memories/` by the sync cron job.
-- If the `memories` directory is missing or empty, the aggregator will still work but will not include Hermes memory data.
-- Always verify the build script exists before running `bun run build` to avoid "Script not found" errors.
-- A helper script is available at `scripts/agentic-os-refresh-deploy.sh` that performs the sync, aggregate, build, deploy and reports the version ID and memory file count.
 
 ## Pitfalls
 
-- **Wrong source directory**: Ensure you copy from `/root/ulak/memories/` (plural), not `/root/ulak/memory/`. The latter does not exist and will cause a "cannot stat" error.
-- **Lock files**: Copying the entire directory (e.g., `cp -r`) will also copy `.lock` files. These are harmless but unnecessary; prefer copying only `*.md` files to avoid them.
-- **Stale files in destination**: If you do not clear `/tmp/hermes-memory/` before copying, old memory files may linger and be counted incorrectly. Consider clearing the destination first (see step 2).
+- **Source directory may not exist**: The directory `/root/ulak/memory` might not exist. 
+  Instead, look for memories in `/root/ulak/memories` and `/root/.hermes/memories` (and their singular forms).
+  The copy commands above use `|| true` to avoid errors if the source is missing.
+
+- **Verify the aggregator output**: After running the aggregator, check the output for the number of memory files
+  processed to ensure the sync worked.
+
+## Verification
+
+After deployment, check the version ID from the `wrangler deploy` output and confirm the dashboard is updated.
+
+## Required Tools
+
+- bun
+- wrangler
+- Access to the Agentic OS source code at `/root/code/agentic-os`
+- Hermes memories in `/root/ulak/memories` and/or `/root/.hermes/memories`
