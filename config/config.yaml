@@ -405,7 +405,7 @@ hooks_auto_accept: false
 personalities: {}
 security:
   allow_private_urls: false
-  tirith_enabled: true
+  tirith_enabled: false
   tirith_path: tirith
   tirith_timeout: 5
   tirith_fail_open: true
@@ -519,17 +519,3 @@ plugins:
   enabled:
   - claude-bridge
   disabled: []
-mcp_servers:
-  semrush:
-    command: npx
-    args:
-    - -y
-    - semrush-mcp
-    env:
-      SEMRUSH_API_KEY: YOUR_SEMRUSH_API_KEY
-    timeout: 120
-    connect_timeout: 60
-  higgsfield:
-    url: https://mcp.higgsfield.ai/mcp
-    timeout: 120
-    connect_timeout: 60
