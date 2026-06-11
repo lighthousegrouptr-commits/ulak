@@ -65,6 +65,8 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    - Note: wrangler deploy does not accept `--yes` or `-y` flags; it will prompt for confirmation if needed.
 
 ## Pitfalls
+
+- **wrangler deploy --verbose**: The `wrangler deploy` command does not accept a `--verbose` flag. Using it will result in an error. Run `wrangler deploy` without the flag to deploy successfully.
 - If you run `bun run build` directly, you may encounter "Script not found \\\"build\\\"". The build script is defined as `bun run seed:data && vite build`. Using deploy.sh avoids this.
 - After building, the output is `dist/server/server.js` but Wrangler expects `index.js`. The deploy.sh copies it for you.
 - The deploy.sh also fixes wrangler.json to include routes and assets directory.
@@ -123,6 +125,8 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
    - Any errors encountered during the process
 
 ## Pitfalls
+
+- **wrangler deploy --verbose**: The `wrangler deploy` command does not accept a `--verbose` flag. Using it will result in an error. Run `wrangler deploy` without the flag to deploy successfully.
 - **Memory source path**: The Hermes memories may be located at either `/root/ulak/memory/` (singular) or `/root/ulak/memories/` (plural). On this system, `/root/ulak/memory/` does not exist, but `/root/ulak/memories/` (the synced snapshot of `~/.hermes/`) does exist. A common mistake is to use the wrong directory name. If using a different Hermes instance, adjust the source path accordingly.
 - **Aggregator scans**: The Agentic OS aggregator script (`scripts/aggregate.ts`) scans multiple Hermes memory locations, including `/tmp/hermes-memory/`, `/root/ulak/memories/`, `/root/.hermes/memories/`, and others. Verify the `HERMES_MEMORIES_DIR` constant in the script includes `/tmp/hermes-memory/` (it should be the last in the array to take precedence). If the aggregator doesn't scan these directories, Hermes memories won't appear in the dashboard.
 - **Environment keys**: The aggregator expects `ANTHROPIC_API_KEY` in `.env.local` for full functionality; missing keys will be reported as "needed".
