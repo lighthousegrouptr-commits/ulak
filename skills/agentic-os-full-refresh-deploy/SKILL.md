@@ -15,11 +15,12 @@ and deploy the changes.
 ## Steps
 
 1. **Prepare the temporary Hermes memory directory**:
-   - Create `/tmp/hermes-memory` if it doesn't exist.
+   - Remove any existing content in `/tmp/hermes-memory` to avoid stale files, then recreate the directory.
    - Copy Hermes memory files from known locations to this temporary directory.
      The aggregator script checks multiple sources, but we copy to ensure consistency.
 
    ```bash
+   rm -rf /tmp/hermes-memory
    mkdir -p /tmp/hermes-memory
    # Copy from Ulak project memories (if exists)
    cp -r /root/ulak/memories/* /tmp/hermes-memory/ 2>/dev/null || true
@@ -28,9 +29,11 @@ and deploy the changes.
    # Also check the non-pluralized directory names (just in case)
    cp -r /root/ulak/memory/* /tmp/hermes-memory/ 2>/dev/null || true
    cp -r /root/.hermes/memory/* /tmp/hermes-memory/ 2>/dev/null || true
+   # Count copied files for verification
+   echo "Copied $(find /tmp/hermes-memory -type f | wc -l) Hermes memory files to /tmp/hermes-memory"
    ```
 
-2. **Run the aggregator** to scan ~/.claude/, ~/.claude/memory, and /tmp/hermes-memory/:
+2. **Run the aggregator** to scan `~/.claude/`, `~/.claude/memory`, and `/tmp/hermes-memory/`:
    ```bash
    cd /root/code/agentic-os
    bun run scripts/aggregate.ts
@@ -47,6 +50,9 @@ and deploy the changes.
 - **Source directory may not exist**: The directory `/root/ulak/memory` might not exist. 
   Instead, look for memories in `/root/ulak/memories` and `/root/.hermes/memories` (and their singular forms).
   The copy commands above use `|| true` to avoid errors if the source is missing.
+
+- **Stale files in temporary directory**: If `/tmp/hermes-memory` is not cleaned before copying, outdated memory files may remain and confuse the aggregator.
+  The step now removes the directory entirely before recreating it.
 
 - **Verify the aggregator output**: After running the aggregator, check the output for the number of memory files
   processed to ensure the sync worked.
