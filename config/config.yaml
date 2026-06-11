@@ -377,7 +377,8 @@ discord:
   server_actions: ''
   allow_any_attachment: false
   max_attachment_bytes: 33554432
-whatsapp: {}
+whatsapp:
+  bridge_port: 3005
 telegram:
   reactions: false
   channel_prompts: {}
