@@ -176,12 +176,11 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 - No errors were encountered during the entire process (memory sync, aggregation, build, or deployment).
 - When running in a non-interactive context (like a cron job), the copy operation proceeded without prompts since we were only copying files, not deleting directory contents.
 
-## Session-Specific Learnings (2026-06-10)
-- As a cron job (no user present), we successfully executed the Agentic OS full refresh and deploy without interaction.
-- Synced Hermes memory files from `/root/ulak/memories/` (the synced snapshot) to `/tmp/hermes-memory/`, copying 2 memory files (excluding lock files): MEMORY.md, USER.md.
-- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).
-- Build completed successfully with warnings about chunk size (>500 kB), which are expected and non‑fatal for this application.
-- Deployment via Wrangler succeeded with version ID: `636a3e1e-da2c-4f18-8dff-f3505a9067b8`.
+## Session-Specific Learnings (2026-06-12)
+- As a cron job (no user present), we executed the Agentic OS full refresh and deploy.
+- Synced Hermes memory files from `/root/ulak/memories/` to `/tmp/hermes-memory/`, copying 4 files total (MEMORY.md, USER.md, MEMORY.md.lock, USER.md.lock).
+- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1704 assistant msgs from ~/.claude/projects).
+- The build step `bun run build` executed `seed:data` and `vite build` successfully, with warnings about chunk size (>500 kB) which are expected and non‑fatal for this application.
+- Deployment via Wrangler succeeded with version ID: `667ac73f-55c0-4f62-b309-0afd83437f1c`.
 - The `wrangler deploy` command warned about `workers_dev` and `preview_urls` being enabled by default (as noted in the skill), which can be overridden explicitly if desired.
 - No errors were encountered during the entire process (memory sync, aggregation, build, or deployment).
-- Learned that when counting memory files for reporting, we should exclude lock files (*.lock) to get the actual count of meaningful memory files.\n\n## Session-Specific Learnings (2026-06-12)\n- As a cron job (no user present), we executed the Agentic OS full refresh and deploy.\n- Synced Hermes memory files from `~/.hermes/memories/` (live memories) to `/tmp/hermes-memory/`, copying 2 memory files (MEMORY.md, USER.md) plus lock files.\n- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).\n- The build step `bun run build` failed with \"Script not found 'build'\". The correct build sequence is `bun run seed:data && vite build` (or using the provided deploy.sh script).\n- Deployment via Wrangler was not attempted due to the build failure.\n- No errors were encountered during memory sync and aggregation.\n- Learned that the Agentic OS project may not have a top-level `build` script; check package.json for available scripts (e.g., `seed:data`, `vite build`).\n
