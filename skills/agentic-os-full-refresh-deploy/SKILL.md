@@ -22,10 +22,7 @@ trigger:
    - Execute the aggregation script: `bun run scripts/aggregate.ts`
    - This script scans ~/.claude/projects, ~/.claude/memory, and /tmp/hermes-memory/ to generate live-data.json
 
-3. **Build and deploy**
-   - Build the project: `bun run build`
-   - Deploy to Cloudflare Workers: `wrangler deploy`
-   - Note the deployed version ID from the output.
+3. **Build and deploy**\n   - Build the project: `bun run build`\n   - Deploy to Cloudflare Workers using the built server worker: `wrangler deploy dist/server/index.js --config dist/server/wrangler.json`\n   - Note the deployed version ID from the output.
 
 ## Pitfalls
 - The aggregator script already includes multiple Hermes memory source paths in its configuration (including `/tmp/hermes-memory`, `/root/.hermes/memories`, and `/root/ulak/memories`), so copying to `/tmp/hermes-memory` is sufficient but not strictly required if other paths are already populated.
@@ -34,6 +31,7 @@ trigger:
 - The deploy step may fail if Cloudflare Workers authentication is not set up; check `wrangler login` status if needed.
 - Double-check the source directory name: it is `memories` (plural) under `/root/ulak/`; `/root/ulak/memory` (singular) does not exist and will cause the copy to fail.
 - If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
+- Verify that the build output exists in `dist/server/` (contains `index.js` and `wrangler.json`) before running `wrangler deploy`; if missing, re-run `bun run build`.
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
