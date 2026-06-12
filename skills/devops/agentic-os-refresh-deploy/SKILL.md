@@ -37,11 +37,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    ```
    This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` and updates `src/data/live-data.json`.
 
-3. **Build the project**
-   ```bash
-   bun run build
-   ```
-   Produces optimized client and server assets in `dist/`.
+3. **Build the project**\n   ```bash\n   bun run seed:data && vite build\n   ```\n   Produces optimized client and server assets in `dist/`.\n   Note: The `build` script is an alias for `vite build`; running `seed:data` first ensures the latest data is embedded.
 
 4. **Deploy via Wrangler**
    ```bash
@@ -188,4 +184,4 @@ cp -r ~/.hermes/memories/* /tmp/hermes-memory/ 2>/dev/null || true
 - Deployment via Wrangler succeeded with version ID: `636a3e1e-da2c-4f18-8dff-f3505a9067b8`.
 - The `wrangler deploy` command warned about `workers_dev` and `preview_urls` being enabled by default (as noted in the skill), which can be overridden explicitly if desired.
 - No errors were encountered during the entire process (memory sync, aggregation, build, or deployment).
-- Learned that when counting memory files for reporting, we should exclude lock files (*.lock) to get the actual count of meaningful memory files.
+- Learned that when counting memory files for reporting, we should exclude lock files (*.lock) to get the actual count of meaningful memory files.\n\n## Session-Specific Learnings (2026-06-12)\n- As a cron job (no user present), we executed the Agentic OS full refresh and deploy.\n- Synced Hermes memory files from `~/.hermes/memories/` (live memories) to `/tmp/hermes-memory/`, copying 2 memory files (MEMORY.md, USER.md) plus lock files.\n- The aggregator processed both `~/.claude/projects` and the synced Hermes memories, reporting 18 memory files across 2 workspaces / 0 Pinecone indexes / 0 vectors / 14 events (plus 2 projects, 1693 assistant msgs from ~/.claude/projects).\n- The build step `bun run build` failed with \"Script not found 'build'\". The correct build sequence is `bun run seed:data && vite build` (or using the provided deploy.sh script).\n- Deployment via Wrangler was not attempted due to the build failure.\n- No errors were encountered during memory sync and aggregation.\n- Learned that the Agentic OS project may not have a top-level `build` script; check package.json for available scripts (e.g., `seed:data`, `vite build`).\n
