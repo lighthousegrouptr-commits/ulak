@@ -56,14 +56,14 @@ Refresh the Agentic OS dashboard by syncing Hermes memories, running the aggrega
    - cd /root/code/agentic-os && bun run scripts/aggregate.ts
 
 3. Build and deploy:
-   - Build the application: `cd /root/code/agentic-os && bun run build`
+   - Build the application: `cd /root/code/agentic-os && bun run build` (which runs `seed:data` and `vite build`)
    - Deploy via Wrangler: `cd /root/code/agentic-os && wrangler deploy`
    - Note: wrangler deploy does not accept `--yes` or `-y` flags; it will prompt for confirmation if needed.
 
 ## Pitfalls
 
 - **wrangler deploy --verbose**: The `wrangler deploy` command does not accept a `--verbose` flag. Using it will result in an error. Run `wrangler deploy` without the flag to deploy successfully.
-- If you run `bun run build` directly, you may encounter "Script not found \\\"build\\\"". The build script is defined as `bun run seed:data && vite build`. Using deploy.sh avoids this.
+- If you run `bun run build` directly, it executes `seed:data` followed by `vite build` to produce optimized client and server assets.
 - After building, the output is `dist/server/server.js` but Wrangler expects `index.js`. The deploy.sh copies it for you.
 - The deploy.sh also fixes wrangler.json to include routes and assets directory.
 
