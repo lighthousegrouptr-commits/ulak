@@ -6,19 +6,18 @@ trigger:
   - after changes to Hermes memories or skills
 ---
 
-# Agentic OS Full Refresh and Deploy
+## Agentic OS Full Refresh and Deploy
 
-Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding the deployment.
+ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding the deployment.
 
-## Steps
+ ## Steps
 1. **Sync Hermes memory files**
    - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
-   - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (the Ulak snapshot lives at `/root/ulak/memories/`; the live Hermes memories are at `~/.hermes/memories/` but the aggregator checks both)
-   - The aggregator script also checks `~/.hermes/memories/`, `/root/ulak/memories/`, and `/tmp/hermes-memory/` directly, so copying to `/tmp/hermes-memory/` is optional but ensures the latest snapshot is available.
+   - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (the Ulak snapshot lives at `/root/ulak/memories/`; note that `/root/ulak/memory` (singular) does not exist; the live Hermes memories are at `~/.hermes/memories/` and the aggregator also checks `/root/.hermes/memories/`, `/root/ulak/memories/`, and `/tmp/hermes-memory/` directly, so copying to `/tmp/hermes-memory/` is optional but ensures the latest snapshot is available.)
    - Note: lock files (`*.md.lock`) are harmless and can be ignored.
-   - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md | wc -l` should match the number of memory files in the source.
+   - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
 
-2. **Run the aggregator**
+ ## Pitfalls
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
    - Execute the aggregation script: `bun run scripts/aggregate.ts`
    - This script scans ~/.claude/projects, ~/.claude/memory, and /tmp/hermes-memory/ to generate live-data.json
