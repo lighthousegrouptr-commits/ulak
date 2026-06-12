@@ -17,7 +17,7 @@ trigger:
    - Note: lock files (`*.md.lock`) are harmless and can be ignored.
    - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
 
- ## Pitfalls
+2. **Run the aggregator**
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
    - Execute the aggregation script: `bun run scripts/aggregate.ts`
    - This script scans ~/.claude/projects, ~/.claude/memory, and /tmp/hermes-memory/ to generate live-data.json
@@ -33,6 +33,7 @@ trigger:
 - Ensure you have `bun` and `wrangler` installed and configured in the agentic-os directory.
 - The deploy step may fail if Cloudflare Workers authentication is not set up; check `wrangler login` status if needed.
 - Double-check the source directory name: it is `memories` (plural) under `/root/ulak/`; `/root/ulak/memory` (singular) does not exist and will cause the copy to fail.
+- If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
