@@ -13,8 +13,9 @@ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding t
 ## Steps
 1. **Sync Hermes memory files**
    - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
-   - Copy memory files from Hermes source: `cp /root/.hermes/memories/* /tmp/hermes-memory/`
-   - (Optional) Also copy from /root/ulak/memories/ if that's the source of truth: `cp /root/ulak/memories/* /tmp/hermes-memory/`
+   - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (or from `~/.hermes/memories/` if that is the source of truth)
+   - The aggregator script also checks `~/.hermes/memories/`, `/root/ulak/memories/`, and `/tmp/hermes-memory/` directly, so copying to `/tmp/hermes-memory/` is optional but ensures the latest snapshot is available.
+   - Note: lock files (`*.md.lock`) are harmless and can be ignored.
 
 2. **Run the aggregator**
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
@@ -47,4 +48,5 @@ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding t
 ✨ Success! Uploaded 21 files (54 already uploaded) (3.12 sec)
 ...
 Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
+```
 ```
