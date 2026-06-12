@@ -52,3 +52,4 @@ Sync Hermes memories to a temporary location, run the Agentic OS aggregator, bui
 After deployment, check `src/data/live-data.json`:
 - Contains a memory source with `kind: "hermes"` and `root: "/tmp/hermes-memory"`.
 - Memory node count reflects synced files.
+- Or run the verification script: `./scripts/verify-agentic-os-deploy.sh`
