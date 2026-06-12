@@ -13,9 +13,10 @@ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding t
 ## Steps
 1. **Sync Hermes memory files**
    - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
-   - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (or from `~/.hermes/memories/` if that is the source of truth)
+   - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (the Ulak snapshot lives at `/root/ulak/memories/`; the live Hermes memories are at `~/.hermes/memories/` but the aggregator checks both)
    - The aggregator script also checks `~/.hermes/memories/`, `/root/ulak/memories/`, and `/tmp/hermes-memory/` directly, so copying to `/tmp/hermes-memory/` is optional but ensures the latest snapshot is available.
    - Note: lock files (`*.md.lock`) are harmless and can be ignored.
+   - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md | wc -l` should match the number of memory files in the source.
 
 2. **Run the aggregator**
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
@@ -32,6 +33,7 @@ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding t
 - If no memory files are found, the aggregator will still run but the memory constellation in the dashboard will be empty.
 - Ensure you have `bun` and `wrangler` installed and configured in the agentic-os directory.
 - The deploy step may fail if Cloudflare Workers authentication is not set up; check `wrangler login` status if needed.
+- Double-check the source directory name: it is `memories` (plural) under `/root/ulak/`; `/root/ulak/memory` (singular) does not exist and will cause the copy to fail.
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
