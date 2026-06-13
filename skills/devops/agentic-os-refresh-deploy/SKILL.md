@@ -56,6 +56,7 @@ When the user requests to run the Agentic OS full refresh and deploy, or when th
 - The wrangler deploy command may warn about missing workers_dev and preview_urls in the Wrangler file. These warnings can be ignored or addressed by adding the appropriate settings to wrangler.jsonc.
 - If wrangler deploy prompts for confirmation (e.g., in CI environments), prefix the command with `CI=true` to run non-interactively.
 - After building, the effective Wrangler configuration is located at `dist/server/wrangler.json`; ensure that any local changes to `wrangler.jsonc` are reflected there by rebuilding.
+- Verify the source Hermes memory directory exists; on some installations it is `/root/ulak/memories` rather than `/root/ulak/memory`.
 
 ## Verification
 
