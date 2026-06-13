@@ -46,6 +46,9 @@ trigger:
 - **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
 - **Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
 
+## Helper Script
+A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above. Make it executable (`chmod +x scripts/refresh-agentic-os.sh`) and run it to perform the full refresh and deploy.
+
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 - Count the number of Hermes memory files synced (optional): `find /tmp/hermes-memory -name \"*.md\" -type f | wc -l` (note: lock files are ignored; the aggregator only processes .md files)
