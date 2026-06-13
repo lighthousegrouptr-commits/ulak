@@ -61,4 +61,10 @@ trigger:
 ...
 Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 ```
+## Pitfalls & Troubleshooting
+
+- **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
+- **Lock files**: Files ending with `.md.lock` in the memories directory are harmless and can be ignored; they do not affect the aggregator.
+- **Alternative source**: If `/root/ulak/memories/` is missing, you can also sync from `/root/.hermes/memories/` (the live Hermes memory directory) using the same copy command.
+- **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better.
 ```
