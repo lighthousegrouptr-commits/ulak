@@ -2,6 +2,7 @@
 name: agentic-os-refresh-deploy
 description: Refresh and deploy the Agentic OS dashboard by syncing Hermes memory files to a temporary location, then running the aggregator (which scans both the synced Hermes memories and the default Claude memories), building, and deploying.
 ---
+
 ## Trigger Conditions
 When the user requests to run the Agentic OS full refresh and deploy, or when the Hermes memory files need to be synced and the Agentic OS dashboard rebuilt and redeployed.
 
@@ -14,15 +15,16 @@ When the user requests to run the Agentic OS full refresh and deploy, or when th
 
 2. Copy the Hermes memory files from the Ulak project to the temporary directory:
    ```bash
-if [ -d /root/ulak/memories ]; then
-  rsync -av /root/ulak/memories/ /tmp/hermes-memory/
-elif [ -d /root/.hermes/memories ]; then
-  rsync -av /root/.hermes/memories/ /tmp/hermes-memory/
-else
-  echo 'No Hermes memories directory found'
-  exit 1
-fi
+   if [ -d /root/ulak/memories ]; then
+     rsync -av /root/ulak/memories/ /tmp/hermes-memory/
+   elif [ -d /root/.hermes/memories ]; then
+     rsync -av /root/.hermes/memories/ /tmp/hermes-memory/
+   else
+     echo 'No Hermes memories directory found'
+     exit 1
+   fi
    ```
+   *Note: If `rsync` is not available, `cp -a` works as well.*
 
 3. (Optional) Count the number of memory files copied:
    ```bash
@@ -42,7 +44,8 @@ fi
 
 6. Deploy the dashboard to Cloudflare Workers:
    ```bash
-   wrangler deploy
+   # For non-interactive deployment, set CI=true to avoid prompts
+   CI=true wrangler deploy
    ```
 
 ## Pitfalls
@@ -51,6 +54,8 @@ fi
 - The vite build may warn about some chunks being larger than 500 kB after minification. This is expected and does not affect the deployment.
 - Ensure that the temporary directory /tmp/hermes-memory is writable and that you have permission to read the source memory directories.
 - The wrangler deploy command may warn about missing workers_dev and preview_urls in the Wrangler file. These warnings can be ignored or addressed by adding the appropriate settings to wrangler.jsonc.
+- If wrangler deploy prompts for confirmation (e.g., in CI environments), prefix the command with `CI=true` to run non-interactively.
+- After building, the effective Wrangler configuration is located at `dist/server/wrangler.json`; ensure that any local changes to `wrangler.jsonc` are reflected there by rebuilding.
 
 ## Verification
 
