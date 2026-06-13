@@ -74,6 +74,10 @@ For SPA sites where meta tags don't reveal the CMS, check:
 
 **robots meta: noai / noimageai** — These tags BLOCK AI engines from training on your content. This is INTENTIONAL. Do NOT flag it as an error unless the site explicitly sells AI visibility services while also blocking AI (contradiction then warrants a flag).
 
+**SPA raw HTML may show zero links/images** — Single‑Page Applications render links and images via JavaScript, so the initial HTML can appear empty. Always verify counts after JS execution (e.g., via `browser_console` or by waiting for network idle) before concluding missing elements.
+
+**Missing lang/charset in HTML** — Ensure the `<html>` tag includes a `lang` attribute (e.g., `lang=\"tr\"`) and a `<meta charset=\"UTF-8\">` tag for proper language detection and accessibility.
+
 **SPA word count** — SPAs may report low word counts if evaluated before full render. If count seems wrong visually, re-evaluate after a pause.
 
 **H1 concatenation** — SPAs may render H1 text concatenated via CSS spacing. Not an SEO issue if it looks correct visually.
