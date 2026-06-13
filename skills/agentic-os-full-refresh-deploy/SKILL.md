@@ -22,7 +22,24 @@ trigger:
 
 2. **Run the aggregator**
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
-   - Execute the aggregation script: `bun run scripts/aggregate.ts`
+   - Execute the aggregator script: `bun run scripts/aggregate.ts`
+   - This scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/
+
+3. **Build the project**
+   - First ensure data file exists: `bun run seed:data`
+   - Then build with vite directly: `./node_modules/.bin/vite build`
+   - Note: `bun run build` may not work; use the vite binary from node_modules/.bin/
+
+4. **Deploy**
+   - Run: `wrangler deploy`
+   - Important: Requires `CLOUDFLARE_API_TOKEN` environment variable to be set
+   - If missing, obtain a token from https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+   - After successful deployment, look for the version ID in the output (e.g., "v1.2.3" or a hash in parentheses)
+
+5. **Report results**
+   - Total memory files count: from the verification in step 1 (or run `find /tmp/hermes-memory -type f | wc -l`)
+   - Deployed version ID: from the wrangler deploy output
+   - Any errors: check the output of each step, especially the deploy step
    - This script scans ~/.claude/projects, ~/.claude/memory, and /tmp/hermes-memory/ to generate live-data.json
 
 3. **Build and deploy**\n   - Build the project: `bun run build`\n   - Deploy to Cloudflare Workers using the built server worker: `wrangler deploy dist/server/index.js --config dist/server/wrangler.json`\n   - Note the deployed version ID from the output.
