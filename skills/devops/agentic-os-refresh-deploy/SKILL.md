@@ -14,7 +14,14 @@ When the user requests to run the Agentic OS full refresh and deploy, or when th
 
 2. Copy the Hermes memory files from the Ulak project to the temporary directory:
    ```bash
-   cp -r /root/ulak/memories/* /tmp/hermes-memory/
+if [ -d /root/ulak/memories ]; then
+  rsync -av /root/ulak/memories/ /tmp/hermes-memory/
+elif [ -d /root/.hermes/memories ]; then
+  rsync -av /root/.hermes/memories/ /tmp/hermes-memory/
+else
+  echo 'No Hermes memories directory found'
+  exit 1
+fi
    ```
 
 3. (Optional) Count the number of memory files copied:
