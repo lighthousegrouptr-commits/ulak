@@ -13,6 +13,9 @@ trigger:
  ## Steps
 1. **Sync Hermes memory files**
    - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
+   - Copy from the correct source: `/root/ulak/memories/` (not `/root/ulak/memory/`)
+   - Command: `cp -r /root/ulak/memories/* /tmp/hermes-memory/`
+   - Verify file count: `find /tmp/hermes-memory -type f | wc -l`
    - Copy memory files from the Ulak snapshot: `cp -r /root/ulak/memories/. /tmp/hermes-memory/` (the Ulak snapshot lives at `/root/ulak/memories/`; note that `/root/ulak/memory` (singular) does not exist; the live Hermes memories are at `~/.hermes/memories/` and the aggregator also checks `/root/.hermes/memories/`, `/root/ulak/memories/`, and `/tmp/hermes-memory/` directly, so copying to `/tmp/hermes-memory/` is optional but ensures the latest snapshot is available.)
    - Note: lock files (`*.md.lock`) are harmless and can be ignored.
    - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
