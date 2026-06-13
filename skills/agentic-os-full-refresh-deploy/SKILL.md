@@ -42,8 +42,9 @@ trigger:
 - The deploy step may fail if Cloudflare Workers authentication is not set up; check `wrangler login` status if needed.
 - Double-check the source directory name: it is `memories` (plural) under `/root/ulak/`; `/root/ulak/memory` (singular) does not exist and will cause the copy to fail.
 - If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
-- Verify that the build output exists in `dist/server/` (contains `index.js` and `wrangler.json`) before running `wrangler deploy`; if missing, re-run `bun run build`.
-- Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
+- **Build warnings**: The Vite build may produce warnings about chunks larger than 500 kB. This is expected for this application and does not affect functionality. See the build output for details.
+- **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
+- **Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
