@@ -55,7 +55,9 @@ Note: The script uses `rsync -av --delete` to ensure the destination is an exact
 ...
 Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 ```
+For a detailed transcript of this session, see references/2026-06-14-agentic-os-refresh-session.md.
 
+## Pitfalls & Troubleshooting
 ## Pitfalls & Troubleshooting
 
 - **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
