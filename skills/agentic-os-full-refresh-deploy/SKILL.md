@@ -1,61 +1,48 @@
 ---
 name: agentic-os-full-refresh-deploy
 description: Refresh Agentic OS dashboard by syncing Hermes memories and rebuilding deployment.
-trigger:
-  - user wants to update Agentic OS dashboard with latest Hermes memories
-  - after changes to Hermes memories or skills
+tags: []
+related_skills: []
 ---
 
 ## Agentic OS Full Refresh and Deploy
 
- Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding the deployment.
+Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding the deployment.
 
 ## Steps
-1. **Sync Hermes memory files (RECOMMENDED: Use helper script)**
-   - **Preferred method:** Use the helper script which ensures an exact mirror: `scripts/refresh-agentic-os.sh` (make executable first: `chmod +x scripts/refresh-agentic-os.sh`)
-   - **Alternative method:** 
-     - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
-     - Use rsync to mirror the source (ensures destination is exact copy, removing stale files): `rsync -av --delete /root/ulak/memories/ /tmp/hermes-memory/`
-     - Verify file count: `find /tmp/hermes-memory -type f | wc -l`
-     - Note: lock files (`*.md.lock`) are harmless and can be ignored.
-     - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
-   - <strong>Important:</strong> Avoid simple copy commands like `cp /root/ulak/memories/* /tmp/hermes-memory/` as they can leave stale files in subdirectories if the destination already contains directories that don't exist in the source.
+**Preferred method: Use the helper script**
+   - Make the script executable: `chmod +x scripts/refresh-agentic-os.sh`
+   - Run it: `./scripts/refresh-agentic-os.sh`
+   - The script will sync memories, run aggregator, build, and deploy.
 
-2. **Run the aggregator**
-   - Change to the agentic-os directory: `cd /root/code/agentic-os`
-   - Execute the aggregator script: `bun run scripts/aggregate.ts`
-   - This scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/
-
-3. **Build the project**
-   - Run: `bun run build` (this runs `seed:data` and `vite build`; verified to work)
-   - The build output will be in `dist/client/` and `dist/server/`
-
-4. **Deploy**
-   - Run: `wrangler deploy`
-   - Important: Requires `CLOUDFLARE_API_TOKEN` environment variable to be set (or use `wrangler login`).
-   - After successful deployment, look for the version ID in the output (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
-
-5. **Report results**
-   - Total memory files count: from verification in step 1 (or run `find /tmp/hermes-memory -type f | wc -l`)
-   - Deployed version ID: from the wrangler deploy output
-   - Any errors: check the output of each step, especially the deploy step
-- If no memory files are found, the aggregator will still run but the memory constellation in the dashboard will be empty.
-- Ensure you have `bun` and `wrangler` installed and configured in the agentic-os directory.
-- The deploy step may fail if Cloudflare Workers authentication is not set up; check `wrangler login` status if needed.
-- Double-check the source directory name: it is `memories` (plural) under `/root/ulak/`; `/root/ulak/memory` (singular) does not exist and will cause the copy to fail.
-- If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
-- **Build warnings**: The Vite build may produce warnings about chunks larger than 500 kB. This is expected for this application and does not affect functionality. See the build output for details.
-- **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
-- **Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
+**Alternative: Manual step-by-step**
+   1. Sync Hermes memory files
+      - Ensure the source directory exists: `/root/ulak/memories/`
+      - Mirror to `/tmp/hermes-memory/` using rsync: `rsync -av --delete /root/ulak/memories/ /tmp/hermes-memory/`
+      - Verify: `find /tmp/hermes-memory -type f | wc -l` (includes all files; lock files are ignored by aggregator)
+   2. Run the aggregator
+      - Change to the agentic-os directory: `cd /root/code/agentic-os`
+      - Execute the aggregator script: `bun run scripts/aggregate.ts`
+      - This scans ~/.claude/projects, ~/.claude/memory, AND /tmp/hermes-memory/
+   3. Build the project
+      - Run: `bun run build` (this runs `seed:data` and `vite build`; verified to work)
+      - The build output will be in `dist/client/` and `dist/server/`
+   4. Deploy
+      - Run: `wrangler deploy`
+      - Important: Requires `CLOUDFLARE_API_TOKEN` environment variable to be set (or use `wrangler login`).
+      - After successful deployment, look for the version ID in the output (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+   5. Report results
+      - Total memory files count: from the aggregator output (look for "memory: X files")
+      - Deployed version ID: from the wrangler deploy output
+      - Any errors: check the output of each step, especially the deploy step
 
 ## Helper Script
-A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above using `rsync` to mirror the Hermes memories directory. Make it executable (`chmod +x scripts/refresh-agentic-os.sh`) and run it to perform the full refresh and deploy.
+A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above using `rsync` to mirror the Hermes memories directory. This is the **preferred method** as it ensures an exact mirror and avoids stale files.
 Note: The script uses `rsync -av --delete` to ensure the destination is an exact mirror of the source.
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
-- Count the number of Hermes memory files synced (optional): `find /tmp/hermes-memory -name \"*.md\" -type f | wc -l` (note: lock files are ignored; the aggregator only processes .md files)
-- Review the aggregator output for any errors (look for lines starting with `[aggregate]`).
+- Review the aggregator output for any errors (look for lines starting with `[aggregate]`). The memory count is reported as "memory: X files".
 - The dashboard should update within a few minutes after deployment.
 
 ## Example Output
@@ -68,6 +55,7 @@ Note: The script uses `rsync -av --delete` to ensure the destination is an exact
 ...
 Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 ```
+
 ## Pitfalls & Troubleshooting
 
 - **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
@@ -75,3 +63,7 @@ Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 - **Lock files**: Files ending with `.md.lock` in the memories directory are harmless and can be ignored; they do not affect the aggregator.
 - **Alternative source**: If `/root/ulak/memories/` is missing, you can also sync from `/root/.hermes/memories/` (the live Hermes memory directory) using the same copy command.
 - **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better (when combined with `--delete` for mirroring).
+- **Build warnings**: The Vite build may produce warnings about chunks larger than 500 kB. This is expected for this application and does not affect functionality. See the build output for details.
+- **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
+- **Deployment failures**: If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
+- **Note on deletion**: Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).

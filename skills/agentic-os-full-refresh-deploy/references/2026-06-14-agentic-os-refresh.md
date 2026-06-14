@@ -18,10 +18,11 @@ Executed Agentic OS full refresh and deploy as per scheduled cron job.
 3. Built and deployed:
    - Build: `bun run build` (successful)
    - Deploy: `wrangler deploy` (successful)
-   - Version ID: 1cadd102-ee06-4c0d-9541-3dcdfdc478df
+   - Version ID: aa634fb9-03f1-4a0d-b236-142a27659d76
 
 ## Notes
 - Actual memory file count from source: 2 unique files (MEMORY.md and USER.md)
 - The cp command used did not properly sync the memories subdirectory, potentially leaving stale data
 - No errors encountered during the process
 - Lesson learned: Use the helper script or rsync with --delete for proper mirroring to avoid stale files
+- The helper script `scripts/refresh-agentic-os.sh` is now the preferred method for future runs.
