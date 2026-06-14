@@ -22,14 +22,14 @@ This session performed a full refresh of the Agentic OS dashboard by syncing Her
 4. **Deployed via Wrangler**
    - Ran `wrangler deploy`
    - Deployment successful
-   - Version ID: `3fa3514f-ef25-48d8-9bf7-6d5b3cda544b`
+   - Version ID: `59436769-6c92-4235-92f4-bd91a9f97c7f`
 
 ## Results
-- **Deployed version ID:** 3fa3514f-ef25-48d8-9bf7-6d5b3cda544b
-- **Total memory files count:** 2 (from /root/ulak/memories/ after sync, lock files ignored)
+- **Deployed version ID:** 59436769-6c92-4235-92f4-bd91a9f97c7f
+- **Total memory files count:** 20 (as reported by aggregator)
 - **Errors:** None
 
 ## Notes
 - The aggregator ignored lock files (`*.md.lock`) as expected.
 - The memories subdirectory was included in the sync and processed by the aggregator.
-- The helper script `scripts/refresh-agentic-os.sh` uses `rsync -av --delete` for an exact mirror; manual copy with fresh destination is also safe.
+- The helper script `scripts/refresh-agentic-os.sh` uses `rsync -av --delete` for an exact mirror; manual copy with fresh destination is also safe when source lacks subdirectories.

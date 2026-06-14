@@ -63,6 +63,7 @@ For a detailed transcript of this session, see references/2026-06-14-agentic-os-
 
 - **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
 - **Stale files in subdirectories**: Using simple copy commands (e.g., `cp /root/ulak/memories/* /tmp/hermes-memory/`) can leave stale files in subdirectories if the destination already contains directories that don't exist in the source. Always use the helper script or `rsync -av --delete` to ensure an exact mirror.
+- **Flat source safe**: If the source directory contains no subdirectories (only flat files), a simple copy command like `cp /root/ulak/memories/* /tmp/hermes-memory/` is safe and will not leave stale files, as there are no subdirectories to mismatch.
 - **Lock files**: Files ending with `.md.lock` in the memories directory are harmless and can be ignored; they do not affect the aggregator.
 - **Alternative source**: If `/root/ulak/memories/` is missing, you can also sync from `/root/.hermes/memories/` (the live Hermes memory directory) using the same copy command.
 - **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better (when combined with `--delete` for mirroring).
