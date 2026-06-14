@@ -57,7 +57,7 @@ Note: The script uses `rsync -av --delete` to ensure the destination is an exact
 ...
 Current Version ID: 19a4695f-9828-42f0-95b9-79a1cbe55edf
 ```
-For a detailed transcript of this session, see references/2026-06-14-agentic-os-refresh-session.md.
+For detailed transcripts of sessions, see the references/ directory (e.g., references/2026-06-14-agentic-os-refresh-session.md).
 
 ## Pitfalls & Troubleshooting
 
