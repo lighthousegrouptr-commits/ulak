@@ -31,3 +31,4 @@ Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudf
 - See `references/agentic-os-deploy-lessons.md` for lessons learned from deployments.
 - See `references/session-2026-06-07.md`: Session notes from the 2026-06-07 Agentic OS refresh and deploy
 - See `references/session-2026-06-07-agentic-os-deploy.md`: Detailed session log and version ID from the 2026-06-07 Agentic OS deployment (version: 966305cc-6589-4697-a514-bb9d2c7ce4f2)
+- See `references/session-2026-06-14.md`: Session notes from the 2026-06-14 Agentic OS refresh and deploy (version: 1b628081-6d21-4fcd-8683-426346109ffc, 18 memory files, $34.63 value extracted)
