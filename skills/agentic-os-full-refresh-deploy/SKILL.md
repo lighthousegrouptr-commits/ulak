@@ -11,13 +11,15 @@ trigger:
  Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding the deployment.
 
 ## Steps
-1. **Sync Hermes memory files**
-   - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
-   - Copy from the correct source: `/root/ulak/memories/` (not `/root/ulak/memory/`)
-   - Command: `cp -r /root/ulak/memories/. /tmp/hermes-memory/`
-   - Verify file count: `find /tmp/hermes-memory -type f | wc -l`
-   - Note: lock files (`*.md.lock`) are harmless and can be ignored.
-   - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
+1. **Sync Hermes memory files (RECOMMENDED: Use helper script)**
+   - **Preferred method:** Use the helper script which ensures an exact mirror: `scripts/refresh-agentic-os.sh` (make executable first: `chmod +x scripts/refresh-agentic-os.sh`)
+   - **Alternative method:** 
+     - Ensure the target directory exists: `mkdir -p /tmp/hermes-memory`
+     - Use rsync to mirror the source (ensures destination is exact copy, removing stale files): `rsync -av --delete /root/ulak/memories/ /tmp/hermes-memory/`
+     - Verify file count: `find /tmp/hermes-memory -type f | wc -l`
+     - Note: lock files (`*.md.lock`) are harmless and can be ignored.
+     - **Verification:** After copying, confirm files are present: `ls -1 /tmp/hermes-memory/*.md 2>/dev/null | wc -l` returns the number of memory files copied (aggregator will also see memories from other sources).
+   - <strong>Important:</strong> Avoid simple copy commands like `cp /root/ulak/memories/* /tmp/hermes-memory/` as they can leave stale files in subdirectories if the destination already contains directories that don't exist in the source.
 
 2. **Run the aggregator**
    - Change to the agentic-os directory: `cd /root/code/agentic-os`
@@ -69,7 +71,7 @@ Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 ## Pitfalls & Troubleshooting
 
 - **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
+- **Stale files in subdirectories**: Using simple copy commands (e.g., `cp /root/ulak/memories/* /tmp/hermes-memory/`) can leave stale files in subdirectories if the destination already contains directories that don't exist in the source. Always use the helper script or `rsync -av --delete` to ensure an exact mirror.
 - **Lock files**: Files ending with `.md.lock` in the memories directory are harmless and can be ignored; they do not affect the aggregator.
 - **Alternative source**: If `/root/ulak/memories/` is missing, you can also sync from `/root/.hermes/memories/` (the live Hermes memory directory) using the same copy command.
-- **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better.
-```
+- **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better (when combined with `--delete` for mirroring).
