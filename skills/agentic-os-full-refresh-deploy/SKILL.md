@@ -36,6 +36,8 @@ Refresh the Agentic OS dashboard by syncing Hermes memory files and rebuilding t
       - Deployed version ID: from the wrangler deploy output
       - Any errors: check the output of each step, especially the deploy step
 
+**Note**: If running `bun run scripts/aggregate.ts` results in a "Module not found" error, ensure you are in the `/root/code/agentic-os` directory and that the `scripts/` directory contains `aggregate.ts`. As an alternative, use the helper script `scripts/refresh-agentic-os.sh` which handles the sync, aggregation, build, and deploy steps in sequence.
+
 ## Helper Script
 A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above using `rsync` to mirror the Hermes memories directory. This is the **preferred method** as it ensures an exact mirror and avoids stale files.
 Note: The script uses `rsync -av --delete` to ensure the destination is an exact mirror of the source.
@@ -58,7 +60,6 @@ Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
 For a detailed transcript of this session, see references/2026-06-14-agentic-os-refresh-session.md.
 
 ## Pitfalls & Troubleshooting
-## Pitfalls & Troubleshooting
 
 - **Source directory mismatch**: Using `/root/ulak/memory/` (singular) will fail with "No such file or directory". The correct source is `/root/ulak/memories/` (plural). Always verify the source directory exists before copying.
 - **Stale files in subdirectories**: Using simple copy commands (e.g., `cp /root/ulak/memories/* /tmp/hermes-memory/`) can leave stale files in subdirectories if the destination already contains directories that don't exist in the source. Always use the helper script or `rsync -av --delete` to ensure an exact mirror.
@@ -69,3 +70,6 @@ For a detailed transcript of this session, see references/2026-06-14-agentic-os-
 - **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
 - **Deployment failures**: If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
 - **Note on deletion**: Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
+
+- **Lock files**: Files ending with `.md.lock` in the memories directory are harmless and can be ignored; they do not affect the aggregator. However, when clearing the destination directory, ensure lock files are also removed to avoid confusion.
+- **Using cp vs rsync**: Using simple copy commands (e.g., `cp /root/ulak/memories/* /tmp/hermes-memory/`) can leave stale files in subdirectories if the destination already contains directories that don't exist in the source. Always use the helper script or `rsync -av --delete` to ensure an exact mirror, which also removes stale files and lock files appropriately.
