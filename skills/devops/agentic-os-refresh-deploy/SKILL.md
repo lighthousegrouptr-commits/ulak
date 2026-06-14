@@ -63,3 +63,7 @@ When the user requests to run the Agentic OS full refresh and deploy, or when th
 - After deployment, the output will show a Version ID (e.g., f1951978-c6eb-4cd9-9340-f42b2f895afe).
 - The total memory files count from the synced Hermes memories can be verified by the find command in step 3.
 - The aggregator output will show a combined memory count (e.g., "memory: 18 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 8 events") that includes both the synced Hermes memories and the default Claude memories in ~/.claude/memory.
+
+## Session References
+
+- references/session-2026-06-14-agentic-os-refresh.md: Session log of the 2026-06-14 Agentic OS refresh and deploy
