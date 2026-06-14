@@ -55,7 +55,7 @@ Note: The script uses `rsync -av --delete` to ensure the destination is an exact
 ...
 ✨ Success! Uploaded 21 files (54 already uploaded) (3.12 sec)
 ...
-Current Version ID: cadbcfb9-8cd1-476f-aa3f-434606052a42
+Current Version ID: 19a4695f-9828-42f0-95b9-79a1cbe55edf
 ```
 For a detailed transcript of this session, see references/2026-06-14-agentic-os-refresh-session.md.
 
@@ -67,6 +67,7 @@ For a detailed transcript of this session, see references/2026-06-14-agentic-os-
 - **Alternative source**: If `/root/ulak/memories/` is missing, you can also sync from `/root/.hermes/memories/` (the live Hermes memory directory) using the same copy command.
 - **rsync alternative**: The skill suggests `cp -r` but using `rsync -av` is also valid and may preserve attributes better (when combined with `--delete` for mirroring).
 - **Build warnings**: The Vite build may produce warnings about chunks larger than 500 kB. This is expected for this application and does not affect functionality. See the build output for details.
+- **Wrong working directory**: Running `bun run build` from outside `/root/code/agentic-os` results in \"Script not found\" errors. Always `cd` into the project directory first, or specify `workdir` when using the terminal tool.
 - **Data freshness**: The `/root/ulak/memories/` directory is updated every 30 minutes by the `ulak_sync.sh` cron job. If the memories appear stale, check the sync status with `hermes cron list` and `hermes cron show <job_id>` (typically job ID starts with 925ecf983b1d for the ulak sync), or check the git log in `/root/ulak` with `cd /root/ulak && git log --oneline -5`.
 - **Deployment failures**: If `wrangler deploy` fails with a Cloudflare API error (e.g., code 10013), verify your Cloudflare authentication with `wrangler login` and check network connectivity; transient API issues may resolve with a retry.
 - **Note on deletion**: Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
