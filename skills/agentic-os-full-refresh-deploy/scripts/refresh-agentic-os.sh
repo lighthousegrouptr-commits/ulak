@@ -15,8 +15,8 @@ if [[ ! -d "$MEMORY_SRC" ]]; then
 fi
 echo "Syncing memories from $MEMORY_SRC to $MEMORY_DST"
 mkdir -p "$MEMORY_DST"
-# Use rsync to copy contents, preserving files, ignoring lock files if desired
-rsync -av --ignore-existing "$MEMORY_SRC/" "$MEMORY_DST/"
+# Use rsync to copy contents, preserving files, and ensuring destination mirrors source
+rsync -av --delete "$MEMORY_SRC/" "$MEMORY_DST/"
 echo "Memory sync complete."
 
 # 2. Run aggregator

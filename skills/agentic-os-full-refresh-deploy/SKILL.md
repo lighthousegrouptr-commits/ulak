@@ -47,7 +47,8 @@ trigger:
 - **Attempting to delete the contents of `/tmp/hermes-memory` (e.g., with `rm -rf`) may trigger approval prompts in the Hermes agent if it is configured to require confirmation for destructive operations in root-like paths. In automated environments (cron jobs), avoid delete operations and rely on the copy step to overwrite existing files, or pre-clear the directory using methods that do not trigger prompts (e.g., via a separate approved script).
 
 ## Helper Script
-A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above. Make it executable (`chmod +x scripts/refresh-agentic-os.sh`) and run it to perform the full refresh and deploy.
+A ready-to-use script is available at `scripts/refresh-agentic-os.sh` that automates the steps above using `rsync` to mirror the Hermes memories directory. Make it executable (`chmod +x scripts/refresh-agentic-os.sh`) and run it to perform the full refresh and deploy.
+Note: The script uses `rsync -av --delete` to ensure the destination is an exact mirror of the source.
 
 ## Verification
 - Check the output of `wrangler deploy` for the Version ID (e.g., `Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
