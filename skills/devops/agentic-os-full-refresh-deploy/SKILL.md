@@ -68,3 +68,4 @@ fi
 ## References
 - See `references/agentic-os-memory-sync.md` for details on memory synchronization.
 - See `references/agentic-os-aggregator.md` for notes on the aggregate.ts script.
+- See `references/deploy-2026-06-15b.md` for the latest deployment log (2026-06-15).
