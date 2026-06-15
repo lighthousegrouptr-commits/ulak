@@ -61,6 +61,7 @@ fi
 
 ## Pitfalls
 - If `/root/.hermes/memories` does not exist, the script falls back to `/root/ulak/memories` (the Ulak snapshot). Ensure at least one source is present.
+- Ensure you copy from the correct directory name: use `memories` (plural) not `memory` (singular); the Ulak snapshot stores memories in `/root/ulak/memories/`.
 - The aggregator may warn about missing macOS-only signals on Linux; this is expected and does not affect functionality.
 - If `bun run build` fails due to missing dependencies, ensure the bun lockfile is up to date and run `bun install` first.
 - Wrangler deployment may require authentication; ensure `wrangler login` has been run.
