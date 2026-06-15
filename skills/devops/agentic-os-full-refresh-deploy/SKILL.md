@@ -14,25 +14,25 @@ Sync Hermes memory files, run the aggregator, build, and deploy the Agentic OS d
 - When deploying changes to the Agentic OS dashboard.
 
 ## Steps
-
-1. **Sync Hermes memory files**
-   ```bash
-   mkdir -p /tmp/hermes-memory
-   # Prefer live Hermes memories; fallback to ulak snapshot if needed
-   if [ -d "/root/.hermes/memories" ]; then
-     rsync -av /root/.hermes/memories/ /tmp/hermes-memory/
-   elif [ -d "/root/ulak/memories" ]; then
-     rsync -av /root/ulak/memories/ /tmp/hermes-memory/
-   else
-     echo "No Hermes memory source found" >&2
-     exit 1
-   fi
-   ```
-
-2. **Count synced memory files (optional verification)**
-   ```bash
-   find /tmp/hermes-memory -name "*.md" -type f | wc -l
-   ```
+ 
+1. **Sync Hermes memory files**  
+   ```bash  
+   mkdir -p /tmp/hermes-memory  
+   # Prefer live Hermes memories; fallback to ulak snapshot if needed  
+   if [ -d "/root/.hermes/memories" ]; then  
+     cp -av /root/.hermes/memories/* /tmp/hermes-memory/  
+   elif [ -d "/root/ulak/memories" ]; then  
+     cp -av /root/ulak/memories/* /tmp/hermes-memory/  
+   else  
+     echo "No Hermes memory source found" >&2  
+     exit 1  
+   fi  
+   ```  
+ 
+2. **Count synced memory files (optional verification)**  
+   ```bash  
+   find /tmp/hermes-memory -name "*.md" -type f | wc -l  
+   ```  
 
 3. **Run the aggregator**
    ```bash
