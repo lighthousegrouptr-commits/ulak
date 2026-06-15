@@ -16,23 +16,23 @@ Sync Hermes memory files, run the aggregator, build, and deploy the Agentic OS d
 ## Steps
  
 1. **Sync Hermes memory files**  
-   ```bash  
-   mkdir -p /tmp/hermes-memory  
-   # Prefer live Hermes memories; fallback to ulak snapshot if needed  
-   if [ -d "/root/.hermes/memories" ]; then  
-     cp -av /root/.hermes/memories/* /tmp/hermes-memory/  
-   elif [ -d "/root/ulak/memories" ]; then  
-     cp -av /root/ulak/memories/* /tmp/hermes-memory/  
-   else  
-     echo "No Hermes memory source found" >&2  
-     exit 1  
-   fi  
-   ```  
- 
+   ```bash 
+   mkdir -p /tmp/hermes-memory 
+   # Prefer live Hermes memories; fallback to ulak memory directory if needed 
+   if [ -d "/root/.hermes/memories" ]; then 
+     cp -av /root/.hermes/memories/* /tmp/hermes-memory/ 
+   elif [ -d "/root/ulak/memory" ]; then 
+     cp -av /root/ulak/memory/* /tmp/hermes-memory/ 
+   else 
+     echo "No Hermes memory source found" >&2 
+     exit 1 
+   fi 
+   ``` 
+
 2. **Count synced memory files (optional verification)**  
-   ```bash  
-   find /tmp/hermes-memory -name "*.md" -type f | wc -l  
-   ```  
+   ```bash 
+   find /tmp/hermes-memory -type f | wc -l 
+   ``` 
 
 3. **Run the aggregator**
    ```bash
@@ -60,7 +60,7 @@ Sync Hermes memory files, run the aggregator, build, and deploy the Agentic OS d
 - Ensure the dashboard loads at the workers.dev URL.
 
 ## Pitfalls
-- If `/root/.hermes/memories` does not exist, the script falls back to `/root/ulak/memories` (the Git-synced snapshot). Ensure at least one source is present.
+- If `/root/.hermes/memories` does not exist, the script falls back to `/root/ulak/memory` (the Ulak snapshot). Ensure at least one source is present.
 - The aggregator may warn about missing macOS-only signals on Linux; this is expected and does not affect functionality.
 - If `bun run build` fails due to missing dependencies, ensure the bun lockfile is up to date and run `bun install` first.
 - Wrangler deployment may require authentication; ensure `wrangler login` has been run.
