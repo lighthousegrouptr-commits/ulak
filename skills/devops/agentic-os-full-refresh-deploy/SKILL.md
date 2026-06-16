@@ -43,18 +43,9 @@ fi
    - This reads `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/`.
    - Outputs `src/data/live-data.json`.
 
-4. **Build the dashboard**
-   ```bash
-   bun run build
-   ```
-   - Produces production assets in `dist/`.
+4. **Build the dashboard**\n   ```bash\n   # First ensure live-data.json exists (copies example if needed)\n   bun run seed:data\n   # Then build the production assets\n   bun run vite build\n   ```\n   - Produces production assets in `dist/`.\n   - The build command is `vite build` accessed via `bun run vite build` (no direct \"build\" script in package.json).
 
-5. **Deploy via Wrangler**
-   ```bash
-   wrangler deploy
-   ```
-   - Deploys the Cloudflare Worker.
-   - Outputs the deployed version ID.
+5. **Deploy via Wrangler**\n   ```bash\n   # Remove any conflicting wrangler deploy config if present\n   rm -f ~/.wrangler/deploy/config.json\n   # Deploy using the built worker and specific wrangler config\n   wrangler deploy dist/server/index.js --config dist/server/wrangler.json\n   ```\n   - Deploys the Cloudflare Worker.\n   - Outputs the deployed version ID.
 
 ## Verification
 - After deployment, check the version ID in the wrangler output.
