@@ -38,6 +38,7 @@ fi
    ```bash
    cd /root/code/agentic-os
    bun run scripts/aggregate.ts
+    - Note: If /root/ulak/memory does not exist, use /root/ulak/memories instead (as seen in Ulak repo).
    ```
    - This reads `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/`.
    - Outputs `src/data/live-data.json`.
