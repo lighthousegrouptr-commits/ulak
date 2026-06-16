@@ -38,14 +38,14 @@ fi
    ```bash
    cd /root/code/agentic-os
    bun run scripts/aggregate.ts
-    - Note: If /root/ulak/memory does not exist, use /root/ulak/memories instead (as seen in Ulak repo).
+    - Note: Check for /root/.hermes/memories first, then fallback to /root/ulak/memories (as seen in Ulak repo).
    ```
    - This reads `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/`.
    - Outputs `src/data/live-data.json`.
 
 4. **Build the dashboard**\n   ```bash\n   # First ensure live-data.json exists (copies example if needed)\n   bun run seed:data\n   # Then build the production assets\n   bun run vite build\n   ```\n   - Produces production assets in `dist/`.\n   - The build command is `vite build` accessed via `bun run vite build` (no direct \"build\" script in package.json).
 
-5. **Deploy via Wrangler**\n   ```bash\n   # Remove any conflicting wrangler deploy config if present\n   rm -f ~/.wrangler/deploy/config.json\n   # Deploy using the built worker and specific wrangler config\n   wrangler deploy dist/server/index.js --config dist/server/wrangler.json\n   ```\n   - Deploys the Cloudflare Worker.\n   - Outputs the deployed version ID.
+5. **Deploy via Wrangler**\\n   ```bash\\n   # Remove any conflicting wrangler deploy config if present to avoid:\\n   # "Found both a user configuration file at "wrangler.json"\\n   #  and a deploy configuration file at ".../config.json".\\n   #  But these do not share the same base path so it is not clear which should be used.\\n   rm -f ~/.wrangler/deploy/config.json\\n   # Deploy using the built worker and specific wrangler config\\n   wrangler deploy dist/server/index.js --config dist/server/wrangler.json\\n   ```\\n   - Deploys the Cloudflare Worker.\\n   - Outputs the deployed version ID.
 
 ## Verification
 - After deployment, check the version ID in the wrangler output.
@@ -64,3 +64,4 @@ fi
 - See `references/references/agentic-os-aggregator.md` for notes on the aggregate.ts script.
 - See `references/deploy-2026-06-16.md` for the latest deployment log (2026-06-16).
 - See `references/deploy-2026-06-15b.md` for the latest deployment log (2026-06-15).
+- See `references/session-2026-06-16-agentic-os-deploy.md` for detailed session notes from 2026-06-16.
