@@ -11,7 +11,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 ## Prerequisites
 
-- Hermes Agent installed and configured with memories in `~/.hermes/memories/`
+- Hermes Agent installed and configured with memories in `~/.hermes/memories/` (default; in Ulak deployments the memories are located at `/root/ulak/memories/`)
 - Agentic OS source code checked out at `/root/code/agentic-os`
 - Bun and Wrangler installed
 - Access to Cloudflare account for `wrangler deploy`
@@ -20,12 +20,16 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 1. **Sync Hermes memory files**
    - Create the temporary directory if it doesn't exist: `mkdir -p /tmp/hermes-memory`
-   - Copy the Hermes memory files (only the `.md` files, ignoring lock files) from `~/.hermes/memories/` to `/tmp/hermes-memory/`:
+   - Copy the Hermes memory files (only the `.md` files, ignoring lock files) from the Hermes memory directory to `/tmp/hermes-memory/`:
      ```bash
-     cp ~/.hermes/memories/MEMORY.md /tmp/hermes-memory/
-     cp ~/.hermes/memories/USER.md /tmp/hermes-memory/
+     # Determine your Hermes memory directory:
+     #   Default: ~/.hermes/memories/
+     #   Ulak deployment: /root/ulak/memories/
+     HERMES_MEM_DIR="/root/ulak/memories"  # adjust as needed
+     # Copy only .md files, ignoring any .lock files
+     find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
      ```
-   - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md)
+   - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md, no .lock files)
 
 2. **Run the Agentic OS aggregator**
    - Change to the Agentic OS directory: `cd /root/code/agentic-os`
@@ -52,7 +56,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 ## Pitfalls
 
-- **Lock files**: Do not copy the lock files (`MEMORY.md.lock`, `USER.md.lock`) from `~/.hermes/memories/` as they are not needed by the aggregator and may cause confusion.
+- **Lock files**: Do not copy the lock files (`MEMORY.md.lock`, `USER.md.lock`) from the Hermes memory directory as they are not needed by the aggregator and may cause confusion.
 - **Wrangler deploy flags**: The flag `--upload-source-map` is invalid. Use `wrangler deploy` without any flags for a standard deployment. If you wish to control source map uploading, use the correct flag `--upload-source-maps` (with an 's') and set it to `false` if needed.
 - **Aggregator output**: The aggregator may report skipping macOS-only signals on Linux. This is expected and does not affect the core functionality of scanning projects, memories, and skills.
 
@@ -64,12 +68,12 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 ## Example
 
-Here is an example of running the full refresh and deploy:
+Here is an example of running the full refresh and deploy for an Ulak deployment:
 
 ```bash
 mkdir -p /tmp/hermes-memory
-cp ~/.hermes/memories/MEMORY.md /tmp/hermes-memory/
-cp ~/.hermes/memories/USER.md /tmp/hermes-memory/
+HERMES_MEM_DIR="/root/ulak/memories"
+find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
 cd /root/code/agentic-os
 bun run scripts/aggregate.ts
 bun run build
@@ -79,5 +83,5 @@ wrangler deploy
 ## References
 
 - Agentic OS repository: `/root/code/agentic-os`
-- Hermes memories: `~/.hermes/memories/`
+- Hermes memories: `~/.hermes/memories/` (default) or `/root/ulak/memories/` for Ulak deployments
 - Wrangler documentation: https://developers.cloudflare.com/workers/wrangler/
