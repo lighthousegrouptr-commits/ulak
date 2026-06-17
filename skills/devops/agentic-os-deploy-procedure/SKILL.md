@@ -38,4 +38,5 @@ Run this procedure when you need to refresh the Agentic OS dashboard with the la
 ## Notes
 - This session deployed version: 40635383-f7d6-4204-90ba-8d04ec3e2694
 - Total Hermes memory files synced: 4 (from /root/ulak/memories/ to /tmp/hermes-memory/)
+- Tip: Ensure you are in the Agentic OS project root (`/root/code/agentic-os/`) before running `bun run build` to avoid 'Script not found \"build\"' errors.
 - The aggregator reported 19 memory files across 2 workspaces (0 Pinecone indexes, 0 vectors, 8 events).
