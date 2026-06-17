@@ -12,7 +12,7 @@ Run this procedure when you need to refresh the Agentic OS dashboard with the la
 ## Steps
 
 1. Sync Hermes memory files from the Hermes server:
-   - Source: /root/ulak/memory/ (Hermes agent memories on this machine)
+   - Source: /root/ulak/memories/ (Hermes agent memories on this machine)
    - Copy relevant memory files to /tmp/hermes-memory/
    ```
    mkdir -p /tmp/hermes-memory
@@ -33,9 +33,9 @@ Run this procedure when you need to refresh the Agentic OS dashboard with the la
 - No errors should appear in the build or deploy steps.
 
 ## Pitfalls
-- None encountered in this session.
+- Ensure the source directory /root/ulak/memories exists; if empty, verify the Ulak sync cron job has run recently (hermes cron list).
 
 ## Notes
-- This session deployed version: da5fec74-5f3c-44d8-88e7-f0a4a56afd3f
-- Total Hermes memory files synced: 2 (from /root/ulak/memories/ to /tmp/hermes-memory/)
-- The aggregator reported 20 total memory files across all sources.
+- This session deployed version: 40635383-f7d6-4204-90ba-8d04ec3e2694
+- Total Hermes memory files synced: 4 (from /root/ulak/memories/ to /tmp/hermes-memory/)
+- The aggregator reported 19 memory files across 2 workspaces (0 Pinecone indexes, 0 vectors, 8 events).
