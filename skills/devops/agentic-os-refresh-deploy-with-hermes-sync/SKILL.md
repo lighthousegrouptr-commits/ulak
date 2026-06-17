@@ -47,8 +47,7 @@ This skill encapsulates the full procedure:
 - **Build warnings**: Vite may warn about large chunks (>500 kB). This is non-fatal; the build succeeds anyway.
 - **Wrangler warnings**: If `workers_dev` or `preview_urls` are not explicitly set in `wrangler.jsonc`, they will be enabled by default. Override by setting `workers_dev = false` and/or `preview_urls = false` in the Wrangler file if desired.
 
-## Verification
-After deployment, the dashboard should be available at the URL shown in the Wrangler output (e.g., `https://<subdomain>.workers.dev`). Check the Version ID in the output to confirm the new deployment.
+## Verification\nAfter deployment, the dashboard should be available at the URL shown in the Wrangler output (e.g., `https://<subdomain>.workers.dev`). Check the Version ID in the output to confirm the new deployment.\n\nOptionally, you can verify that the generated `live-data.json` is recent and non-empty:\n```bash\ncd /root/code/agentic-os && ls -l src/data/live-data.json\n```\nEnsure the file size is greater than zero and the timestamp reflects the latest run.
 
 ## References
 - [Hermes Memory Sync Details](references/hermes-memory-sync.md)
