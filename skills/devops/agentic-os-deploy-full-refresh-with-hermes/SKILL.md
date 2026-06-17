@@ -29,7 +29,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
      # Copy only .md files, ignoring any .lock files
      find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
      ```
-   - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md, no .lock files)
+   - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md, no .lock files). If the directory is empty, check that the source Hermes memory directory exists and contains .md files.
 
 2. **Run the Agentic OS aggregator**
    - Change to the Agentic OS directory: `cd /root/code/agentic-os`
