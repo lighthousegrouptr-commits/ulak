@@ -355,3 +355,23 @@ Disable sampling for untrusted servers with `sampling: { enabled: false }`.
 - The native MCP client is independent of `mcporter` -- you can use both simultaneously
 - Server connections are persistent and shared across all conversations in the same agent process
 - Adding or removing servers requires restarting the agent (no hot-reload currently)
+
+### AgencyOS MCP Example
+
+To connect the AgencyOS MCP server (used by the Agentic OS dashboard), add:
+
+```yaml
+mcp_servers:
+  agencyos:
+    url: "http://localhost:3091/mcp"   # or your AgencyOS MCP endpoint
+    headers:
+      Authorization: "Bearer <your-token>"  # replace with actual token
+```
+
+After updating `~/.claude/mcp.json`, re-run the aggregator:
+
+```bash
+cd /opt/agentic-os && bun run aggregate
+```
+
+The aggregator will poll the AgencyOS MCP and populate the `agencyos` section in `live-data.json`.
