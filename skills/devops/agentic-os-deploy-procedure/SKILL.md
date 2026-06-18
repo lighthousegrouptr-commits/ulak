@@ -36,7 +36,7 @@ Run this procedure when you need to refresh the Agentic OS dashboard with the la
 - Ensure the source directory /root/ulak/memories exists; if empty, verify the Ulak sync cron job has run recently (hermes cron list).
 
 ## Notes
-- This session deployed version: a757661b-de82-40ea-ae8b-06f73be7912f
+- This session deployed version: c0edb0f4-8daf-4e6a-b9e3-66691ac7d844
 - Total Hermes memory files synced: 4 (from /root/ulak/memories/ to /tmp/hermes-memory/)
-- Tip: Ensure you are in the Agentic OS project root (`/root/code/agentic-os/`) before running `bun run build` to avoid 'Script not found \\\"build\\\"' errors.
-- The aggregator reported 20 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 8 events.
+- Tip: Ensure you are in the Agentic OS project root (`/root/code/agentic-os/`) before running `bun run build` to avoid 'Script not found \\\\\\\"build\\\\\\\"' errors.
+- The aggregator reported 21 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 8 events.
