@@ -23,4 +23,5 @@ Sync Hermes memory files, run the aggregator, build, and deploy the Agentic OS d
 - If `bun run build` fails due to missing dependencies, ensure the bun lockfile is up to date and run `bun install` first.
 - Wrangler deployment may require authentication; ensure `wrangler login` has been run.
 - When running `wrangler deploy` in non-interactive environments (e.g., cron jobs), prefix with `CI=true` to avoid prompts; the `--yes` flag is not recognized.\n\n## References\n- See `references/agentic-os-memory-sync.md` for details on memory synchronization.\n- See `references/agentic-os-aggregator.md` for notes on the aggregate.ts script.\n- See `references/deploy-2026-06-16.md` for the latest deployment log (2026-06-16).
-- See `references/deploy-2026-06-17.md` for the latest deployment log (2026-06-17).\n- See `references/deploy-2026-06-15b.md` for the latest deployment log (2026-06-15).\n- See `references/session-2026-06-16-agentic-os-deploy.md` for detailed session notes from 2026-06-16.
+- See `references/deploy-2026-06-17.md` for the latest deployment log (2026-06-17).
+- See `references/deploy-2026-06-18.md` for the latest deployment log (2026-06-18).\n- See `references/deploy-2026-06-15b.md` for the latest deployment log (2026-06-15).\n- See `references/session-2026-06-16-agentic-os-deploy.md` for detailed session notes from 2026-06-16.
