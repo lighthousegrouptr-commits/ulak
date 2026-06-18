@@ -16,6 +16,8 @@ This skill encapsulates the full procedure:
 
 ## Steps
 
+See also `references/hermes-memory-sync.md` for details on syncing Hermes memory files.
+
 1. **Prepare temporary memory directory**
    ```bash
    mkdir -p /tmp/hermes-memory
