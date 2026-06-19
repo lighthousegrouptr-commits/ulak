@@ -25,11 +25,11 @@ See also `references/hermes-memory-sync.md` for details on syncing Hermes memory
    ```
    > This uses the snapshot in `/root/ulak/memories`, updated every 30 minutes by the ulak_sync.sh cron job from the live `~/.hermes/memories`.
 
-2. **Run the aggregator**
+2. **Run the aggregator and capture output**
    ```bash
-   cd /root/code/agentic-os && bun run scripts/aggregate.ts
+   cd /root/code/agentic-os && bun run scripts/aggregate.ts 2>&1 | tee /tmp/aggregate-output.txt
    ```
-   > The aggregator scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` to produce `src/data/live-data.json`.
+   > The aggregator scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` to produce `src/data/live-data.json`. The output is saved to `/tmp/aggregate-output.txt` for verification.
 
 3. **Build for production**
    ```bash
@@ -49,7 +49,7 @@ See also `references/hermes-memory-sync.md` for details on syncing Hermes memory
 - **Build warnings**: Vite may warn about large chunks (>500 kB). This is non-fatal; the build succeeds anyway.
 - **Wrangler warnings**: If `workers_dev` or `preview_urls` are not explicitly set in `wrangler.jsonc`, they will be enabled by default. Override by setting `workers_dev = false` and/or `preview_urls = false` in the Wrangler file if desired.
 
-## Verification\nAfter deployment, the dashboard should be available at the URL shown in the Wrangler output (e.g., `https://<subdomain>.workers.dev`). Check the Version ID in the output to confirm the new deployment.\n\nOptionally, you can verify that the generated `live-data.json` is recent and non-empty:\n```bash\ncd /root/code/agentic-os && ls -l src/data/live-data.json\n```\nEnsure the file size is greater than zero and the timestamp reflects the latest run.
+## Verification\\nAfter deployment, the dashboard should be available at the URL shown in the Wrangler output (e.g., `https://<subdomain>.workers.dev`). Check the Version ID in the output to confirm the new deployment.\\n\\nOptionally, you can verify that the generated `live-data.json` is recent and non-empty:\\n```bash\\ncd /root/code/agentic-os && ls -l src/data/live-data.json\\n```\\nEnsure the file size is greater than zero and the timestamp reflects the latest run.\\n\\nAdditionally, verify the memory file count from the aggregator output:\\n```bash\\ngrep \"memory:.*files\" /tmp/aggregate-output.txt\\n```\\nThis should show a line like `[aggregate] memory: 24 files / 3 workspaces / 0 Pinecone indexes / 0 vectors / 8 events`. The number before \"files\" is the total memory files count.
 
 ## References
 - [Hermes Memory Sync Details](references/hermes-memory-sync.md)
