@@ -15,8 +15,8 @@ Sync Hermes memory files, run the Agentic OS aggregator to include both Claude a
 mkdir -p /tmp/hermes-memory
 
 # Copy Hermes memory files from the Ulak snapshot (source of truth for Hermes memories)
-# Note: The Ulak snapshot is at /root/ulak/memory/ (mirror of ~/.hermes/memories/)
-cp /root/ulak/memories/* /tmp/hermes-memory/
+# Note: The Ulak snapshot is at /root/ulak/memories/ (mirror of ~/.hermes/memories/)
+cp -r /root/ulak/memories/. /tmp/hermes-memory/
 ```
 
 ### 2. Run the Aggregator
