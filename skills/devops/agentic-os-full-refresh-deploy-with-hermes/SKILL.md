@@ -10,7 +10,8 @@ description: Perform a full refresh of the Agentic OS dashboard by syncing Herme
    - Ensure the source directory exists: `/root/ulak/memories/` (or `~/.hermes/memories/` depending on setup).
    - Create the target directory if needed: `mkdir -p /tmp/hermes-memory`
    - Copy memory files: `cp /root/ulak/memories/* /tmp/hermes-memory/`
-   - Verify files were copied (should include MEMORY.md, USER.md, and possibly a memories/ subdirectory).
+   - Verify files were copied (should include MEMORY.md, USER.md, and optionally a memories/ subdirectory with additional memory files).
+   - Optionally check file count: `find /tmp/hermes-memory -type f | wc -l` (expected: at least 2 for MEMORY.md and USER.md, plus any additional memory files).
 
 2. **Run the aggregator**
    - Change to the Agentic OS directory: `cd /root/code/agentic-os`
