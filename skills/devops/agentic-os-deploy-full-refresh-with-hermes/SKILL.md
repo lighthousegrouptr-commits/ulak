@@ -25,9 +25,9 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
      # Determine your Hermes memory directory:
      #   Default: ~/.hermes/memories/
      #   Ulak deployment: /root/ulak/memories/
-     HERMES_MEM_DIR="/root/ulak/memories"  # adjust as needed
+     HERMES_MEM_DIR=\"/root/ulak/memories\"  # adjust as needed
      # Copy only .md files, ignoring any .lock files
-     find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
+     find \"$HERMES_MEM_DIR\" -name \"*.md\" -type f -exec cp {} /tmp/hermes-memory/ \\;
      ```
    - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md, no .lock files). If the directory is empty, check that the source Hermes memory directory exists and contains .md files.
 
@@ -58,9 +58,10 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 - Wrangler config conflict: If you see an error about both a user configuration file and a deploy configuration file not sharing the same base path, explicitly specify the config file with `--config wrangler.jsonc` when running `wrangler deploy`.
 
-- **Directory name**: In Ulak deployments, the Hermes memory directory is `/root/ulak/memories/` (plural), not `/root/ulak/memory/` (singular). Using the incorrect path will result in a "cannot stat" error.
+- **Directory name**: In Ulak deployments, the Hermes memory directory is `/root/ulak/memories/` (plural), not `/root/ulak/memory/` (singular). Using the incorrect path will result in a \"cannot stat\" error.
 - **Lock files**: The lock files (`MEMORY.md.lock`, `USER.md.lock`) are harmless if copied; the aggregator only processes `.md` files. You may safely ignore them or omit them when copying.
 - **Wrangler deploy flags**: The flag `--upload-source-map` is invalid. Use `wrangler deploy` without any flags for a standard deployment. If you wish to control source map uploading, use the correct flag `--upload-source-maps` (with an 's') and set it to `false` if needed.
+- **Invalid wrangler flags**: Flags like `--yes` are not valid for `wrangler deploy`. Use `wrangler deploy` without flags, or consult `wrangler deploy --help` for valid options.
 - **Aggregator output**: The aggregator may report skipping macOS-only signals on Linux. This is expected and does not affect the core functionality of scanning projects, memories, and skills.
 
 ## Troubleshooting
@@ -75,8 +76,8 @@ Here is an example of running the full refresh and deploy for an Ulak deployment
 
 ```bash
 mkdir -p /tmp/hermes-memory
-HERMES_MEM_DIR="/root/ulak/memories"
-find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
+HERMES_MEM_DIR=\"/root/ulak/memories\"
+find \"$HERMES_MEM_DIR\" -name \"*.md\" -type f -exec cp {} /tmp/hermes-memory/ \\;
 cd /root/code/agentic-os
 bun run scripts/aggregate.ts
 bun run build
