@@ -93,4 +93,5 @@ wrangler deploy
 
 - Agentic OS repository: `/root/code/agentic-os`
 - Hermes memories: `~/.hermes/memories/` (default) or `/root/ulak/memories/` for Ulak deployments
-- Wrangler documentation: https://developers.cloudflare.com/workers/wrangler/
+- Wrangler documentation: https://developers.cloudflare.com/workers/wrangler
+- Exact command sequence: see `references/agentic-os-deploy-commands.md`/
