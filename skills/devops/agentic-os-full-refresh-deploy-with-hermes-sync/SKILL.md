@@ -68,6 +68,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 ## Verification
 After deployment, visit the deployed URL (shown in the wrangler output) to confirm the dashboard loads and displays updated memory counts and session data.
+   The aggregator output (if available) will show the memory file count, which should match the number of non-lock files in /tmp/hermes-memory/.
 
 ## Required Tools
 - `bun` (Node.js runtime)
