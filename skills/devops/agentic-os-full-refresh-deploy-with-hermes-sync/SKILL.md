@@ -1,7 +1,7 @@
 ---
 name: agentic-os-full-refresh-deploy-with-hermes-sync
 category: devops
-description: Full refresh and deploy of Agentic OS dashboard, including syncing Hermes memory files from ~/.hermes/ or /root/ulak/memories/ to /tmp/hermes-memory/ before running the aggregator.
+description: Full refresh and deploy of Agentic OS dashboard, including syncing Hermes memory files from ~/.hermes/memories/ or /root/ulak/memories/ to /tmp/hermes-memory/ before running the aggregator.
 ---
 
 # Agentic OS Full Refresh and Deploy with Hermes Memory Sync
