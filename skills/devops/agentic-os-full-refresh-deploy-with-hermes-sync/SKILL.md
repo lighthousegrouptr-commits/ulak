@@ -42,7 +42,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 5. **Deploy with Wrangler**
    ```bash
-   wrangler deploy
+wrangler deploy
    ```
    Deploys the Worker to the configured namespace.
 
