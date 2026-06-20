@@ -16,18 +16,27 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
    mkdir -p /tmp/hermes-memory
    ```
 
-2. **Sync Hermes memory files**
-   Sync from the live Hermes memories (either ~/.hermes/memories/ or /root/ulak/memories/) to /tmp/hermes-memory/.
-   ```bash
-   # Prefer rsync if available, otherwise use cp
-   if command -v rsync >/dev/null 2>&1; then
-     rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/
-   else
-     mkdir -p /tmp/hermes-memory && cp -r /root/ulak/memories/. /tmp/hermes-memory/
-   fi
-   # Remove any lock files that may have been copied
-   find /tmp/hermes-memory -name '*.lock' -delete
-   ```
+  2. **Sync Hermes memory files**
+      Sync from the live Hermes memories (~/.hermes/memories/) to /tmp/hermes-memory/.
+      If the live memories are not available, fall back to the Ulak backup (/root/ulak/memories/).
+      ```bash
+      # Prefer rsync if available, otherwise use cp
+      if command -v rsync >/dev/null 2>&1; then
+        if [ -d ~/.hermes/memories ]; then
+          rsync -av --exclude='*.lock' ~/.hermes/memories/ /tmp/hermes-memory/
+        else
+          rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/
+        fi
+      else
+        if [ -d ~/.hermes/memories ]; then
+          mkdir -p /tmp/hermes-memory && cp -r ~/.hermes/memories/. /tmp/hermes-memory/
+        else
+          mkdir -p /tmp/hermes-memory && cp -r /root/ulak/memories/. /tmp/hermes-memory/
+        fi
+      fi
+      # Remove any lock files that may have been copied
+      find /tmp/hermes-memory -name '*.lock' -delete
+      ```
 
    **Note:** The aggregator ignores zero-byte `.lock` files, but we clean them to keep the directory tidy.
 
