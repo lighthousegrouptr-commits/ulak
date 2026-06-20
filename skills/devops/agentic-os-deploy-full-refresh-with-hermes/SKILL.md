@@ -1,98 +1,44 @@
 ---
 name: agentic-os-deploy-full-refresh-with-hermes
-description: Full refresh and deploy of Agentic OS dashboard with Hermes memory synchronization.
-category: devops
-version: 1.0.0
+description: Full refresh and deploy of Agentic OS dashboard with Hermes memory sync
+trigger: when needing to refresh and deploy the Agentic OS dashboard with synced Hermes memories
 ---
 
-## When to Use
+# Agentic OS Full Refresh and Deploy with Hermes Memory Sync
 
-Use this skill when you want to refresh the Agentic OS dashboard with the latest data from both `~/.claude/` and Hermes memories, then build and deploy the dashboard to Cloudflare Workers.
+## Trigger
+When you need to refresh the Agentic OS dashboard data and deploy it, including syncing Hermes agent memories.
 
-## Prerequisites
+## Procedure
+1. **Sync Hermes memory files**:
+   - Create the sync directory: `mkdir -p /tmp/hermes-memory`
+   - Copy memory files from the Hermes agent: `cp -r /root/ulak/memories/. /tmp/hermes-memory/`
+   - Verify the sync: `find /tmp/hermes-memory -type f | wc -l` (should match the number of memory files in `/root/ulak/memories/`)
 
-- Hermes Agent installed and configured with memories in `~/.hermes/memories/` (default; in Ulak deployments the memories are located at `/root/ulak/memories/`)
-- Agentic OS source code checked out at `/root/code/agentic-os`
-- Bun and Wrangler installed
-- Access to Cloudflare account for `wrangler deploy`
-
-## Steps
-
-1. **Sync Hermes memory files**
-   - Create the temporary directory if it doesn't exist: `mkdir -p /tmp/hermes-memory`
-   - Copy the Hermes memory files (only the `.md` files, ignoring lock files) from the Hermes memory directory to `/tmp/hermes-memory/`:
-     ```bash
-     # Determine your Hermes memory directory:
-     #   Default: ~/.hermes/memories/
-     #   Ulak deployment: /root/ulak/memories/
-     HERMES_MEM_DIR="/root/ulak/memories"  # adjust as needed
-     # Copy only .md files, ignoring any .lock files
-     find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
-     ```
-    - Verify the copy: `ls -la /tmp/hermes-memory/` (should show MEMORY.md and USER.md, no .lock files). If the directory is empty, check that the source Hermes memory directory exists and contains .md files.
-    - As an alternative, you can use `rsync -av --exclude='*.lock' "$HERMES_MEM_DIR"/ /tmp/hermes-memory/` to copy files while excluding lock files.
-2. **Run the Agentic OS aggregator**
+2. **Run the aggregator**:
    - Change to the Agentic OS directory: `cd /root/code/agentic-os`
-   - Run the aggregator script: `bun run scripts/aggregate.ts`
-   - This script will scan:
-     - `~/.claude/projects`
-     - `~/.claude/memory`
-     - `/tmp/hermes-memory` (the synced Hermes memories)
-   - It will generate `/root/code/agentic-os/src/data/live-data.json`
+   - Execute the aggregator script: `bun run scripts/aggregate.ts`
+   - This script reads `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` to generate `src/data/live-data.json`.
 
-3. **Build the dashboard**
-   - Still in `/root/code/agentic-os`, run: `bun run build`
-   - This will seed the data (if needed) and build the client and server bundles for production.
+3. **Build and deploy**:
+   - Build the project: `bun run build`
+   - Deploy to Cloudflare Workers: `wrangler deploy`
 
-4. **Deploy to Cloudflare Workers**
-   - Change to the built worker directory: `cd /root/code/agentic-os/dist/server`
-   - Remove any existing conflicting deploy configuration (if present): `rm -rf ../../.wrangler/deploy`
-   - Deploy the worker using the generated Wrangler configuration: `wrangler deploy`
-    - Note: Do not use `--upload-source-map` as it is not a valid flag. The default behavior does not upload source maps, which is acceptable.
-    - Alternatively, you can run `wrangler deploy` from the project root (`/root/code/agentic-os`); it will automatically use the generated configuration in `dist/server/wrangler.json`.
-    - Upon success, note the version ID from the output.
-
-## Verification
-
-- After deployment, visit the deployed Worker URL (provided in the `wrangler deploy` output) to verify the dashboard is updated.
-- Check that the Live Data section reflects the synced Hermes memories and Claude data.
+4. **Report**:
+   - Deployed version ID (from wrangler deploy output)
+   - Total memory files count (from the sync verification step)
+   - Any errors encountered during the process
 
 ## Pitfalls
+- **Source directory**: The Hermes memories are located in `/root/ulak/memories/` (not `/root/ulak/memory/`). Using the incorrect path will result in zero files synced.
+- **Directory permissions**: Ensure the `/tmp/hermes-memory` directory is writable.
+- **Aggregator warnings**: On non-macOS platforms, the aggregator will skip macOS-only signals (like Keychain credential count) but will still process project sessions, memory, and Pinecone indexes normally.
+- **Build output**: The build process may warn about chunk sizes; these are safe to ignore for deployment.
 
-- Wrangler config conflict: If you see an error about both a user configuration file and a deploy configuration file not sharing the same base path, explicitly specify the config file with `--config wrangler.jsonc` when running `wrangler deploy`.
-- **Directory name**: In Ulak deployments, the Hermes memory directory is `/root/ulak/memories/` (plural), not `/root/ulak/memory/` (singular). Using the incorrect path will result in a "\\"cannot stat\\"" error.
-- **Lock files**: The lock files (`MEMORY.md.lock`, `USER.md.lock`) are harmless if copied; the aggregator only processes `.md` files. You may safely ignore them or omit them when copying.
-- **Wrangler deploy flags**: The flag `--upload-source-map` is invalid. Use `wrangler deploy` without any flags for a standard deployment. If you wish to control source map uploading, use the correct flag `--upload-source-maps` (with an 's') and set it to `false` if needed.
-- **Invalid wrangler flags**: Flags like `--yes` are not valid for `wrangler deploy`. Use `wrangler deploy` without flags, or consult `wrangler deploy --help` for valid options.
-- **Aggregator output**: The aggregator may report skipping macOS-only signals on Linux. This is expected and does not affect the core functionality of scanning projects, memories, and skills.
-- **Deploy directory**: The `wrangler deploy` command should be run from the `/root/code/agentic-os/dist/server` directory where the generated `wrangler.json` (with correct assets configuration) resides. Running it from the project root may cause asset scanning errors.
-- **Deploy config conflict**: If you encounter an error about both a user configuration file and a deploy configuration file not sharing the same base path (e.g., `Found both a user configuration file at \"wrangler.json\" and a deploy configuration file at \"../../.wrangler/deploy/config.json\"`), remove the conflicting deploy configuration directory before deploying: `rm -rf ../../.wrangler/deploy`.
+## Verification
+- After deployment, visit the deployed Worker URL to confirm the dashboard loads.
+- Check that the memory constellation in the dashboard includes the synced Hermes memories (visible in the Memory graph).
 
-## Troubleshooting
-
-- If the aggregator fails to read the Hermes memories, verify that the files were copied correctly to `/tmp/hermes-memory/` and that they are readable.
-- If the build fails, check for any missing dependencies and ensure bun is installed.
-- If `wrangler deploy` fails, check your Cloudflare API token and ensure you are logged in (via `wrangler login`).
-
-## Example
-
-Here is an example of running the full refresh and deploy for an Ulak deployment:
-
-```bash
-mkdir -p /tmp/hermes-memory
-HERMES_MEM_DIR="/root/ulak/memories"
-find "$HERMES_MEM_DIR" -name "*.md" -type f -exec cp {} /tmp/hermes-memory/ \;
-cd /root/code/agentic-os
-bun run scripts/aggregate.ts
-bun run build
-cd dist/server
-rm -rf ../../.wrangler/deploy
-wrangler deploy
-```
-
-## References
-
-- Agentic OS repository: `/root/code/agentic-os`
-- Hermes memories: `~/.hermes/memories/` (default) or `/root/ulak/memories/` for Ulak deployments
-- Wrangler documentation: https://developers.cloudflare.com/workers/wrangler
-- Exact command sequence: see `references/agentic-os-deploy-commands.md`/
+## Related Skills
+- `hermes-config-backup`: For backing up Hermes agent configuration.
+- `agentic-os-deploy-standard`: For a standard Agentic OS deploy without Hermes memory sync.
