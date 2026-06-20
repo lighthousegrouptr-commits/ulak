@@ -19,12 +19,17 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 2. **Sync Hermes memory files**
    Sync from the live Hermes memories (either ~/.hermes/memories/ or /root/ulak/memories/) to /tmp/hermes-memory/.
    ```bash
-   rsync -av /root/ulak/memories/ /tmp/hermes-memory/
-   # Alternatively, if using ~/.hermes/:
-   # rsync -av ~/.hermes/memories/ /tmp/hermes-memory/
+   # Prefer rsync if available, otherwise use cp
+   if command -v rsync >/dev/null 2>&1; then
+     rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/
+   else
+     mkdir -p /tmp/hermes-memory && cp -r /root/ulak/memories/. /tmp/hermes-memory/
+   fi
+   # Remove any lock files that may have been copied
+   find /tmp/hermes-memory -name '*.lock' -delete
    ```
 
-   **Note:** The sync may create zero-byte `.lock` files; these are ignored by the aggregator and can be safely left.
+   **Note:** The aggregator ignores zero-byte `.lock` files, but we clean them to keep the directory tidy.
 
 3. **Run the aggregator**
    From the agentic-os project root, run the TypeScript aggregator script:
@@ -42,12 +47,12 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 5. **Deploy with Wrangler**
    ```bash
-wrangler deploy
-   ```
-   Deploys the Worker to the configured namespace.
+## Related Skills
+- `agentic-os-hermes-memory-sync` – focuses only on syncing Hermes memories.
+- `agentic-os-refresh-deploy` – refresh and deploy without explicit Hermes memory sync (relies on aggregator's built-in paths).
 
 ## Pitfalls
-- **Lock files**: The Hermes memory directory may contain `.lock` files (zero-byte). They are harmless but can be excluded from sync using `--exclude='*.lock'` if desired.
+- **Lock files**: The Hermes memory directory may contain `.lock` files (zero-byte). The sync step now excludes and deletes them to keep the sync directory clean.
 - **Source directory**: Ensure you are syncing from the correct Hermes memories location. On this system, live memories are at `~/.hermes/memories/` and mirrored at `/root/ulak/memories/`. Either works.
 - **Aggregator platform warnings**: On non-macOS platforms, the aggregator will skip macOS-specific signals (Keychain, plan-tier detection). This is expected and does not affect core functionality.
 - **Wrangler configuration**: The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.
