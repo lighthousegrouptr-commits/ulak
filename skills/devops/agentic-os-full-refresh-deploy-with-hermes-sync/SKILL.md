@@ -17,21 +17,25 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
    ```
 
   2. **Sync Hermes memory files**
-      Sync from the live Hermes memories (~/.hermes/memories/) to /tmp/hermes-memory/.
+      First, clear the sync directory to avoid stale files, then sync from the live Hermes memories (~/.hermes/memories/) to /tmp/hermes-memory/.
       If the live memories are not available, fall back to the Ulak backup (/root/ulak/memories/).
+      Using rsync with --delete ensures an exact mirror; if rsync is not available, we clear the directory and copy.
       ```bash
+      # Clear sync directory
+      rm -rf /tmp/hermes-memory/*
       # Prefer rsync if available, otherwise use cp
       if command -v rsync >/dev/null 2>&1; then
         if [ -d ~/.hermes/memories ]; then
-          rsync -av --exclude='*.lock' ~/.hermes/memories/ /tmp/hermes-memory/
+          rsync -av --exclude='*.lock' --delete ~/.hermes/memories/ /tmp/hermes-memory/
         else
-          rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/
+          rsync -av --exclude='*.lock' --delete /root/ulak/memories/ /tmp/hermes-memory/
         fi
       else
+        # rsync not available: clear already done, then copy
         if [ -d ~/.hermes/memories ]; then
-          mkdir -p /tmp/hermes-memory && cp -r ~/.hermes/memories/. /tmp/hermes-memory/
+          cp -r ~/.hermes/memories/. /tmp/hermes-memory/
         else
-          mkdir -p /tmp/hermes-memory && cp -r /root/ulak/memories/. /tmp/hermes-memory/
+          cp -r /root/ulak/memories/. /tmp/hermes-memory/
         fi
       fi
       # Remove any lock files that may have been copied
@@ -40,7 +44,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
   3. **Verify sync count (optional)**
       ```bash
-      echo "Synced $(find /tmp/hermes-memory -type f | wc -l) memory files (excluding .lock)."
+      echo "Synced $(find /tmp/hermes-memory -type f -not -name '*.lock' | wc -l) memory files (excluding .lock)."
       ```
 
   4. **Run the aggregator**
