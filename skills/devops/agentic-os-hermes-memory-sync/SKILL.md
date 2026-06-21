@@ -6,7 +6,32 @@ category: devops
 
 # Agentic OS Hermes Memory Sync
 
-When preparing data for the Agentic OS dashboard, Hermes memory files must be copied to `/tmp/hermes-memory/` so the aggregator script can pick them up from both `~/.claude/` and Hermes agent memories.
+Skill for synchronizing Hermes agent memories with Agentic OS dashboard.
+
+## When to Use
+Before running the Agentic OS aggregator to ensure it picks up the latest Hermes memories.
+
+## Procedure
+```bash
+# Create target directory if needed
+mkdir -p /tmp/hermes-memory
+
+# Sync memories from Hermes agent to temporary location
+# Important: Source is ~/.hermes/memories (not /root/ulak/memory)
+cp -r ~/.hermes/memories/* /tmp/hermes-memory/
+
+# Verify sync completed
+ls -la /tmp/hermes-memory/
+# Should show MEMORY.md, USER.md and their lock files
+```
+
+## Notes
+- The Agentic OS aggregator script automatically scans `/tmp/hermes-memory/` as a memory source
+- Typical memory files: MEMORY.md (agent memories), USER.md (user preferences)
+- Lock files (.lock) are temporary and can be ignored
+- This sync should be run fresh each time before aggregation to avoid stale data
+- **Important**: The initial instruction to sync from `/root/ulak/memory/` was incorrect - the actual Hermes memory location is `~/.hermes/memories/`
+- **Important**: The initial instruction to sync from `/root/ulak/memory/` was incorrect - the actual Hermes memory location is `~/.hermes/memories/`
 
 ## Steps
 

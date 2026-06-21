@@ -12,12 +12,51 @@ metadata:
 ---
 
 # Agentic OS Deployment Skill
+# Agentic OS Deploy
 
-Standard procedure for refreshing and deploying the Agentic OS dashboard (Cloudflare Worker) after syncing Hermes memory files.
+Standard procedure for Agentic OS full refresh and deploy with Hermes memory synchronization.
 
 ## When to Use
-- You have updated Hermes agent memories or skills and want to reflect them in the Agentic OS dashboard.
-- You need to rebuild and redeploy the Cloudflare Worker after changes to the agentic-os source.
+When you need to refresh the Agentic OS dashboard with the latest data from both Claude Code and Hermes Agent memories.
+
+## Procedure
+
+### 1. Sync Hermes Memory Files
+```bash
+# Create target directory if needed
+mkdir -p /tmp/hermes-memory
+
+# Sync memories from Hermes agent to temporary location
+# Note: Hermes memories are located at ~/.hermes/memories (not /root/ulak/memory)
+cp -r ~/.hermes/memories/* /tmp/hermes-memory/
+```
+
+### 2. Run the Aggregator
+The aggregator scans both ~/.claude/ and the synced Hermes memories:
+```bash
+cd /root/code/agentic-os
+bun run scripts/aggregate.ts
+```
+
+### 3. Build and Deploy
+```bash
+bun run build
+wrangler deploy
+```
+
+## Verification
+After deployment, check for:
+- Deployed version ID from wrangler output
+- Confirmation that memory files were processed (check aggregator output for "memory: X files / Y workspaces")
+- Value extracted metric in aggregator output
+
+## Notes
+- The aggregator automatically detects and uses `/tmp/hermes-memory/` as an additional memory source
+- No manual configuration of the aggregator script is needed - it scans the predefined paths
+- Typical memory file count is small (usually 2-4 files: MEMORY.md, USER.md, and their lock files)
+- **Important**: The initial instruction to sync from `/root/ulak/memory/` was incorrect - the actual Hermes memory location is `~/.hermes/memories/`
+- **Important**: The initial instruction to sync from `/root/ulak/memory/` was incorrect - the actual Hermes memory location is `~/.hermes/memories/`
+- **Important**: The initial instruction to sync from `/root/ulak/memory/` was incorrect - the actual Hermes memory location is `~/.hermes/memories/`
 
 ## Prerequisites
 - Access to the Hermes agent memory directory (`~/.hermes/memories/` or `/root/ulak/memories/`).
