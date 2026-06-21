@@ -82,6 +82,11 @@ For SPA sites where meta tags don't reveal the CMS, check:
 
 **H1 concatenation** — SPAs may render H1 text concatenated via CSS spacing. Not an SEO issue if it looks correct visually.
 
+**Browser navigation timeouts/failures** — When `browser_navigate` times out or fails to establish a connection (common with slow sites, network issues, or restrictive firewalls), skip browser tools entirely and use terminal-based fetching:
+1. Fetch raw HTML with `curl -L --max-time 30 <URL> -o /tmp/page.html`
+2. Parse the saved file for SEO elements using grep/sed/perl (see examples in Client-Side Rendered Content Pitfall)
+3. Remember this method only captures initial HTML; for SPA sites, missing elements may be due to client-side rendering rather than actual absence
+
 ## Image Optimization
 
 Large, unoptimized images are a common cause of poor LCP and increased page weight. Use the browser to identify oversized images, then compress them with `cwebp` (WebP) or consider AVIF for modern browsers.
