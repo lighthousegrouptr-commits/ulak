@@ -35,10 +35,11 @@ cp -r /root/ulak/memories/. /tmp/hermes-memory/
 
 ## Verification
 - Check the output for the deployed version ID.
-- Confirm total memory files count (should be 2: MEMORY.md and USER.md).
+- Confirm total memory files count from aggregator output (e.g., "memory: 25 files / 2 workspaces / 0 Pinecone indexes / 0 vectors / 12 events").
 - Ensure no errors are reported.
 
 ## Pitfalls
 - If the source memory directory does not exist, the rsync will fail. Verify the path.
 - The aggregator may skip macOS-only signals on Linux; this is expected.
 - Ensure `bun` and `wrangler` are installed and in PATH.
+- Lock files (*.lock) may be copied but are ignored by the aggregator; they can be safely ignored.
