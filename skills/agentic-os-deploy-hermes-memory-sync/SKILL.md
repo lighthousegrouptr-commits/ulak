@@ -13,8 +13,8 @@ Perform a full refresh of the Agentic OS dashboard by syncing Hermes memory file
 1. **Sync Hermes memory files**
    - Ensure the source directory exists: `/root/ulak/memories/` (contains `MEMORY.md` and `USER.md`).
    - Create temporary destination: `mkdir -p /tmp/hermes-memory`
-   - Sync with rsync (excluding lock files): `rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/`
-    - Verify file count: `find /tmp/hermes-memory -type f | wc -l` (shows actual memory files, lock files excluded)
+- Sync with rsync (excluding lock files): `rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/`
+- Verify file count: `find /tmp/hermes-memory -type f | wc -l` (shows actual memory files, lock files excluded)
 
 2. **Run the aggregator**
    - Change to the Agentic OS project: `cd /root/code/agentic-os`
@@ -35,7 +35,9 @@ Perform a full refresh of the Agentic OS dashboard by syncing Hermes memory file
    - Note any errors from the sync, aggregate, build, or deploy steps.
 
 ## Pitfalls
+
 - The Hermes memory directory is `memories`, not `memory`. Using `/root/ulak/memory/` will fail with “No such file or directory”.
+- Temporary lock files (*.md.lock) may appear in the source directory. These are harmless but can be excluded from sync to keep the temporary directory cleaner.
 - The aggregator script is located at `scripts/aggregate.ts` relative to the project root; ensure you are in `/root/code/agentic-os` before running.
 - If the `.env.local` file is missing required API keys (PINECONE_API_KEY, OPENROUTER_API_KEY, etc.), the aggregator will skip those services but still succeed.
 - Wrangler warnings about `workers_dev` and `preview_urls` are expected if not explicitly disabled in `wrangler.jsonc`; they do not affect deployment success.

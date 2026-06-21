@@ -14,7 +14,7 @@ This skill outlines the steps to synchronize Hermes memory files, run the aggreg
    - Copy to `/tmp/hermes-memory/`
    - ```bash
      mkdir -p /tmp/hermes-memory
-     rsync -a /root/ulak/memories/ /tmp/hermes-memory/
+cp -r /root/ulak/memories/. /tmp/hermes-memory/
      ```
 
 2. **Run the aggregator**
