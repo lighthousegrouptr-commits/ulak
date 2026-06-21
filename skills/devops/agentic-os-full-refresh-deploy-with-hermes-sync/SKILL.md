@@ -67,10 +67,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 ## Related Skills
 - **Source directory**: Ensure you are syncing from the correct Hermes memories location. On this system, live memories are at `~/.hermes/memories/` and mirrored at `/root/ulak/memories/`. Either works.
 - **Aggregator platform warnings**: On non-macOS platforms, the aggregator will skip macOS-specific signals (Keychain, plan-tier detection). This is expected and does not affect core functionality.
-- **Wrangler configuration**: The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.
-
-## Verification
-After deployment, visit the deployed URL (shown in the wrangler output) to confirm the dashboard loads and displays updated memory counts and session data.
+- **Wrangler configuration**: The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.\n- See `references/memory-sync-verification.md` for verification details.\n\n## Verification\nAfter deployment, visit the deployed URL (shown in the wrangler output) to confirm the dashboard loads and displays updated memory counts and session data.
    The aggregator output (if available) will show the memory file count, which should match the number of non-lock files in /tmp/hermes-memory/.
 
 ## Required Tools
