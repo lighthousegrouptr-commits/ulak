@@ -40,6 +40,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
       fi
       # Remove any lock files that may have been copied
       find /tmp/hermes-memory -name '*.lock' -delete
+      # This ensures lock files are not counted as memory files.
       ```
 
   3. **Verify sync count (optional)**
