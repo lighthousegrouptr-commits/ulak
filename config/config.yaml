@@ -1,4 +1,4 @@
-model: nvidia/nemotron-3-super-120b-a12b:free
+model: meta-llama/llama-3.3-70b-instruct:free
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
