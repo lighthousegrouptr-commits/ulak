@@ -12,8 +12,8 @@ When you need to refresh the Agentic OS dashboard data and deploy it, including 
 ## Procedure
 1. **Sync Hermes memory files**:
    - Create the sync directory: `mkdir -p /tmp/hermes-memory`
-   - Copy memory files from the Hermes agent: `cp -r /root/ulak/memories/. /tmp/hermes-memory/`
-   - Verify the sync: `find /tmp/hermes-memory -type f | wc -l` (should match the number of memory files in `/root/ulak/memories/`)
+   - Copy memory files from the Hermes agent: `cp -r /root/ulak/memory/. /tmp/hermes-memory/`
+   - Verify the sync: `find /tmp/hermes-memory -type f | wc -l` (should match the number of memory files in `/root/ulak/memory/`)
 
 2. **Run the aggregator**:
    - Change to the Agentic OS directory: `cd /root/code/agentic-os`
@@ -30,7 +30,7 @@ When you need to refresh the Agentic OS dashboard data and deploy it, including 
    - Any errors encountered during the process
 
 ## Pitfalls
-- **Source directory**: The Hermes memories are located in `/root/ulak/memories/` (not `/root/ulak/memory/`). Using the incorrect path will result in zero files synced.
+- **Source directory**: The Hermes memories are located in `/root/ulak/memory/` (not `/root/ulak/memories/`). Using the incorrect path will result in zero files synced.
 - **Directory permissions**: Ensure the `/tmp/hermes-memory` directory is writable.
 - **Aggregator warnings**: On non-macOS platforms, the aggregator will skip macOS-only signals (like Keychain credential count) but will still process project sessions, memory, and Pinecone indexes normally.
 - **Build output**: The build process may warn about chunk sizes; these are safe to ignore for deployment.
