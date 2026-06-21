@@ -126,6 +126,9 @@ NPM: `semrush-mcp` v0.1.5 (thomaswawra, Apr 2026). Config under `mcp_servers.sem
 Structure findings as: Iyi Olanlar → Sorunku Olanlar → Acil Yapilar (max 5 priority items). Keep actionable.
 
 
+### Sample Audit
+See `references/lighthousegroup_audit.md` for an example audit of agentic.lighthousegroup.net.tr.
+
 ## Lighthouse Audit
 
 When a deeper performance, accessibility, best practices, and SEO audit is needed, use the open‑source Lighthouse tool (https://github.com/GoogleChrome/lighthouse). It can be run headlessly via Node.js.
