@@ -38,30 +38,33 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
       find /tmp/hermes-memory -name '*.lock' -delete
       ```
 
-   **Note:** The aggregator ignores zero-byte `.lock` files, but we clean them to keep the directory tidy.
+  3. **Verify sync count (optional)**
+      ```bash
+      echo "Synced $(find /tmp/hermes-memory -type f | wc -l) memory files (excluding .lock)."
+      ```
 
-3. **Run the aggregator**
-   From the agentic-os project root, run the TypeScript aggregator script:
-   ```bash
-   cd /root/code/agentic-os
-   bun run scripts/aggregate.ts
-   ```
-   This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` (among other sources) and writes `src/data/live-data.json`.
+  4. **Run the aggregator**
+      From the agentic-os project root, run the TypeScript aggregator script:
+      ```bash
+      cd /root/code/agentic-os
+      bun run scripts/aggregate.ts
+      ```
+      This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` (among other sources) and writes `src/data/live-data.json`.
 
-4. **Build the dashboard**
-   ```bash
-   bun run build
-   ```
-   This seeds data if needed and builds the Vite + SSR bundle.
+  5. **Build the dashboard**
+      ```bash
+      bun run build
+      ```
+      This seeds data if needed and builds the Vite + SSR bundle.
 
-5. **Deploy with Wrangler**
-   ```bash
+  6. **Deploy with Wrangler**
+      ```bash
+      wrangler deploy
+      ```
+
+      **Note:** The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.
+
 ## Related Skills
-- `agentic-os-hermes-memory-sync` – focuses only on syncing Hermes memories.
-- `agentic-os-refresh-deploy` – refresh and deploy without explicit Hermes memory sync (relies on aggregator's built-in paths).
-
-## Pitfalls
-- **Lock files**: The Hermes memory directory may contain `.lock` files (zero-byte). The sync step now excludes and deletes them to keep the sync directory clean.
 - **Source directory**: Ensure you are syncing from the correct Hermes memories location. On this system, live memories are at `~/.hermes/memories/` and mirrored at `/root/ulak/memories/`. Either works.
 - **Aggregator platform warnings**: On non-macOS platforms, the aggregator will skip macOS-specific signals (Keychain, plan-tier detection). This is expected and does not affect core functionality.
 - **Wrangler configuration**: The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.

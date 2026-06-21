@@ -13,8 +13,8 @@ Perform a full refresh of the Agentic OS dashboard by syncing Hermes memory file
 1. **Sync Hermes memory files**
    - Ensure the source directory exists: `/root/ulak/memories/` (contains `MEMORY.md` and `USER.md`).
    - Create temporary destination: `mkdir -p /tmp/hermes-memory`
-   - Sync with rsync: `rsync -av /root/ulak/memories/ /tmp/hermes-memory/`
-   - Verify file count: `find /tmp/hermes-memory -type f | wc -l`
+   - Sync with rsync (excluding lock files): `rsync -av --exclude='*.lock' /root/ulak/memories/ /tmp/hermes-memory/`
+    - Verify file count: `find /tmp/hermes-memory -type f | wc -l` (shows actual memory files, lock files excluded)
 
 2. **Run the aggregator**
    - Change to the Agentic OS project: `cd /root/code/agentic-os`
