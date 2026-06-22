@@ -21,8 +21,9 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
       If the live memories are not available, fall back to the Ulak backup (/root/ulak/memories/).
       Using rsync with --delete ensures an exact mirror; if rsync is not available, we clear the directory and copy.
       ```bash
-      # Clear sync directory
-      rm -rf /tmp/hermes-memory/*
+      # Ensure sync directory exists and is empty
+      rm -rf /tmp/hermes-memory
+      mkdir -p /tmp/hermes-memory
       # Prefer rsync if available, otherwise use cp
       if command -v rsync >/dev/null 2>&1; then
         if [ -d ~/.hermes/memories ]; then
@@ -31,7 +32,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
           rsync -av --exclude='*.lock' --delete /root/ulak/memories/ /tmp/hermes-memory/
         fi
       else
-        # rsync not available: clear already done, then copy
+        # rsync not available: copy
         if [ -d ~/.hermes/memories ]; then
           cp -r ~/.hermes/memories/. /tmp/hermes-memory/
         else
