@@ -63,9 +63,26 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
 
 ## Related Skills
 - **Source directory**: Ensure you are syncing from the correct Hermes memories location. On this system, live memories are at `~/.hermes/memories/` and mirrored at `/root/ulak/memories/`. Either works.
-- **Aggregator platform warnings**: On non-macOS platforms, the aggregator will skip macOS-specific signals (Keychain, plan-tier detection). This is expected and does not affect core functionality.
-- **Wrangler configuration**: The first deploy may warn about missing `workers_dev` and `preview_urls` settings; these are safe to ignore for personal dashboards.\n- See `references/memory-sync-verification.md` for verification details.\n\n## Verification\nAfter deployment, visit the deployed URL (shown in the wrangler output) to confirm the dashboard loads and displays updated memory counts and session data.
+## Verification
+After deployment, visit the deployed URL (shown in the wrangler output) to confirm the dashboard loads and displays updated memory counts and session data.
    The aggregator output (if available) will show the memory file count, which should match the number of non-lock files in /tmp/hermes-memory/.
+
+## Troubleshooting
+
+- **`bun: command not found`**  
+  Install bun via `curl -fsSL https://bun.sh/install | bash` and restart the shell, or ensure `~/.bun/bin` is in your PATH.
+
+- **`wrangler: command not found`**  
+  Install wrangler globally: `npm install -g wrangler` (requires Node.js).
+
+- **Aggregator fails with "Cannot find module"**  
+  Run `bun install` inside `/root/code/agentic-os` to install dependencies.
+
+- **Build fails due to missing modules**  
+  Ensure you have run `bun install` after pulling updates.
+
+- **Wrangler deployment warnings about `workers_dev` and `preview_urls`**  
+  These are safe to ignore for personal dashboards; you can explicitly set them in `wrangler.jsonc` if desired.
 
 ## Required Tools
 - `bun` (Node.js runtime)
