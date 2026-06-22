@@ -49,16 +49,7 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
       echo "Synced $(find /tmp/hermes-memory -type f -not -name '*.lock' | wc -l) memory files (excluding .lock)."
       ```
 
-  4. **Run the aggregator**
-      From the agentic-os project root, run the TypeScript aggregator script:
-      ```bash
-      cd /root/code/agentic-os
-      bun run scripts/aggregate.ts
-      ```
-      This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` (among other sources) and writes `src/data/live-data.json`.
-
-  5. **Build the dashboard**
-      ```bash
+  4. **Run the aggregator**\n      From the agentic-os project root, run the TypeScript aggregator script:\n      ```bash\n      cd /root/code/agentic-os\n      bun run scripts/aggregate.ts\n      ```\n      This scans `~/.claude/projects`, `~/.claude/memory`, and `/tmp/hermes-memory/` (among other sources) and writes `src/data/live-data.json`.\n\n  5. **Update agentic-os source (optional)**\n      To ensure you are building the latest version, you can pull any upstream changes:\n      ```bash\n      cd /root/code/agentic-os\n      git pull origin main\n      ```\n      (If you are on a different branch or prefer not to auto-merge, skip this step.)\n\n  6. **Build the dashboard**\n      ```bash
       bun run build
       ```
       This seeds data if needed and builds the Vite + SSR bundle.
