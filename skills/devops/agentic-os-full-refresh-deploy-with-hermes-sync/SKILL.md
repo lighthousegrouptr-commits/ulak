@@ -17,27 +17,42 @@ Use this skill when you want to refresh the Agentic OS dashboard with the latest
    ```
 
   2. **Sync Hermes memory files**
-      First, clear the sync directory to avoid stale files, then sync from the live Hermes memories (~/.hermes/memories/) to /tmp/hermes-memory/.
-      If the live memories are not available, fall back to the Ulak backup (/root/ulak/memories/).
+      First, clear the sync directory to avoid stale files, then sync from the first available Hermes memories location to /tmp/hermes-memory/.
+      We check multiple possible locations in order of preference:
+      1. ~/.hermes/memories (live Hermes memories)
+      2. /root/ulak/memories (Ulak backup, plural)
+      3. ~/.hermes/memory (live Hermes memories, singular - fallback)
+      4. /root/ulak/memory (Ulak backup, singular - fallback)
       Using rsync with --delete ensures an exact mirror; if rsync is not available, we clear the directory and copy.
       ```bash
       # Ensure sync directory exists and is empty
       rm -rf /tmp/hermes-memory
       mkdir -p /tmp/hermes-memory
+      # Define an array of possible source directories
+      memdirs=(
+        "$HOME/.hermes/memories"
+        "/root/ulak/memories"
+        "$HOME/.hermes/memory"
+        "/root/ulak/memory"
+      )
+      # Find the first existing directory
+      src_dir=""
+      for dir in "${memdirs[@]}"; do
+        if [ -d "$dir" ]; then
+          src_dir="$dir"
+          break
+        fi
+      done
+      if [ -z "$src_dir" ]; then
+        echo "Error: No Hermes memories directory found in: ${memdirs[*]}" >&2
+        exit 1
+      fi
       # Prefer rsync if available, otherwise use cp
       if command -v rsync >/dev/null 2>&1; then
-        if [ -d ~/.hermes/memories ]; then
-          rsync -av --exclude='*.lock' --delete ~/.hermes/memories/ /tmp/hermes-memory/
-        else
-          rsync -av --exclude='*.lock' --delete /root/ulak/memories/ /tmp/hermes-memory/
-        fi
+        rsync -av --exclude='*.lock' --delete "$src_dir/" /tmp/hermes-memory/
       else
         # rsync not available: copy
-        if [ -d ~/.hermes/memories ]; then
-          cp -r ~/.hermes/memories/. /tmp/hermes-memory/
-        else
-          cp -r /root/ulak/memories/. /tmp/hermes-memory/
-        fi
+        cp -r "$src_dir"/. /tmp/hermes-memory/
       fi
       # Remove any lock files that may have been copied
       find /tmp/hermes-memory -name '*.lock' -delete
