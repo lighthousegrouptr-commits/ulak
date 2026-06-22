@@ -42,3 +42,6 @@ When you need to refresh the Agentic OS dashboard data and deploy it, including 
 ## Related Skills
 - `hermes-config-backup`: For backing up Hermes agent configuration.
 - `agentic-os-deploy-standard`: For a standard Agentic OS deploy without Hermes memory sync.
+
+## Support Files
+- `references/deployment-checklist.md`: Step‑by‑step checklist used during deployment.
