@@ -1,4 +1,6 @@
-model: nvidia/nemotron-3-super-120b-a12b:free
+model:
+  provider: deepseek
+  default: deepseek-v4-flash
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
@@ -617,6 +619,7 @@ WHATSAPP_HOME_CHANNEL: 156744982499471@lid
 plugins:
   enabled:
   - claude-bridge
+  - hermes-internal
   disabled: []
 mcp_servers:
   gsc-server:
